@@ -21,11 +21,20 @@ mod test {
         INITED_2.store(true, Ordering::SeqCst);
     }
 
+    #[cfg(not(target_os = "windows"))]
     #[dtor]
-    unsafe fn shutdown() {
+    unsafe fn shutdown_unix() {
         // Using println or eprintln here will panic as Rust has shut down
         let msg = "We don't test shutdown, but if you see this message it worked!\n";
         libc::write(1, std::mem::transmute(msg.as_ptr()), msg.len() as libc::size_t);
+    }
+
+    #[cfg(target_os = "windows")]
+    #[dtor]
+    unsafe fn shutdown_windows() {
+        // Using println or eprintln here will panic as Rust has shut down
+        let msg = "We don't test shutdown, but if you see this message it worked!\n";
+        libc::write(1, std::mem::transmute(msg.as_ptr()), msg.len() as u32);
     }
 
     #[test]
