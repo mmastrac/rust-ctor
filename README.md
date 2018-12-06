@@ -36,7 +36,7 @@ library is loaded or an executable is started:
     }
 ```
 
-Print a message at shutdown time:
+Print a message at shutdown time (note: `dtor` is not supported on Windows right now):
 
 ```
     #[dtor]
