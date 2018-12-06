@@ -19,7 +19,13 @@ version = "0.15.22"
 features = ["full", "fold", "parsing", "printing", "proc-macro"]
 default-features = false
 
+[dev-dependencies]
+libc = "0.2.44"
+
 [lib]
 name = "ctor"
 proc-macro = true
 
+[[example]]
+name = "example"
+path = "src/example.rs"

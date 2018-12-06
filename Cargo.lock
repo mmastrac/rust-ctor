@@ -2,6 +2,7 @@
 name = "ctor"
 version = "0.1.3"
 dependencies = [
+ "libc 0.2.44 (registry+https://github.com/rust-lang/crates.io-index)",
  "quote 0.6.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "syn 0.15.22 (registry+https://github.com/rust-lang/crates.io-index)",
 ]

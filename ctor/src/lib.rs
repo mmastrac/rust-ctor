@@ -87,7 +87,7 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
         #[used]
         #[cfg_attr(target_os = "linux", link_section = ".ctors")]
         #[cfg_attr(target_os = "macos", link_section = "__DATA,__mod_init_func")]
-        #[cfg_attr(target_os = "windows", link_section = ".CRT$XCU")]
+        #[cfg_attr(windows, link_section = ".CRT$XCU")]
         #(#attrs)*
         static #ident
         :
@@ -104,14 +104,12 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
 /// Marks a function as a library/executable destructor. This uses OS-specific
 /// linker sections to call a specific function at termination time.
 ///
-/// Only available on Linux and OSX right now.
-/// 
 /// Multiple shutdown functions are supported, but the invocation order is not
 /// guaranteed.
-/// 
+///
 /// `sys_common::at_exit` is usually a better solution for shutdown handling, as
 /// it allows you to use `stdout` in your handlers.
-/// 
+///
 /// ```rust
 /// # extern crate ctor;
 /// # use ctor::*;
@@ -137,16 +135,30 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
     } = function;
 
     let output = quote!(
-        #[used]
-        #[cfg_attr(target_os = "linux", link_section = ".dtors")]
-        #[cfg_attr(target_os = "macos", link_section = "__DATA,__mod_term_func")]
-        #[cfg_attr(target_os = "windows", link_section = ".CRT$XPU")]
-        #(#attrs)*
-        static #ident
-        :
-        #unsafety extern #abi #constness fn() =
-        { #unsafety extern #abi #constness fn #ident() #block; #ident }
-        ;
+        mod #ident {
+            use super::*;
+
+            // Avoid a dep on libc by linking directly
+            extern "C" {
+                fn atexit(cb: #unsafety extern fn());
+            }
+
+            #[used]
+            #[cfg_attr(target_os = "linux", link_section = ".ctors")]
+            #[cfg_attr(target_os = "macos", link_section = "__DATA,__mod_init_func")]
+            #[cfg_attr(windows, link_section = ".CRT$XCU")]
+            #(#attrs)*
+            static __dtor_export
+            :
+            unsafe extern #abi #constness fn() =
+            {
+                #unsafety extern #abi #constness fn #ident() #block;
+                unsafe extern fn __dtor_atexit() {
+                    atexit(#ident);
+                };
+                __dtor_atexit
+            };
+        }
     );
 
     // eprintln!("{}", output);
@@ -155,11 +167,7 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
 }
 
 fn validate_item(typ: &str, item: &syn::ItemFn) {
-    let syn::ItemFn {
-        vis,
-        decl,
-        ..
-    } = item;
+    let syn::ItemFn { vis, decl, .. } = item;
 
     // Ensure that visibility modifier is not present
     match vis {

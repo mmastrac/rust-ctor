@@ -10,6 +10,28 @@ mod test {
     static INITED: AtomicBool = ATOMIC_BOOL_INIT;
     static INITED_2: AtomicBool = ATOMIC_BOOL_INIT;
 
+    #[cfg(not(windows))]
+    pub fn shutdown_println(msg: &str) {
+        unsafe {
+            libc::write(
+                2,
+                std::mem::transmute(msg.as_ptr()),
+                msg.len() as libc::size_t,
+            );
+            let newline = "\n";
+            libc::write(2, std::mem::transmute(newline.as_ptr()), 1);
+        }
+    }
+
+    #[cfg(windows)]
+    pub fn shutdown_println(msg: &str) {
+        unsafe {
+            libc::write(2, std::mem::transmute(msg.as_ptr()), msg.len() as u32);
+            let newline = "\n";
+            libc::write(2, std::mem::transmute(newline.as_ptr()), 1);
+        }
+    }
+
     /// Doc comment
     #[ctor]
     fn foo() {
@@ -22,20 +44,10 @@ mod test {
         INITED_2.store(true, Ordering::SeqCst);
     }
 
-    #[cfg(not(target_os = "windows"))]
     #[dtor]
-    unsafe fn shutdown_unix() {
+    fn shutdown() {
         // Using println or eprintln here will panic as Rust has shut down
-        let msg = "We don't test shutdown, but if you see this message it worked!\n";
-        libc::write(2, std::mem::transmute(msg.as_ptr()), msg.len() as libc::size_t);
-    }
-
-    #[cfg(target_os = "windows")]
-    #[dtor]
-    unsafe fn shutdown_windows() {
-        // Using println or eprintln here will panic as Rust has shut down
-        let msg = "We don't test shutdown, but if you see this message it worked!\n";
-        libc::write(2, std::mem::transmute(msg.as_ptr()), msg.len() as u32);
+        shutdown_println("We don't test shutdown, but if you see this message it worked!");
     }
 
     #[test]
