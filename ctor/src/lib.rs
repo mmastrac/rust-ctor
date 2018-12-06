@@ -104,6 +104,8 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
 /// Marks a function as a library/executable destructor. This uses OS-specific
 /// linker sections to call a specific function at termination time.
 ///
+/// Only available on Linux and OSX right now.
+/// 
 /// Multiple shutdown functions are supported, but the invocation order is not
 /// guaranteed.
 /// 
@@ -119,6 +121,7 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
 ///   /* ... */
 /// }
 /// ```
+#[cfg(not(target_os = "windows"))]
 #[proc_macro_attribute]
 pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
     let function: syn::ItemFn = syn::parse_macro_input!(function);

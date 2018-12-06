@@ -1,3 +1,4 @@
+// Prevent a spurious 'unused_imports' warning
 #[allow(unused_imports)]
 #[macro_use]
 extern crate ctor;
@@ -27,14 +28,6 @@ mod test {
         // Using println or eprintln here will panic as Rust has shut down
         let msg = "We don't test shutdown, but if you see this message it worked!\n";
         libc::write(1, std::mem::transmute(msg.as_ptr()), msg.len() as libc::size_t);
-    }
-
-    #[cfg(target_os = "windows")]
-    #[dtor]
-    unsafe fn shutdown_windows() {
-        // Using println or eprintln here will panic as Rust has shut down
-        let msg = "We don't test shutdown, but if you see this message it worked!\n";
-        libc::write(1, std::mem::transmute(msg.as_ptr()), msg.len() as u32);
     }
 
     #[test]
