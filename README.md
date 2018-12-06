@@ -1,6 +1,10 @@
 # rust-ctor
 
-`__attribute__((constructor))` for Rust [![Build Status](https://api.travis-ci.org/mmastrac/rust-ctor.svg?branch=master)](https://travis-ci.org/mmastrac/rust-ctor)
+[![Build Status](https://api.travis-ci.org/mmastrac/rust-ctor.svg?branch=master)](https://travis-ci.org/mmastrac/rust-ctor)
+[![docs.rs](https://docs.rs/ctor/badge.svg)](https://docs.rs/ctor)
+[![crates.io](https://img.shields.io/crates/v/ctor.svg)](https://crates.io/crates/ctor)
+
+Module initialization functions for Rust (like `__attribute__((constructor))` in C/C++).
 
 Note that this library currently requires the `beta` or `nightly` channel, but should work with `stable` soon (I think!).
 
