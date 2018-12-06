@@ -21,6 +21,11 @@ mod test {
         INITED_2.store(true, Ordering::SeqCst);
     }
 
+    #[dtor]
+    unsafe fn shutdown() {
+        libc::printf("We don't test shutdown, but if you see this message it worked!\n\0".as_ptr() as *const i8);
+    }
+
     #[test]
     fn test_initialized() {
         // Test to see that the ctor ran

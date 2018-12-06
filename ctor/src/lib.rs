@@ -64,35 +64,24 @@ use proc_macro::TokenStream;
 #[proc_macro_attribute]
 pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
     let function: syn::ItemFn = syn::parse_macro_input!(function);
+    validate_item("ctor", &function);
 
     let syn::ItemFn {
         ident,
-        vis,
         unsafety,
         constness,
         abi,
         block,
-        decl,
         attrs,
         ..
     } = function;
 
-    // Ensure that visibility modifier is not present
-    match vis {
-        syn::Visibility::Inherited => {}
-        _ => panic!("#[ctor] methods must not have visibility modifiers"),
-    }
+    // Linux/ELF: https://www.exploit-db.com/papers/13234
 
-    // No parameters allowed
-    if decl.inputs.len() > 0 {
-        panic!("#[ctor] methods may not have parameters");
-    }
+    // Mac details: https://blog.timac.org/2016/0716-constructor-and-destructor-attributes/
 
-    // No return type allowed
-    match decl.output {
-        syn::ReturnType::Default => {}
-        _ => panic!("#[ctor] methods must not have return types"),
-    }
+    // Why .CRT$XCU on Windows? https://www.cnblogs.com/sunkang/archive/2011/05/24/2055635.html
+    // 'I'=C init, 'C'=C++ init, 'P'=Pre-terminators and 'T'=Terminators
 
     let output = quote!(
         #[used]
@@ -110,4 +99,80 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
     // eprintln!("{}", output);
 
     output.into()
+}
+
+/// Marks a function as a library/executable destructor. This uses OS-specific
+/// linker sections to call a specific function at termination time.
+///
+/// Multiple shutdown functions are supported, but the invocation order is not
+/// guaranteed.
+/// 
+/// `sys_common::at_exit` is usually a better solution for shutdown handling, as
+/// it allows you to use `stdout` in your handlers.
+/// 
+/// ```rust
+/// # extern crate ctor;
+/// # use ctor::*;
+///
+/// #[dtor]
+/// fn shutdown() {
+///   /* ... */
+/// }
+/// ```
+#[proc_macro_attribute]
+pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
+    let function: syn::ItemFn = syn::parse_macro_input!(function);
+    validate_item("dtor", &function);
+
+    let syn::ItemFn {
+        ident,
+        unsafety,
+        constness,
+        abi,
+        block,
+        attrs,
+        ..
+    } = function;
+
+    let output = quote!(
+        #[used]
+        #[cfg_attr(target_os = "linux", link_section = ".dtors")]
+        #[cfg_attr(target_os = "macos", link_section = "__DATA,__mod_term_func")]
+        #[cfg_attr(target_os = "windows", link_section = ".CRT$XPU")]
+        #(#attrs)*
+        static #ident
+        :
+        #unsafety extern #abi #constness fn() =
+        { #unsafety extern #abi #constness fn #ident() #block; #ident }
+        ;
+    );
+
+    // eprintln!("{}", output);
+
+    output.into()
+}
+
+fn validate_item(typ: &str, item: &syn::ItemFn) {
+    let syn::ItemFn {
+        vis,
+        decl,
+        ..
+    } = item;
+
+    // Ensure that visibility modifier is not present
+    match vis {
+        syn::Visibility::Inherited => {}
+        _ => panic!("#[{}] methods must not have visibility modifiers", typ),
+    }
+
+    // No parameters allowed
+    if decl.inputs.len() > 0 {
+        panic!("#[{}] methods may not have parameters", typ);
+    }
+
+    // No return type allowed
+    match decl.output {
+        syn::ReturnType::Default => {}
+        _ => panic!("#[{}] methods must not have return types", typ),
+    }
 }
