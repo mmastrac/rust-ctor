@@ -1,0 +1,18 @@
+[package]
+name = "ctor"
+version = "0.1.0"
+authors = ["Matt Mastracci <matthew@mastracci.com>"]
+edition = "2018"
+
+[dependencies]
+quote = "0.6.10"
+
+[dependencies.syn]
+version = "0.15.22"
+features = ["full", "fold", "parsing", "printing", "proc-macro"]
+default-features = false
+
+[lib]
+name = "ctor"
+proc-macro = true
+
