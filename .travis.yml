@@ -9,8 +9,3 @@ rust:
   - stable
   - beta
   - nightly
-
-# Temporary: waiting for Rust to stabilize features
-matrix:
-  allow_failures:
-    - rust: stable
