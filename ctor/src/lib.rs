@@ -51,15 +51,15 @@ use proc_macro::TokenStream;
 ///
 /// The above example translates into the following Rust code (approximately):
 ///
-///```rust,ignore
+///```rust
 /// #[used]
 /// #[cfg_attr(target_os = "linux", link_section = ".ctors")]
 /// #[cfg_attr(target_os = "macos", link_section = "__DATA,__mod_init_func")]
 /// #[cfg_attr(target_os = "windows", link_section = ".CRT$XCU")]
 /// static foo: extern fn() = {
-///   extern fn foo() { ... };
+///   extern fn foo() { /* ... */ };
 ///   foo
-/// }
+/// };
 /// ```
 #[proc_macro_attribute]
 pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
