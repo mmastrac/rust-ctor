@@ -36,7 +36,8 @@ library is loaded or an executable is started:
     }
 ```
 
-Print a message at shutdown time (note: `dtor` is not supported on Windows right now):
+Print a message at shutdown time. Note that Rust may have shut down
+some stdlib services at this time.
 
 ```
     #[dtor]
@@ -61,5 +62,14 @@ The above example translates into the following Rust code (approximately):
     pub static foo: extern fn() = { 
         extern fn foo() { ... };
         foo 
+    }
+```
+
+The `#[dtor]` macro effectively creates a constructor that calls `libc::atexit` with the provided function, ie roughly equivalent to:
+
+```
+    #[ctor]
+    fn dtor_atexit() {
+        libc::atexit(dtor);
     }
 ```
