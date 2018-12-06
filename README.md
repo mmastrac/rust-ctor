@@ -10,7 +10,18 @@ Note that this library currently requires the `beta` or `nightly` channel, but s
 
 Idea inspired by [this code](https://github.com/neon-bindings/neon/blob/2277e943a619579c144c1da543874f4a7ec39879/src/lib.rs#L42) in the Neon project.
 
-## Example
+## Warnings
+
+Rust's philosophy is that nothing happens before or after main and 
+this library explicitly subverts that. The code that runs in the `ctor`
+and `dtor` functions should be careful to limit itself to `libc` 
+functions and code that does not rely on Rust's stdlib services.
+
+For example, using stdout in a `dtor` function is a guaranteed panic.
+
+In most cases, `sys_common::at_exit` is a better choice than `#[dtor]`. Caveat emptor!
+
+## Examples
 
 Marks the function `foo` as a module constructor, called when a static
 library is loaded or an executable is started:
@@ -21,6 +32,16 @@ library is loaded or an executable is started:
     #[ctor]
     fn foo() {
         INITED.store(true, Ordering::SeqCst);
+    }
+```
+
+Print a message at shutdown time:
+
+```
+    #[dtor]
+    unsafe fn shutdown() {
+        // Using println or eprintln here will panic as Rust has shut down
+        libc::printf("Shutting down!\n\0".as_ptr() as *const i8);
     }
 ```
 
