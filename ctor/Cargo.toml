@@ -1,11 +1,15 @@
 [package]
 name = "ctor"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Matt Mastracci <matthew@mastracci.com>"]
 edition = "2018"
 description = "__attribute__((constructor)) for Rust"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/mmastrac/rust-ctor"
+readme = "../README.md"
+
+[badges]
+travis-ci = { repository = "mmastrac/rust-ctor", branch = "master" }
 
 [dependencies]
 quote = "0.6.10"
