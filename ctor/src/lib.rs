@@ -138,7 +138,7 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
         #[used]
         #[cfg_attr(target_os = "linux", link_section = ".dtors")]
         #[cfg_attr(target_os = "macos", link_section = "__DATA,__mod_term_func")]
-        #[cfg_attr(target_os = "windows", link_section = ".CRT$XPU")]
+        #[cfg_attr(target_os = "windows", link_section = ".CRT$XTU")]
         #(#attrs)*
         static #ident
         :
