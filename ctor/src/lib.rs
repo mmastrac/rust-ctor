@@ -1,4 +1,11 @@
-//! Procedural macro for defining module startup functions.
+//! Procedural macro for defining global constrctor/destructor functions.
+//!
+//! This provides module initialization/teardown functions for Rust (like
+//! `__attribute__((constructor))` in C/C++) for Linux, OSX, and Windows via
+//! the `#[ctor]` and `#[dtor]` macros.
+//!
+//! This library currently requires Rust > `1.31.0` at a minimum for the
+//! procedural macro support.
 
 extern crate proc_macro;
 extern crate syn;
