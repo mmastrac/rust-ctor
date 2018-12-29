@@ -4,12 +4,19 @@
 [![docs.rs](https://docs.rs/ctor/badge.svg)](https://docs.rs/ctor)
 [![crates.io](https://img.shields.io/crates/v/ctor.svg)](https://crates.io/crates/ctor)
 
-Module initialization functions for Rust (like `__attribute__((constructor))` in C/C++) for Linux, OSX, and Windows.
+Module initialization/teardown functions for Rust (like `__attribute__((constructor))` in C/C++) for Linux, OSX, and Windows.
 
 This library currently requires Rust > `1.31.0` at a minimum for the
 procedural macro support.
 
 Idea inspired by [this code](https://github.com/neon-bindings/neon/blob/2277e943a619579c144c1da543874f4a7ec39879/src/lib.rs#L42) in the Neon project.
+
+## Support
+
+This library works and has been tested for Linux, OSX and Windows. This
+library will also work as expected in both `bin` and `cdylib` outputs, 
+ie: the `ctor` and `dtor` will run at executable or library 
+startup/shutdown respectively.
 
 ## Warnings
 

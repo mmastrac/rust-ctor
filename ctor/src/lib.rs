@@ -1,11 +1,18 @@
-//! Procedural macro for defining global constrctor/destructor functions.
+//! Procedural macro for defining global constructor/destructor functions.
 //!
 //! This provides module initialization/teardown functions for Rust (like
 //! `__attribute__((constructor))` in C/C++) for Linux, OSX, and Windows via
 //! the `#[ctor]` and `#[dtor]` macros.
 //!
+//! This library works and has been tested for Linux, OSX and Windows. This
+//! library will also work as expected in both `bin` and `cdylib` outputs,
+//! ie: the `ctor` and `dtor` will run at executable or library
+//! startup/shutdown respectively.
+//!
 //! This library currently requires Rust > `1.31.0` at a minimum for the
 //! procedural macro support.
+
+// Code note:
 
 // You might wonder why we don't use `__attribute__((destructor))`/etc for
 // dtor. Unfortunately mingw doesn't appear to properly support section-based
