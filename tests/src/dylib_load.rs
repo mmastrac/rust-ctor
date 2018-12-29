@@ -33,9 +33,24 @@ fn dtor() {
     shutdown_println("- dtor bin");
 }
 
+#[cfg(target_os = "macos")]
+fn extension() -> &'static str {
+    "dylib"
+}
+
+#[cfg(target_os = "linux")]
+fn extension() -> &'static str {
+    "so"
+}
+
+#[cfg(windows)]
+fn extension() -> &'static str {
+    "dll"
+}
+
 pub fn main() {
     println!("++ main start");
-    let lib = Library::open("target/debug/examples/libdylib.dylib").unwrap();
+    let lib = Library::open(format!("target/debug/examples/libdylib.{}", extension())).unwrap();
     drop(lib);
     println!("-- main end");
 }
