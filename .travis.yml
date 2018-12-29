@@ -9,3 +9,11 @@ rust:
   - stable
   - beta
   - nightly
+
+script:
+  - cargo test --all
+  - RUSTFLAGS='-C target-feature=+crt-static' cargo build --example dylib
+  - RUSTFLAGS='-C target-feature=+crt-static' cargo run --example dylib_load
+  - cargo clean
+  - RUSTFLAGS='-C target-feature=-crt-static' cargo build --example dylib
+  - RUSTFLAGS='-C target-feature=-crt-static' cargo run --example dylib_load

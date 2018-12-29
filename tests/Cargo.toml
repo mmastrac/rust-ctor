@@ -8,3 +8,14 @@ publish = false
 [dependencies]
 ctor = { path = "../ctor" }
 libc = "0.2.44"
+dlopen = "0.1.6"
+
+[[example]]
+name = "dylib"
+path = "src/dylib.rs"
+crate-type = ["cdylib"]
+
+[[example]]
+name = "dylib_load"
+path = "src/dylib_load.rs"
+crate-type = ["bin"]
