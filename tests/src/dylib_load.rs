@@ -48,9 +48,19 @@ fn extension() -> &'static str {
     "dll"
 }
 
+#[cfg(not(windows))]
+fn prefix() -> &'static str {
+    "lib"
+}
+
+#[cfg(windows)]
+fn prefix() -> &'static str {
+    ""
+}
+
 pub fn main() {
     println!("++ main start");
-    let lib = Library::open(format!("target/debug/examples/libdylib.{}", extension())).unwrap();
+    let lib = Library::open(format!("target/debug/examples/{}dylib.{}", prefix(), extension())).unwrap();
     drop(lib);
     println!("-- main end");
 }
