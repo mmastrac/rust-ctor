@@ -59,8 +59,8 @@ fn prefix() -> &'static str {
 }
 
 pub fn main() {
-    shutdown_println!("++ main start");
+    shutdown_println("++ main start");
     let lib = Library::open(format!("target/debug/examples/{}dylib.{}", prefix(), extension())).unwrap();
     drop(lib);
-    shutdown_println!("-- main end");
+    shutdown_println("-- main end");
 }
