@@ -25,17 +25,17 @@ pub fn shutdown_println(msg: &str) {
 
 #[ctor]
 fn ctor() {
-    shutdown_println("-- ctor bin");
+    shutdown_println("+ ctor bin");
 }
 
 #[dtor]
 fn dtor() {
-    shutdown_println("++ dtor bin");
+    shutdown_println("- dtor bin");
 }
 
 pub fn main() {
-    println!("+ main start");
+    println!("++ main start");
     let lib = Library::open("target/debug/examples/libdylib.dylib").unwrap();
     drop(lib);
-    println!("- main end");
+    println!("-- main end");
 }
