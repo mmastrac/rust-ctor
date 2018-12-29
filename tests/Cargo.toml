@@ -18,4 +18,3 @@ crate-type = ["cdylib"]
 [[example]]
 name = "dylib_load"
 path = "src/dylib_load.rs"
-crate-type = ["bin"]
