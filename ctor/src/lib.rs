@@ -7,6 +7,12 @@
 //! This library currently requires Rust > `1.31.0` at a minimum for the
 //! procedural macro support.
 
+// You might wonder why we don't use `__attribute__((destructor))`/etc for
+// dtor. Unfortunately mingw doesn't appear to properly support section-based
+// hooks for shutdown, ie:
+
+// https://github.com/Alexpux/mingw-w64/blob/d0d7f784833bbb0b2d279310ddc6afb52fe47a46/mingw-w64-crt/crt/crtdll.c
+
 extern crate proc_macro;
 extern crate syn;
 #[macro_use]
