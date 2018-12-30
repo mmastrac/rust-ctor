@@ -4,13 +4,13 @@ use libc_print::*;
 
 #[ctor]
 unsafe fn ctor() {
-    libc::sleep(1);
+    // libc::sleep(1);
     libc_ewriteln!("+ ctor bin");
 }
 
 #[dtor]
 unsafe fn dtor() {
-    libc::sleep(1);
+    // libc::sleep(1);
     libc_ewriteln!("- dtor bin");
 }
 
@@ -41,7 +41,7 @@ fn prefix() -> &'static str {
 
 pub fn main() {
     unsafe {
-        libc::sleep(1);
+        // libc::sleep(1);
         libc_ewriteln!("++ main start");
         let lib = Library::open(format!(
             "target/debug/examples/{}dylib.{}",
@@ -50,7 +50,7 @@ pub fn main() {
         ))
         .unwrap();
         drop(lib);
-        libc::sleep(1);
+        // libc::sleep(1);
         libc_ewriteln!("-- main end");
     }
 }
