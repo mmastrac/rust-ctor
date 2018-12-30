@@ -29,6 +29,11 @@ For example, using stdout in a `dtor` function is a guaranteed panic.
 
 In most cases, `sys_common::at_exit` is a better choice than `#[dtor]`. Caveat emptor!
 
+On some platforms, unloading of shared libraries may not actually 
+happen until process exit, even if explicitly unloaded. The rules for 
+this are arcane and difficult to understand. For example, thread-local
+storage on OSX will affect this (see [this comment](https://github.com/rust-lang/rust/issues/28794#issuecomment-368693049)).
+
 ## Examples
 
 Marks the function `foo` as a module constructor, called when a static
