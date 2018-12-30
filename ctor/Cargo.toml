@@ -20,7 +20,7 @@ features = ["full", "fold", "parsing", "printing", "proc-macro"]
 default-features = false
 
 [dev-dependencies]
-libc = "0.2.44"
+libc-print = "0.1.7"
 
 [lib]
 name = "ctor"

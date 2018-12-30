@@ -1,50 +1,29 @@
 extern crate ctor;
-extern crate libc;
+extern crate libc_print;
 
 use ctor::*;
-
-#[cfg(not(windows))]
-pub fn shutdown_println(msg: &str) {
-    unsafe {
-        libc::write(
-            2,
-            std::mem::transmute(msg.as_ptr()),
-            msg.len() as libc::size_t,
-        );
-        let newline = "\n";
-        libc::write(2, std::mem::transmute(newline.as_ptr()), 1);
-    }
-}
-
-#[cfg(windows)]
-pub fn shutdown_println(msg: &str) {
-    unsafe {
-        libc::write(2, std::mem::transmute(msg.as_ptr()), msg.len() as u32);
-        let newline = "\n";
-        libc::write(2, std::mem::transmute(newline.as_ptr()), 1);
-    }
-}
+use libc_print::*;
 
 #[ctor]
 fn ctor() {
-    eprintln!("ctor");
+    libc_eprintln!("ctor");
 }
 
 #[ctor]
-fn ctor_unsafe() {
-    eprintln!("ctor_unsafe");
+unsafe fn ctor_unsafe() {
+    libc_eprintln!("ctor_unsafe");
 }
 
 #[dtor]
 fn dtor() {
-    shutdown_println("dtor");
+    libc_eprintln!("dtor");
 }
 
 #[dtor]
 unsafe fn dtor_unsafe() {
-    shutdown_println("dtor_unsafe");
+    libc_eprintln!("dtor_unsafe");
 }
 
 pub fn main() {
-    eprintln!("main!");
+    libc_eprintln!("main!");
 }

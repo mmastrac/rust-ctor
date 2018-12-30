@@ -111,8 +111,8 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
         #(#attrs)*
         static #ident
         :
-        extern #unsafety #abi #constness fn() =
-        { extern #unsafety #abi #constness fn #ident() #block; #ident }
+        #unsafety extern #abi #constness fn() =
+        { #unsafety extern #abi #constness fn #ident() #block; #ident }
         ;
     );
 

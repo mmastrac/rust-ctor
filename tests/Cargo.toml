@@ -7,8 +7,9 @@ publish = false
 
 [dependencies]
 ctor = { path = "../ctor" }
-libc = "0.2.44"
 dlopen = "0.1.6"
+libc-print = "0.1.7"
+libc = "0.2"
 
 [[example]]
 name = "dylib"
