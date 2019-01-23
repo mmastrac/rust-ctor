@@ -105,6 +105,7 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
 
     let output = quote!(
         #[used]
+        #[allow(non_upper_case_globals)]
         #[cfg_attr(target_os = "linux", link_section = ".ctors")]
         #[cfg_attr(target_os = "macos", link_section = "__DATA,__mod_init_func")]
         #[cfg_attr(windows, link_section = ".CRT$XCU")]
@@ -164,6 +165,7 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             }
 
             #[used]
+            #[allow(non_upper_case_globals)]
             #[cfg_attr(target_os = "linux", link_section = ".ctors")]
             #[cfg_attr(target_os = "macos", link_section = "__DATA,__mod_init_func")]
             #[cfg_attr(windows, link_section = ".CRT$XCU")]
