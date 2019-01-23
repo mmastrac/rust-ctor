@@ -39,7 +39,7 @@ storage on OSX will affect this (see [this comment](https://github.com/rust-lang
 Marks the function `foo` as a module constructor, called when a static
 library is loaded or an executable is started:
 
-```
+```rust
     static INITED: AtomicBool = ATOMIC_BOOL_INIT;
 
     #[ctor]
@@ -51,7 +51,7 @@ library is loaded or an executable is started:
 Print a message at shutdown time. Note that Rust may have shut down
 some stdlib services at this time.
 
-```
+```rust
     #[dtor]
     unsafe fn shutdown() {
         // Using println or eprintln here will panic as Rust has shut down
@@ -66,7 +66,7 @@ function is run at startup time.
 
 The above example translates into the following Rust code (approximately):
 
-```
+```rust
     #[used]
     #[cfg_attr(target_os = "linux", link_section = ".ctors")]
     #[cfg_attr(target_os = "macos", link_section = "__DATA,__mod_init_func")]
@@ -79,7 +79,7 @@ The above example translates into the following Rust code (approximately):
 
 The `#[dtor]` macro effectively creates a constructor that calls `libc::atexit` with the provided function, ie roughly equivalent to:
 
-```
+```rust
     #[ctor]
     fn dtor_atexit() {
         libc::atexit(dtor);
