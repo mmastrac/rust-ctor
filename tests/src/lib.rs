@@ -2,11 +2,9 @@
 #[allow(unused_imports)]
 #[macro_use]
 extern crate ctor;
-extern crate assert_cmd;
 
 #[cfg(test)]
 mod test {
-    use assert_cmd::prelude::*;
     use libc_print::*;
     use std::process::Command;
     use std::sync::atomic::{AtomicBool, Ordering, ATOMIC_BOOL_INIT};
@@ -39,17 +37,27 @@ mod test {
         assert_eq!(true, INITED_2.load(Ordering::SeqCst));
     }
 
+    #[cfg(target_feature="crt-static")]
+    fn crt_static() -> &'static str {
+        "+crt-static"
+    }
+
+    #[cfg(not(target_feature="crt-static"))]
+    fn crt_static() -> &'static str {
+        "-crt-static"
+    }
+
     #[test]
     fn test_dylib() {
-        let mut cmd = Command::cargo_example("dylib_load").unwrap();
+        let mut cmd = Command::new("target/debug/examples/dylib_load");
 
         // Move from tests -> root dir so we match the behaviour of running
         // --example
-        let out = cmd.current_dir("..").unwrap();
+        let out = cmd.current_dir("..").output().unwrap();
         assert_eq!("", std::str::from_utf8(out.stdout.as_slice()).unwrap());
         assert_eq!(
-            "+ ctor bin\n++ main start\n+++ ctor lib\n--- dtor lib\n-- main end\n- dtor bin\n",
-            std::str::from_utf8(out.stderr.as_slice()).unwrap()
+            format!("+ ctor bin\n++ main start\n+++ ctor lib ({})\n--- dtor lib\n-- main end\n- dtor bin\n", crt_static()),
+            std::str::from_utf8(out.stderr.as_slice()).unwrap().to_owned().replace("\r\n", "\n")
         );
     }
 }

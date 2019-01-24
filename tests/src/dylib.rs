@@ -21,9 +21,18 @@ unsafe fn sleep(seconds: u32) {
 
 #[ctor]
 #[cfg(not(test))]
+#[cfg(target_feature="crt-static")]
 unsafe fn ctor() {
     sleep(1);
-    libc_ewriteln!("+++ ctor lib");
+    libc_ewriteln!("+++ ctor lib (+crt-static)");
+}
+
+#[ctor]
+#[cfg(not(test))]
+#[cfg(not(target_feature="crt-static"))]
+unsafe fn ctor() {
+    sleep(1);
+    libc_ewriteln!("+++ ctor lib (-crt-static)");
 }
 
 #[dtor]
