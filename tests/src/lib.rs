@@ -59,7 +59,9 @@ mod test {
 
     #[test]
     fn test_dylib() {
-        let mut cmd = Command::new(format!("target/debug/examples/dylib_load{}", exe_extension()));
+        let exe = format!("target/debug/examples/dylib_load{}", exe_extension());
+        libc_eprintln!("{:?} {}", std::env::current_dir(), exe);
+        let mut cmd = Command::new(exe);
 
         // Move from tests -> root dir so we match the behaviour of running
         // --example
