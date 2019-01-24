@@ -13,7 +13,8 @@ Idea inspired by [this code](https://github.com/neon-bindings/neon/blob/2277e943
 
 ## Support
 
-This library works and has been tested for Linux, OSX and Windows. This
+This library works and [has been tested](https://travis-ci.org/mmastrac/rust-ctor)
+for Linux, OSX and Windows, with both `+crt-static` and `-crt-static`. This
 library will also work as expected in both `bin` and `cdylib` outputs, 
 ie: the `ctor` and `dtor` will run at executable or library 
 startup/shutdown respectively.
@@ -25,7 +26,9 @@ this library explicitly subverts that. The code that runs in the `ctor`
 and `dtor` functions should be careful to limit itself to `libc` 
 functions and code that does not rely on Rust's stdlib services.
 
-For example, using stdout in a `dtor` function is a guaranteed panic.
+For example, using stdout in a `dtor` function is a guaranteed panic. Consider
+using the [`libc-print` crate](https://crates.io/crates/libc-print) for output
+to stderr/stdout during `#[ctor]` and `#[dtor]` methods.
 
 In most cases, `sys_common::at_exit` is a better choice than `#[dtor]`. Caveat emptor!
 
