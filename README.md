@@ -6,7 +6,7 @@
 
 Module initialization/teardown functions for Rust (like `__attribute__((constructor))` in C/C++) for Linux, OSX, and Windows.
 
-This library currently requires Rust > `1.31.0` at a minimum for the
+This library currently requires **Rust > 1.31.0** at a minimum for the
 procedural macro support.
 
 Idea inspired by [this code](https://github.com/neon-bindings/neon/blob/2277e943a619579c144c1da543874f4a7ec39879/src/lib.rs#L42) in the Neon project.
