@@ -19,17 +19,17 @@ unsafe fn dtor() {
 }
 
 #[cfg(target_os = "macos")]
-fn extension() -> &'static str {
+fn lib_extension() -> &'static str {
     "dylib"
 }
 
 #[cfg(target_os = "linux")]
-fn extension() -> &'static str {
+fn lib_extension() -> &'static str {
     "so"
 }
 
 #[cfg(windows)]
-fn extension() -> &'static str {
+fn lib_extension() -> &'static str {
     "dll"
 }
 
@@ -65,7 +65,7 @@ pub fn main() {
         let lib = Library::open(format!(
             "target/debug/examples/{}dylib.{}",
             prefix(),
-            extension()
+            lib_extension()
         ))
         .unwrap();
         drop(lib);

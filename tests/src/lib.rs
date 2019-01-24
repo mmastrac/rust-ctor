@@ -37,6 +37,16 @@ mod test {
         assert_eq!(true, INITED_2.load(Ordering::SeqCst));
     }
 
+    #[cfg(not(windows))]
+    fn exe_extension() -> &'static str {
+        ""
+    }
+
+    #[cfg(windows)]
+    fn exe_extension() -> &'static str {
+        ".exe"
+    }
+
     #[cfg(target_feature="crt-static")]
     fn crt_static() -> &'static str {
         "+crt-static"
@@ -49,7 +59,7 @@ mod test {
 
     #[test]
     fn test_dylib() {
-        let mut cmd = Command::new("target/debug/examples/dylib_load");
+        let mut cmd = Command::new(format!("target/debug/examples/dylib_load{}", exe_extension()));
 
         // Move from tests -> root dir so we match the behaviour of running
         // --example
