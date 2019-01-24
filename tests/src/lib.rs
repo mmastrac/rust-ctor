@@ -61,10 +61,12 @@ mod test {
     #[test]
     fn test_dylib() {
         let mut path = Path::new("..").canonicalize().unwrap();
-        let exe = format!("target/debug/examples/dylib_load{}", exe_extension());
-        path.push(Path::new(&exe));
+        let exe = format!("dylib_load{}", exe_extension());
+        for x in &["target", "debug", "examples", exe.as_str()] {
+            path.push(x);
+        }
         libc_eprintln!("{:?} {:?} {}", path, std::env::current_dir(), exe);
-        let mut cmd = Command::new(exe);
+        let mut cmd = Command::new(path.to_str().unwrap());
 
         // Move from tests -> root dir so we match the behaviour of running
         // --example
