@@ -8,6 +8,7 @@ mod test {
     use libc_print::*;
     use std::process::Command;
     use std::sync::atomic::{AtomicBool, Ordering, ATOMIC_BOOL_INIT};
+    use std::path::Path;
 
     static INITED: AtomicBool = ATOMIC_BOOL_INIT;
     static INITED_2: AtomicBool = ATOMIC_BOOL_INIT;
@@ -59,8 +60,10 @@ mod test {
 
     #[test]
     fn test_dylib() {
+        let mut path = Path::new("..").canonicalize().unwrap();
         let exe = format!("target/debug/examples/dylib_load{}", exe_extension());
-        libc_eprintln!("{:?} {}", std::env::current_dir(), exe);
+        path.push(Path::new(&exe));
+        libc_eprintln!("{:?} {:?} {}", path, std::env::current_dir(), exe);
         let mut cmd = Command::new(exe);
 
         // Move from tests -> root dir so we match the behaviour of running
