@@ -52,7 +52,7 @@ library is loaded or an executable is started:
 ```
 
 Creates a `HashMap` populated with strings when a static
-library is loaded or an executable is started:
+library is loaded or an executable is started (new in `0.1.7`):
 
 ```rust
     #[ctor]
