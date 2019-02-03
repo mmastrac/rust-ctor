@@ -51,6 +51,21 @@ library is loaded or an executable is started:
     }
 ```
 
+Creates a `HashMap` populated with strings when a static
+library is loaded or an executable is started:
+
+```rust
+    #[ctor]
+    /// This is an immutable static, evaluated at init time
+    static STATIC_CTOR: HashMap<u32, &'static str> = {
+        let mut m = HashMap::new();
+        m.insert(0, "foo");
+        m.insert(1, "bar");
+        m.insert(2, "baz");
+        m
+    };
+```
+
 Print a message at shutdown time. Note that Rust may have shut down
 some stdlib services at this time.
 
@@ -67,7 +82,8 @@ some stdlib services at this time.
 The `#[ctor]` macro makes use of linker sections to ensure that a 
 function is run at startup time.
 
-The above example translates into the following Rust code (approximately):
+The macro translates a marked function to the following Rust code 
+(approximately):
 
 ```rust
     #[used]

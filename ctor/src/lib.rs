@@ -29,10 +29,11 @@ extern crate quote;
 
 use proc_macro::TokenStream;
 
-/// Marks a function as a library/executable constructor. This uses OS-specific
-/// linker sections to call a specific function at load time.
+/// Marks a function or static variable as a library/executable constructor.
+/// This uses OS-specific linker sections to call a specific function at
+/// load time.
 ///
-/// Multiple startup functions are supported, but the invocation order is not
+/// Multiple startup functions/statics are supported, but the invocation order is not
 /// guaranteed.
 ///
 /// # Examples
@@ -64,6 +65,27 @@ use proc_macro::TokenStream;
 /// fn foo() {
 ///   INITED.store(true, Ordering::SeqCst);
 /// }
+/// ```
+///
+/// Initialize a `HashMap` at startup time:
+///
+/// ```rust
+/// # extern crate ctor;
+/// # use std::collections::HashMap;
+/// # use ctor::*;
+/// #[ctor]
+/// static STATIC_CTOR: HashMap<u32, String> = {
+///   let mut m = HashMap::new();
+///   for i in 0..100 {
+///     m.insert(i, format!("x*100={}", i*100));
+///   }
+///   m
+/// };
+///
+/// # pub fn main() {
+/// #   assert_eq!(STATIC_CTOR.len(), 100);
+/// #   assert_eq!(STATIC_CTOR[&20], "x*100=2000");
+/// # }
 /// ```
 ///
 /// # Details
