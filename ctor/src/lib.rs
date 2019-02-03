@@ -1,3 +1,5 @@
+#![recursion_limit="128"]
+
 //! Procedural macro for defining global constructor/destructor functions.
 //!
 //! This provides module initialization/teardown functions for Rust (like
@@ -83,43 +85,101 @@ use proc_macro::TokenStream;
 /// ```
 #[proc_macro_attribute]
 pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
-    let function: syn::ItemFn = syn::parse_macro_input!(function);
-    validate_item("ctor", &function);
+    let item: syn::Item = syn::parse_macro_input!(function);
+    if let syn::Item::Fn(function) = item {
+        validate_item("ctor", &function);
 
-    let syn::ItemFn {
-        ident,
-        unsafety,
-        constness,
-        abi,
-        block,
-        attrs,
-        ..
-    } = function;
+        let syn::ItemFn {
+            ident,
+            unsafety,
+            constness,
+            abi,
+            block,
+            attrs,
+            ..
+        } = function;
 
-    // Linux/ELF: https://www.exploit-db.com/papers/13234
+        // Linux/ELF: https://www.exploit-db.com/papers/13234
 
-    // Mac details: https://blog.timac.org/2016/0716-constructor-and-destructor-attributes/
+        // Mac details: https://blog.timac.org/2016/0716-constructor-and-destructor-attributes/
 
-    // Why .CRT$XCU on Windows? https://www.cnblogs.com/sunkang/archive/2011/05/24/2055635.html
-    // 'I'=C init, 'C'=C++ init, 'P'=Pre-terminators and 'T'=Terminators
+        // Why .CRT$XCU on Windows? https://www.cnblogs.com/sunkang/archive/2011/05/24/2055635.html
+        // 'I'=C init, 'C'=C++ init, 'P'=Pre-terminators and 'T'=Terminators
 
-    let output = quote!(
-        #[used]
-        #[allow(non_upper_case_globals)]
-        #[cfg_attr(target_os = "linux", link_section = ".ctors")]
-        #[cfg_attr(target_os = "macos", link_section = "__DATA,__mod_init_func")]
-        #[cfg_attr(windows, link_section = ".CRT$XCU")]
-        #(#attrs)*
-        static #ident
-        :
-        #unsafety extern #abi #constness fn() =
-        { #unsafety extern #abi #constness fn #ident() #block; #ident }
-        ;
-    );
+        let output = quote!(
+            #[used]
+            #[allow(non_upper_case_globals)]
+            #[cfg_attr(target_os = "linux", link_section = ".ctors")]
+            #[cfg_attr(target_os = "macos", link_section = "__DATA,__mod_init_func")]
+            #[cfg_attr(windows, link_section = ".CRT$XCU")]
+            #(#attrs)*
+            static #ident
+            :
+            #unsafety extern #abi #constness fn() =
+            { #unsafety extern #abi #constness fn #ident() #block; #ident }
+            ;
+        );
 
-    // eprintln!("{}", output);
+        // eprintln!("{}", output);
 
-    output.into()
+        output.into()
+    } else if let syn::Item::Static(var) = item {
+        let syn::ItemStatic {
+            ident,
+            mutability,
+            expr,
+            attrs,
+            ty,
+            vis,
+            ..
+        } = var;
+
+        if let Some(_) = mutability {
+            panic!("#[ctor]-annotated static objects must not be mutable");
+        }
+
+        let ctor_ident = syn::parse_str::<syn::Ident>(format!("{}___rust_ctor___ctor", ident).as_ref()).expect("Unable to create identifier");
+        let storage_ident = syn::parse_str::<syn::Ident>(format!("{}___rust_ctor___storage", ident).as_ref()).expect("Unable to create identifier");
+
+        let output = quote!(
+            // This is mutable, but only by this macro code!
+            static mut #storage_ident: Option<#ty> = None;
+
+            #[doc(hidden)]
+            #vis struct #ident {}
+
+            #(#attrs)*
+            #vis static #ident: #ident = #ident {};
+
+            impl core::ops::Deref for #ident {
+                type Target = #ty;
+                fn deref(&self) -> &'static #ty {
+                    unsafe {
+                        let r = #storage_ident.as_ref();
+                        r.unwrap()
+                    }
+                }
+            }
+
+            #[cfg_attr(target_os = "linux", link_section = ".ctors")]
+            #[cfg_attr(target_os = "macos", link_section = "__DATA,__mod_init_func")]
+            #[cfg_attr(windows, link_section = ".CRT$XCU")]
+            static #ctor_ident
+            :
+            unsafe extern fn() = { 
+                unsafe extern fn initer() {
+                    let ptr = &#storage_ident as *const Option<#ty> as *mut Option<#ty>; 
+                    let tmp = Some(#expr);
+                    core::ptr::copy_nonoverlapping(&tmp, ptr, 1);
+                    core::mem::forget(tmp);
+                }; initer }
+            ;
+        );
+
+        output.into()
+    } else {
+        panic!("#[ctor] items must be functions or static globals");
+    }
 }
 
 /// Marks a function as a library/executable destructor. This uses OS-specific
