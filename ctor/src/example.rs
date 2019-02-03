@@ -41,9 +41,9 @@ mod module {
     use libc_print::*;
 
     #[ctor]
-    pub static STATIC_CTOR: u8 = { 
+    pub static STATIC_CTOR: u8 = {
         libc_eprintln!("module::STATIC_CTOR");
-        42 
+        42
     };
 }
 

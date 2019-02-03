@@ -21,7 +21,7 @@ unsafe fn sleep(seconds: u32) {
 
 #[ctor]
 #[cfg(not(test))]
-#[cfg(target_feature="crt-static")]
+#[cfg(target_feature = "crt-static")]
 unsafe fn ctor() {
     sleep(1);
     libc_ewriteln!("+++ ctor lib (+crt-static)");
@@ -29,7 +29,7 @@ unsafe fn ctor() {
 
 #[ctor]
 #[cfg(not(test))]
-#[cfg(not(target_feature="crt-static"))]
+#[cfg(not(target_feature = "crt-static"))]
 unsafe fn ctor() {
     sleep(1);
     libc_ewriteln!("+++ ctor lib (-crt-static)");

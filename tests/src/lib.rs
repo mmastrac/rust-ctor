@@ -6,9 +6,9 @@ extern crate ctor;
 #[cfg(test)]
 mod test {
     use libc_print::*;
+    use std::path::Path;
     use std::process::Command;
     use std::sync::atomic::{AtomicBool, Ordering, ATOMIC_BOOL_INIT};
-    use std::path::Path;
 
     static INITED: AtomicBool = ATOMIC_BOOL_INIT;
     static INITED_2: AtomicBool = ATOMIC_BOOL_INIT;
@@ -48,12 +48,12 @@ mod test {
         ".exe"
     }
 
-    #[cfg(target_feature="crt-static")]
+    #[cfg(target_feature = "crt-static")]
     fn crt_static() -> &'static str {
         "+crt-static"
     }
 
-    #[cfg(not(target_feature="crt-static"))]
+    #[cfg(not(target_feature = "crt-static"))]
     fn crt_static() -> &'static str {
         "-crt-static"
     }

@@ -1,4 +1,4 @@
-#![recursion_limit="128"]
+#![recursion_limit = "128"]
 
 //! Procedural macro for defining global constructor/destructor functions.
 //!
@@ -138,8 +138,12 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             panic!("#[ctor]-annotated static objects must not be mutable");
         }
 
-        let ctor_ident = syn::parse_str::<syn::Ident>(format!("{}___rust_ctor___ctor", ident).as_ref()).expect("Unable to create identifier");
-        let storage_ident = syn::parse_str::<syn::Ident>(format!("{}___rust_ctor___storage", ident).as_ref()).expect("Unable to create identifier");
+        let ctor_ident =
+            syn::parse_str::<syn::Ident>(format!("{}___rust_ctor___ctor", ident).as_ref())
+                .expect("Unable to create identifier");
+        let storage_ident =
+            syn::parse_str::<syn::Ident>(format!("{}___rust_ctor___storage", ident).as_ref())
+                .expect("Unable to create identifier");
 
         let output = quote!(
             // This is mutable, but only by this macro code!
@@ -166,9 +170,9 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             #[cfg_attr(windows, link_section = ".CRT$XCU")]
             static #ctor_ident
             :
-            unsafe extern fn() = { 
+            unsafe extern fn() = {
                 unsafe extern fn initer() {
-                    let ptr = &#storage_ident as *const Option<#ty> as *mut Option<#ty>; 
+                    let ptr = &#storage_ident as *const Option<#ty> as *mut Option<#ty>;
                     let tmp = Some(#expr);
                     core::ptr::copy_nonoverlapping(&tmp, ptr, 1);
                     core::mem::forget(tmp);
