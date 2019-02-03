@@ -75,9 +75,16 @@ mod test {
         // --example
         let out = cmd.current_dir("..").output().unwrap();
         assert_eq!("", std::str::from_utf8(out.stdout.as_slice()).unwrap());
-        assert_eq!(
-            format!("+ ctor bin\n++ main start\n+++ ctor STATIC_INT\n+++ ctor lib ({})\n--- dtor lib\n-- main end\n- dtor bin\n", crt_static()),
-            std::str::from_utf8(out.stderr.as_slice()).unwrap().to_owned().replace("\r\n", "\n")
-        );
+
+        let a = format!("+ ctor bin\n++ main start\n+++ ctor STATIC_INT\n+++ ctor lib ({})\n--- dtor lib\n-- main end\n- dtor bin\n", crt_static());
+        let b = format!("+ ctor bin\n++ main start\n+++ ctor lib ({})\n+++ ctor STATIC_INT\n--- dtor lib\n-- main end\n- dtor bin\n", crt_static());
+        let s = std::str::from_utf8(out.stderr.as_slice())
+            .unwrap()
+            .to_owned()
+            .replace("\r\n", "\n");
+
+        // There are two possible outcomes for stderr, depending on the order
+        // that functions are called
+        assert!(a == s || b == s);
     }
 }
