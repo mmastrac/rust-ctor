@@ -20,6 +20,12 @@ unsafe fn sleep(seconds: u32) {
 }
 
 #[ctor]
+pub static STATIC_INT: u8 = {
+    libc_ewriteln!("+++ ctor STATIC_INT");
+    200
+};
+
+#[ctor]
 #[cfg(not(test))]
 #[cfg(target_feature = "crt-static")]
 unsafe fn ctor() {

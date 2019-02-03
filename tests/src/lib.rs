@@ -25,6 +25,9 @@ mod test {
         INITED_2.store(true, Ordering::SeqCst);
     }
 
+    #[ctor]
+    static INITED_3: u8 = 42;
+
     #[dtor]
     fn shutdown() {
         // Using println or eprintln here will panic as Rust has shut down
@@ -36,6 +39,7 @@ mod test {
         // Test to see that the ctor ran
         assert_eq!(true, INITED.load(Ordering::SeqCst));
         assert_eq!(true, INITED_2.load(Ordering::SeqCst));
+        assert_eq!(*INITED_3, 42);
     }
 
     #[cfg(not(windows))]
@@ -72,7 +76,7 @@ mod test {
         let out = cmd.current_dir("..").output().unwrap();
         assert_eq!("", std::str::from_utf8(out.stdout.as_slice()).unwrap());
         assert_eq!(
-            format!("+ ctor bin\n++ main start\n+++ ctor lib ({})\n--- dtor lib\n-- main end\n- dtor bin\n", crt_static()),
+            format!("+ ctor bin\n++ main start\n+++ ctor STATIC_INT\n+++ ctor lib ({})\n--- dtor lib\n-- main end\n- dtor bin\n", crt_static()),
             std::str::from_utf8(out.stderr.as_slice()).unwrap().to_owned().replace("\r\n", "\n")
         );
     }

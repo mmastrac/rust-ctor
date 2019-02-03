@@ -1,4 +1,4 @@
-#![recursion_limit = "128"]
+#![recursion_limit = "256"]
 
 //! Procedural macro for defining global constructor/destructor functions.
 //!
@@ -138,6 +138,15 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             panic!("#[ctor]-annotated static objects must not be mutable");
         }
 
+        if attrs.iter().any(|attr| {
+            attr.path
+                .segments
+                .iter()
+                .any(|segment| segment.ident == "no_mangle")
+        }) {
+            panic!("#[ctor]-annotated static objects do not support #[no_mangle]");
+        }
+
         let ctor_ident =
             syn::parse_str::<syn::Ident>(format!("{}___rust_ctor___ctor", ident).as_ref())
                 .expect("Unable to create identifier");
@@ -150,12 +159,16 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             static mut #storage_ident: Option<#ty> = None;
 
             #[doc(hidden)]
-            #vis struct #ident {}
+            #vis struct #ident<T> {
+                _data: core::marker::PhantomData<T>
+            }
 
             #(#attrs)*
-            #vis static #ident: #ident = #ident {};
+            #vis static #ident: #ident<#ty> = #ident {
+                _data: core::marker::PhantomData::<#ty>
+            };
 
-            impl core::ops::Deref for #ident {
+            impl core::ops::Deref for #ident<#ty> {
                 type Target = #ty;
                 fn deref(&self) -> &'static #ty {
                     unsafe {
@@ -179,6 +192,8 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
                 }; initer }
             ;
         );
+
+        // eprintln!("{}", output);
 
         output.into()
     } else {
