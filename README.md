@@ -43,7 +43,7 @@ Marks the function `foo` as a module constructor, called when a static
 library is loaded or an executable is started:
 
 ```rust
-    static INITED: AtomicBool = ATOMIC_BOOL_INIT;
+    static INITED: AtomicBool = AtomicBool::new(false);
 
     #[ctor]
     fn foo() {
