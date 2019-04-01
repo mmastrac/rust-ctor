@@ -181,6 +181,7 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             static mut #storage_ident: Option<#ty> = None;
 
             #[doc(hidden)]
+            #[allow(non_camel_case_types)]
             #vis struct #ident<T> {
                 _data: core::marker::PhantomData<T>
             }
@@ -194,8 +195,7 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
                 type Target = #ty;
                 fn deref(&self) -> &'static #ty {
                     unsafe {
-                        let r = #storage_ident.as_ref();
-                        r.unwrap()
+                        #storage_ident.as_ref().unwrap()
                     }
                 }
             }
@@ -205,12 +205,9 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             #[cfg_attr(windows, link_section = ".CRT$XCU")]
             static #ctor_ident
             :
-            unsafe extern fn() = {
-                unsafe extern fn initer() {
-                    let ptr = &#storage_ident as *const Option<#ty> as *mut Option<#ty>;
-                    let tmp = Some(#expr);
-                    core::ptr::copy_nonoverlapping(&tmp, ptr, 1);
-                    core::mem::forget(tmp);
+            unsafe fn() = {
+                unsafe fn initer() {
+                    #storage_ident = Some(#expr);
                 }; initer }
             ;
         );
