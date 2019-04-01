@@ -28,7 +28,8 @@ functions and code that does not rely on Rust's stdlib services.
 
 For example, using stdout in a `dtor` function is a guaranteed panic. Consider
 using the [`libc-print` crate](https://crates.io/crates/libc-print) for output
-to stderr/stdout during `#[ctor]` and `#[dtor]` methods.
+to stderr/stdout during `#[ctor]` and `#[dtor]` methods. Other issues
+may involve signal processing or panic handling in that early code.
 
 In most cases, `sys_common::at_exit` is a better choice than `#[dtor]`. Caveat emptor!
 
