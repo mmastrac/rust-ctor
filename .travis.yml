@@ -16,3 +16,5 @@ env:
 
 script:
   - cargo test --all
+  - cargo test --all --release
+  
