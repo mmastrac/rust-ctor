@@ -1,6 +1,6 @@
 [package]
 name = "ctor"
-version = "0.1.9"
+version = "0.1.10"
 authors = ["Matt Mastracci <matthew@mastracci.com>"]
 edition = "2018"
 description = "__attribute__((constructor)) for Rust"
@@ -12,10 +12,10 @@ readme = "../README.md"
 travis-ci = { repository = "mmastrac/rust-ctor", branch = "master" }
 
 [dependencies]
-quote = "0.6.10"
+quote = "1"
 
 [dependencies.syn]
-version = "0.15.22"
+version = "1"
 features = ["full", "fold", "parsing", "printing", "proc-macro"]
 default-features = false
 
