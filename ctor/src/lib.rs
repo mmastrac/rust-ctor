@@ -112,14 +112,18 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
         validate_item("ctor", &function);
 
         let syn::ItemFn {
-            ident,
-            unsafety,
-            constness,
-            abi,
-            block,
             attrs,
+            block,
+            sig: syn::Signature {
+                ident,
+                unsafety,
+                constness,
+                abi,
+                ..
+            },
             ..
         } = function;
+
 
         // Linux/ELF: https://www.exploit-db.com/papers/13234
 
@@ -245,15 +249,18 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
     let function: syn::ItemFn = syn::parse_macro_input!(function);
     validate_item("dtor", &function);
 
-    let syn::ItemFn {
-        ident,
-        unsafety,
-        constness,
-        abi,
-        block,
-        attrs,
-        ..
-    } = function;
+        let syn::ItemFn {
+            attrs,
+            block,
+            sig: syn::Signature {
+                ident,
+                unsafety,
+                constness,
+                abi,
+                ..
+            },
+            ..
+        } = function;
 
     let output = quote!(
         mod #ident {
@@ -289,7 +296,7 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
 }
 
 fn validate_item(typ: &str, item: &syn::ItemFn) {
-    let syn::ItemFn { vis, decl, .. } = item;
+    let syn::ItemFn { vis, sig, .. } = item;
 
     // Ensure that visibility modifier is not present
     match vis {
@@ -298,12 +305,12 @@ fn validate_item(typ: &str, item: &syn::ItemFn) {
     }
 
     // No parameters allowed
-    if decl.inputs.len() > 0 {
+    if sig.inputs.len() > 0 {
         panic!("#[{}] methods may not have parameters", typ);
     }
 
     // No return type allowed
-    match decl.output {
+    match sig.output {
         syn::ReturnType::Default => {}
         _ => panic!("#[{}] methods must not have return types", typ),
     }
