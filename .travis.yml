@@ -13,6 +13,7 @@ rust:
 env:
   - RUSTFLAGS='-C target-feature=+crt-static'
   - RUSTFLAGS='-C target-feature=-crt-static'
+  - RUSTFLAGS='-Clinker-plugin-lto -Clinker=clang-8 -Clink-arg=-fuse-ld=lld-8'
 
 script:
   - cargo test --all
