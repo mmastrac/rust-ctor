@@ -10,7 +10,7 @@ ctor = { path = "../ctor" }
 dlopen = "0.1.8"
 # This is as far as we can update libc-* without breaking the tests
 libc-print = "=0.1.7"
-libc = { version = "=0.2.48", default-features = false }
+libc = { version = "=0.2.62", default-features = false }
 
 [[example]]
 name = "dylib"
