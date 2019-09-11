@@ -8,8 +8,9 @@ publish = false
 [dependencies]
 ctor = { path = "../ctor" }
 dlopen = "0.1.8"
-libc-print = "0.1.7"
-libc = "0.2"
+# This is as far as we can update libc-* without breaking the tests
+libc-print = "=0.1.7"
+libc = { version = "=0.2.48", default-features = false }
 
 [[example]]
 name = "dylib"
