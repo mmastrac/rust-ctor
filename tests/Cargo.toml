@@ -8,7 +8,7 @@ publish = false
 [dependencies]
 ctor = { path = "../ctor" }
 dlopen = "0.1.8"
-libc-print = "0.1.10"
+libc-print = "0.1.11"
 libc = { version = "0.2.62", default-features = false }
 
 [[example]]
