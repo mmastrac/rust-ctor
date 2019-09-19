@@ -1,5 +1,15 @@
 #![no_std]
+#![feature(lang_items)]
 #![allow(dead_code, unused_imports)]
+
+use core::panic::PanicInfo;
+
+#[panic_handler]
+fn panic(_info: &PanicInfo) -> ! {
+    loop {}
+}
+
+#[lang = "eh_personality"] extern fn eh_personality() {}
 
 use ctor::*;
 use libc_print::*;
