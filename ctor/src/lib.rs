@@ -115,16 +115,16 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
         let syn::ItemFn {
             attrs,
             block,
-            sig: syn::Signature {
-                ident,
-                unsafety,
-                constness,
-                abi,
-                ..
-            },
+            sig:
+                syn::Signature {
+                    ident,
+                    unsafety,
+                    constness,
+                    abi,
+                    ..
+                },
             ..
         } = function;
-
 
         // Linux/ELF: https://www.exploit-db.com/papers/13234
 
@@ -255,18 +255,19 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
     let function: syn::ItemFn = syn::parse_macro_input!(function);
     validate_item("dtor", &function);
 
-        let syn::ItemFn {
-            attrs,
-            block,
-            sig: syn::Signature {
+    let syn::ItemFn {
+        attrs,
+        block,
+        sig:
+            syn::Signature {
                 ident,
                 unsafety,
                 constness,
                 abi,
                 ..
             },
-            ..
-        } = function;
+        ..
+    } = function;
 
     let output = quote!(
         mod #ident {
