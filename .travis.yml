@@ -15,4 +15,4 @@ env:
   - RUSTFLAGS='-C target-feature=-crt-static'
 
 script:
-  - test.sh
+  - ./test.sh
