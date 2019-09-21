@@ -15,6 +15,4 @@ env:
   - RUSTFLAGS='-C target-feature=-crt-static'
 
 script:
-  - cargo test --all
-  - cargo test --all --release
-  
+  - ./test.sh
