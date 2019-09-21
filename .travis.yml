@@ -13,15 +13,6 @@ rust:
 env:
   - RUSTFLAGS='-C target-feature=+crt-static'
   - RUSTFLAGS='-C target-feature=-crt-static'
-  - RUSTFLAGS="-Z sanitizer=address"
 
 script:
-  - cargo test --all
-  - cargo test --all --release
-
-matrix:
-  exclude:
-    - os: osx
-      env: RUSTFLAGS="-Z sanitizer=address"
-    - os: windows
-      env: RUSTFLAGS="-Z sanitizer=address"
+  - test.sh
