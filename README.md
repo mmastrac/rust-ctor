@@ -19,6 +19,9 @@ library will also work as expected in both `bin` and `cdylib` outputs,
 ie: the `ctor` and `dtor` will run at executable or library 
 startup/shutdown respectively.
 
+`musl` is supported, but as `proc_macro` does not work on that target ([due to the lack
+of dynamic linking](https://github.com/rust-lang/rust/issues/40174)), you'll need to use `cross` or another cross-compilation solution.
+
 ## Warnings
 
 Rust's philosophy is that nothing happens before or after main and 
