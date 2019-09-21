@@ -17,3 +17,10 @@ env:
 
 script:
   - ./test.sh
+
+matrix:
+  exclude:
+    - os: osx
+      env: MUSL=true
+    - os: windows
+      env: MUSL=true
