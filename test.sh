@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euf -o pipefail
 
-if [ -z MUSL ]; then
+if [ -z "${MUSL:-}" ]; then
 
 cargo test --all
 cargo test --all --release
