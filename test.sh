@@ -1,5 +1,5 @@
 #!/bin/bash
-set
+set -euf -o pipefail
 cargo test --all
 cargo test --all --release
 
