@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euf -o pipefail
 
-if [[ $MUSL == "true" ]]; then
+if [[ -v MUSL ]]; then
 
 # We can't test dynamic linking on musl
 echo "Testing --target x86_64-unknown-linux-musl..."
