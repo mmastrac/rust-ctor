@@ -3,6 +3,8 @@ set -euf -o pipefail
 
 if [[ -v MUSL ]]; then
 
+rustup target add x86_64-unknown-linux-musl
+
 # We can't test dynamic linking on musl
 echo "Testing --target x86_64-unknown-linux-musl..."
 cargo run --example example --target x86_64-unknown-linux-musl
