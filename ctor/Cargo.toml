@@ -1,6 +1,6 @@
 [package]
 name = "ctor"
-version = "0.1.11"
+version = "0.1.12"
 authors = ["Matt Mastracci <matthew@mastracci.com>"]
 edition = "2018"
 description = "__attribute__((constructor)) for Rust"
@@ -16,7 +16,7 @@ quote = "1"
 
 [dependencies.syn]
 version = "1"
-features = ["full", "fold", "parsing", "printing", "proc-macro"]
+features = ["full", "parsing", "printing", "proc-macro"]
 default-features = false
 
 [dev-dependencies]
