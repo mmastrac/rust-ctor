@@ -97,12 +97,12 @@ use proc_macro::TokenStream;
 ///
 ///```rust
 /// #[used]
-/// #[cfg_attr(target_os = "linux", link_section = ".init_array")]
+/// #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
 /// #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
 /// #[cfg_attr(target_os = "macos", link_section = "__DATA,__mod_init_func")]
 /// #[cfg_attr(target_os = "windows", link_section = ".CRT$XCU")]
 /// static FOO: extern fn() = {
-///   #[cfg_attr(target_os = "linux", link_section = ".text.startup")]
+///   #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.startup")]
 ///   extern fn foo() { /* ... */ };
 ///   foo
 /// };
@@ -137,7 +137,7 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
         let output = quote!(
             #[used]
             #[allow(non_upper_case_globals)]
-            #[cfg_attr(target_os = "linux", link_section = ".init_array")]
+            #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
             #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
             #[cfg_attr(target_os = "macos", link_section = "__DATA,__mod_init_func")]
             #[cfg_attr(windows, link_section = ".CRT$XCU")]
@@ -146,7 +146,7 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             :
             #unsafety extern #abi #constness fn() =
             {
-                #[cfg_attr(target_os = "linux", link_section = ".text.startup")]
+                #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.startup")]
                 #unsafety extern #abi #constness fn #ident() #block;
                 #ident
             }
@@ -213,14 +213,14 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
 
             #[used]
             #[allow(non_upper_case_globals)]
-            #[cfg_attr(target_os = "linux", link_section = ".init_array")]
+            #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
             #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
             #[cfg_attr(target_os = "macos", link_section = "__DATA,__mod_init_func")]
             #[cfg_attr(windows, link_section = ".CRT$XCU")]
             static #ctor_ident
             :
             unsafe fn() = {
-                #[cfg_attr(target_os = "linux", link_section = ".text.startup")]
+                #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.startup")]
                 unsafe fn initer() {
                     #storage_ident = Some(#expr);
                 }; initer }
@@ -283,7 +283,7 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
 
             #[used]
             #[allow(non_upper_case_globals)]
-            #[cfg_attr(target_os = "linux", link_section = ".init_array")]
+            #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
             #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
             #[cfg_attr(target_os = "macos", link_section = "__DATA,__mod_init_func")]
             #[cfg_attr(windows, link_section = ".CRT$XCU")]
@@ -292,9 +292,9 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             :
             unsafe extern #abi #constness fn() =
             {
-                #[cfg_attr(target_os = "linux", link_section = ".text.exit")]
+                #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.exit")]
                 #unsafety extern #abi #constness fn #ident() #block;
-                #[cfg_attr(target_os = "linux", link_section = ".text.startup")]
+                #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.startup")]
                 unsafe extern fn __dtor_atexit() {
                     atexit(#ident);
                 };
