@@ -83,21 +83,22 @@ some stdlib services at this time.
 
 ## Under the Hood
 
-The `#[ctor]` macro makes use of linker sections to ensure that a 
+The `#[ctor]` macro makes use of linker sections to ensure that a
 function is run at startup time.
 
-The macro translates a marked function to the following Rust code 
-(approximately):
+The above example translates into the following Rust code (approximately):
 
 ```rust
     #[used]
-    #[cfg_attr(target_os = "linux", link_section = ".ctors")]
+    #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
+    #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
     #[cfg_attr(target_os = "macos", link_section = "__DATA,__mod_init_func")]
     #[cfg_attr(target_os = "windows", link_section = ".CRT$XCU")]
-    pub static foo: extern fn() = { 
-        extern fn foo() { ... };
-        foo 
-    }
+    static FOO: extern fn() = {
+        #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.startup")]
+        extern fn foo() { /* ... */ };
+        foo
+    };
 ```
 
 The `#[dtor]` macro effectively creates a constructor that calls `libc::atexit` with the provided function, ie roughly equivalent to:
