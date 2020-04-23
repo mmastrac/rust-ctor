@@ -2,7 +2,7 @@
 # It is not intended for manual editing.
 [[package]]
 name = "ctor"
-version = "0.1.13"
+version = "0.1.14"
 dependencies = [
  "libc-print 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)",
  "quote 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -104,7 +104,7 @@ dependencies = [
 name = "tests"
 version = "0.1.0"
 dependencies = [
- "ctor 0.1.13",
+ "ctor 0.1.14",
  "dlopen 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc 0.2.69 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc-print 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)",
