@@ -4,7 +4,7 @@
 [![docs.rs](https://docs.rs/ctor/badge.svg)](https://docs.rs/ctor)
 [![crates.io](https://img.shields.io/crates/v/ctor.svg)](https://crates.io/crates/ctor)
 
-Module initialization/teardown functions for Rust (like `__attribute__((constructor))` in C/C++) for Linux, OSX, FreeBSD, Android, and Windows.
+Module initialization/teardown functions for Rust (like `__attribute__((constructor))` in C/C++) for Linux, OSX, FreeBSD, Android, iOS, and Windows.
 
 This library currently requires **Rust > 1.31.0** at a minimum for the
 procedural macro support.
