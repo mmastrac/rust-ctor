@@ -273,6 +273,11 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
     } = function;
 
     let output = quote!(
+        // Targets that use `atexit`.
+        #[cfg(not(any(
+            target_os = "macos",
+            target_os = "ios",
+        )))]
         mod #ident {
             use super::*;
 
@@ -285,7 +290,6 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             #[allow(non_upper_case_globals)]
             #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
             #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
-            #[cfg_attr(any(target_os = "macos", target_os = "ios"), link_section = "__DATA,__mod_init_func")]
             #[cfg_attr(windows, link_section = ".CRT$XCU")]
             #(#attrs)*
             static __dtor_export
@@ -299,6 +303,27 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
                     atexit(#ident);
                 };
                 __dtor_atexit
+            };
+        }
+
+        // Targets that don't rely on `atexit`.
+        #[cfg(any(
+            target_os = "macos",
+            target_os = "ios",
+        ))]
+        mod #ident {
+            use super::*;
+
+            #[used]
+            #[allow(non_upper_case_globals)]
+            #[cfg_attr(any(target_os = "macos", target_os = "ios"), link_section = "__DATA,__mod_term_func")]
+            #(#attrs)*
+            static __dtor_export
+            :
+            unsafe extern #abi #constness fn() =
+            {
+                unsafe extern fn __dtor() #block;
+                __dtor
             };
         }
     );
