@@ -280,7 +280,7 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
 
     let output = quote!(
         #[cfg(not(any(target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "macos", target_os = "ios", windows)))]
-        compile_error!("#[ctor] is not supported on the current target");
+        compile_error!("#[dtor] is not supported on the current target");
 
         // Targets that use `atexit`.
         #[cfg(not(any(
