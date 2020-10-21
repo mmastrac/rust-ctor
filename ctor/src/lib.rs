@@ -140,6 +140,8 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
                 .expect("Unable to create identifier");
 
         let output = quote!(
+            #[cfg(not(any(target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "macos", target_os = "ios", windows)))]
+            compile_error!("#[ctor] is not supported on the current target");
 
             #(#attrs)*
             #vis #unsafety extern #abi #constness fn #ident() #block
@@ -196,6 +198,9 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
                 .expect("Unable to create identifier");
 
         let output = quote!(
+            #[cfg(not(any(target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "macos", target_os = "ios", windows)))]
+            compile_error!("#[ctor] is not supported on the current target");
+
             // This is mutable, but only by this macro code!
             static mut #storage_ident: Option<#ty> = None;
 
@@ -291,6 +296,8 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             .expect("Unable to create identifier");
 
     let output = quote!(
+        #[cfg(not(any(target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "macos", target_os = "ios", windows)))]
+        compile_error!("#[dtor] is not supported on the current target");
 
         #(#attrs)*
         #vis #unsafety extern #abi #constness fn #ident() #block
