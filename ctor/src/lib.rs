@@ -348,7 +348,7 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
         }
     );
 
-    eprintln!("{}", output);
+    // eprintln!("{}", output);
 
     output.into()
 }
