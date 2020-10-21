@@ -340,7 +340,7 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             target_os = "ios",
         ))]
         mod #mod_ident {
-            use super::*;
+            use super::#ident;
 
             #[used]
             #[allow(non_upper_case_globals)]
