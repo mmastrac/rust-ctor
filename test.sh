@@ -5,11 +5,13 @@ if [ -z "${MUSL:-}" ]; then
 
 # https://github.com/mmastrac/rust-ctor/pull/98#issuecomment-714594194
 if [[ $TRAVIS_OS_NAME == "linux" && $RUSTFLAGS == '-C target-feature=+crt-static' ]]; then
-    TARGET="--target x86_64-unknown-linux-gnu"
+    # We can't test dynamic linking on +crt-static
+    cargo run --example example --target
+    exit 0
 fi
 
-cargo test --all $TARGET
-cargo test --all --release $TARGET
+cargo test --all
+cargo test --all --release
 
 if [[ $TRAVIS_OS_NAME == "linux" && $TRAVIS_RUST_VERSION == "nightly" ]]; then
     echo "Testing '-Z sanitizer=address'..."
