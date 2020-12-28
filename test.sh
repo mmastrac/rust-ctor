@@ -3,8 +3,13 @@ set -euf -o pipefail
 
 if [ -z "${MUSL:-}" ]; then
 
-cargo test --all
-cargo test --all --release
+# https://github.com/mmastrac/rust-ctor/pull/98#issuecomment-714594194
+if [[ $TRAVIS_OS_NAME == "linux" && $RUSTFLAGS == '-C target-feature=+crt-static' ]]; then
+    TARGET="--target x86_64-unknown-linux-gnu"
+fi
+
+cargo test --all $TARGET
+cargo test --all --release $TARGET
 
 if [[ $TRAVIS_OS_NAME == "linux" && $TRAVIS_RUST_VERSION == "nightly" ]]; then
     echo "Testing '-Z sanitizer=address'..."
