@@ -8,8 +8,8 @@ publish = false
 [dependencies]
 ctor = { path = "../ctor" }
 dlopen = "0.1.8"
-libc-print = "0.1.14"
-libc = { version = "0.2.79", default-features = false }
+libc-print = "0.1.15"
+libc = { version = "0.2.81", default-features = false }
 
 [[example]]
 name = "dylib"
