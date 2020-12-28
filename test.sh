@@ -6,7 +6,7 @@ if [ -z "${MUSL:-}" ]; then
 # https://github.com/mmastrac/rust-ctor/pull/98#issuecomment-714594194
 if [[ $TRAVIS_OS_NAME == "linux" && $RUSTFLAGS == '-C target-feature=+crt-static' ]]; then
     # We can't test dynamic linking on +crt-static
-    cargo run --example example --target
+    cargo run --example example --target x86_64-unknown-linux-gnu
     exit 0
 fi
 
