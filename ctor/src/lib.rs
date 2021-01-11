@@ -140,7 +140,11 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
                 .expect("Unable to create identifier");
 
         let output = quote!(
+<<<<<<< HEAD
+            #[cfg(not(any(target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "netbsd", target_os = "macos", target_os = "ios", windows)))]
+=======
             #[cfg(not(any(target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "macos", target_os = "ios", windows)))]
+>>>>>>> parent of 2e9e668 (Update lib.rs)
             compile_error!("#[ctor] is not supported on the current target");
 
             #(#attrs)*
