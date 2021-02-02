@@ -4,7 +4,7 @@
 [![docs.rs](https://docs.rs/ctor/badge.svg)](https://docs.rs/ctor)
 [![crates.io](https://img.shields.io/crates/v/ctor.svg)](https://crates.io/crates/ctor)
 
-Module initialization/teardown functions for Rust (like `__attribute__((constructor))` in C/C++) for Linux, OSX, FreeBSD, NetBSD, Android, iOS, and Windows.
+Module initialization/teardown functions for Rust (like `__attribute__((constructor))` in C/C++) for Linux, OSX, FreeBSD, NetBSD, OpenBSD, Android, iOS, and Windows.
 
 This library currently requires **Rust > 1.31.0** at a minimum for the
 procedural macro support.
@@ -93,6 +93,7 @@ The above example translates into the following Rust code (approximately):
     #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
     #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
     #[cfg_attr(target_os = "netbsd", link_section = ".init_array")]
+    #[cfg_attr(target_os = "openbsd", link_section = ".init_array")]
     #[cfg_attr(target_os = "macos", link_section = "__DATA,__mod_init_func")]
     #[cfg_attr(target_os = "windows", link_section = ".CRT$XCU")]
     static FOO: extern fn() = {
