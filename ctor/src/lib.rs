@@ -141,7 +141,7 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
                 .expect("Unable to create identifier");
 
         let output = quote!(
-            #[cfg(not(any(target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "netbsd", target_os = "macos", target_os = "ios", windows)))]
+            #[cfg(not(any(target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "netbsd", target_os = "openbsd", target_os = "macos", target_os = "ios", windows)))]
             compile_error!("#[ctor] is not supported on the current target");
 
             #(#attrs)*
@@ -152,6 +152,7 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
             #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
             #[cfg_attr(target_os = "netbsd", link_section = ".init_array")]
+            #[cfg_attr(target_os = "openbsd", link_section = ".init_array")]
             #[cfg_attr(any(target_os = "macos", target_os = "ios"), link_section = "__DATA,__mod_init_func")]
             #[cfg_attr(windows, link_section = ".CRT$XCU")]
             static #ctor_ident
@@ -200,7 +201,7 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
                 .expect("Unable to create identifier");
 
         let output = quote!(
-            #[cfg(not(any(target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "netbsd", target_os = "macos", target_os = "ios", windows)))]
+            #[cfg(not(any(target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "netbsd", target_os = "openbsd", target_os = "macos", target_os = "ios", windows)))]
             compile_error!("#[ctor] is not supported on the current target");
 
             // This is mutable, but only by this macro code!
@@ -231,6 +232,7 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
             #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
             #[cfg_attr(target_os = "netbsd", link_section = ".init_array")]
+            #[cfg_attr(target_os = "openbsd", link_section = ".init_array")]
             #[cfg_attr(any(target_os = "macos", target_os = "ios"), link_section = "__DATA,__mod_init_func")]
             #[cfg_attr(windows, link_section = ".CRT$XCU")]
             static #ctor_ident
@@ -299,7 +301,7 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             .expect("Unable to create identifier");
 
     let output = quote!(
-        #[cfg(not(any(target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "netbsd", target_os = "macos", target_os = "ios", windows)))]
+        #[cfg(not(any(target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "netbsd", target_os = "openbsd", target_os = "macos", target_os = "ios", windows)))]
         compile_error!("#[dtor] is not supported on the current target");
 
         #(#attrs)*
@@ -323,6 +325,7 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
             #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
             #[cfg_attr(target_os = "netbsd", link_section = ".init_array")]
+            #[cfg_attr(target_os = "openbsd", link_section = ".init_array")]
             #[cfg_attr(windows, link_section = ".CRT$XCU")]
             static __dtor_export
             :
