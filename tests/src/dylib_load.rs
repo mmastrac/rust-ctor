@@ -43,6 +43,11 @@ fn lib_extension() -> &'static str {
     "so"
 }
 
+#[cfg(target_os = "illumos")]
+fn lib_extension() -> &'static str {
+    "so"
+}
+
 #[cfg(windows)]
 fn lib_extension() -> &'static str {
     "dll"
