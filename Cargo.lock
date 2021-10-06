@@ -6,7 +6,7 @@ version = "0.1.21"
 dependencies = [
  "libc-print",
  "quote 1.0.9",
- "syn 1.0.75",
+ "syn 1.0.80",
 ]
 
 [[package]]
@@ -102,9 +102,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "1.0.75"
+version = "1.0.80"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7f58f7e8eaa0009c5fec437aabf511bd9933e4b2d7407bd05273c01a8906ea7"
+checksum = "d010a1623fbd906d51d650a9916aaefc05ffa0e4053ff7fe601167f3e715d194"
 dependencies = [
  "proc-macro2 1.0.29",
  "quote 1.0.9",
