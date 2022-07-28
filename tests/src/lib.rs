@@ -76,15 +76,18 @@ mod test {
         let out = cmd.current_dir("..").output().unwrap();
         assert_eq!("", std::str::from_utf8(out.stdout.as_slice()).unwrap());
 
+        // Welcome to permutation hell...
         let a = format!("+ ctor bin\n++ main start\n+++ ctor STATIC_INT\n+++ ctor lib ({})\n--- dtor lib\n-- main end\n- dtor bin\n", crt_static());
         let b = format!("+ ctor bin\n++ main start\n+++ ctor lib ({})\n+++ ctor STATIC_INT\n--- dtor lib\n-- main end\n- dtor bin\n", crt_static());
+        let c = format!("+ ctor bin\n++ main start\n+++ ctor STATIC_INT\n+++ ctor lib ({})\n-- main end\n--- dtor lib\n- dtor bin\n", crt_static());
+        let d = format!("+ ctor bin\n++ main start\n+++ ctor lib ({})\n+++ ctor STATIC_INT\n-- main end\n--- dtor lib\n- dtor bin\n", crt_static());
         let s = std::str::from_utf8(out.stderr.as_slice())
             .unwrap()
             .to_owned()
             .replace("\r\n", "\n");
 
-        // There are two possible outcomes for stderr, depending on the order
+        // There are four possible outcomes for stderr, depending on the order
         // that functions are called
-        assert!(a == s || b == s, "s was unexpected:\n{}", s.replace("\n", "\\n"));
+        assert!(a == s || b == s || c == s || d == s, "s was unexpected:\n{}", s.replace("\n", "\\n"));
     }
 }
