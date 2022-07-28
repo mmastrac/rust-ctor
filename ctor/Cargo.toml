@@ -12,15 +12,15 @@ readme = "../README.md"
 travis-ci = { repository = "mmastrac/rust-ctor", branch = "master" }
 
 [dependencies]
-quote = "1.0.9"
+quote = "1.0.20"
 
 [dependencies.syn]
-version = "1.0.73"
+version = "1.0.98"
 features = ["full", "parsing", "printing", "proc-macro"]
 default-features = false
 
 [dev-dependencies]
-libc-print = "0.1.15"
+libc-print = "0.1.20"
 
 [lib]
 name = "ctor"
