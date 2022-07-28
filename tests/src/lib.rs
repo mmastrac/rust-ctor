@@ -85,6 +85,6 @@ mod test {
 
         // There are two possible outcomes for stderr, depending on the order
         // that functions are called
-        assert!(a == s || b == s);
+        assert!(a == s || b == s, "s was unexpected:\n{}", s.replace("\n", "\\n"));
     }
 }
