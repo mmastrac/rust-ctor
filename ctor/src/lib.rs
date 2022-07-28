@@ -38,11 +38,13 @@ use proc_macro::TokenStream;
 ///
 /// # Examples
 ///
-/// Print a startup message:
+/// Print a startup message (using `libc_print` for safety):
 ///
 /// ```rust
 /// # extern crate ctor;
 /// # use ctor::*;
+/// use libc_print::std_name::println;
+///
 /// #[ctor]
 /// fn foo() {
 ///   println!("Hello, world!");
