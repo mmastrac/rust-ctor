@@ -13,14 +13,11 @@ Idea inspired by [this code](https://github.com/neon-bindings/neon/blob/2277e943
 
 ## Support
 
-This library works and [has been tested](https://travis-ci.org/mmastrac/rust-ctor)
-for Linux, OSX and Windows, with both `+crt-static` and `-crt-static`. This
-library will also work as expected in both `bin` and `cdylib` outputs, 
-ie: the `ctor` and `dtor` will run at executable or library 
+This library works and [is regularly tested](https://travis-ci.org/mmastrac/rust-ctor)
+on Linux, OSX and Windows, with both `+crt-static` and `-crt-static`. Other platforms are supported
+but not tested as part of the automatic builds. This library will also work as expected in both
+`bin` and `cdylib` outputs, ie: the `ctor` and `dtor` will run at executable or library 
 startup/shutdown respectively.
-
-`musl` is supported, but as `proc_macro` does not work on that target ([due to the lack
-of dynamic linking](https://github.com/rust-lang/rust/issues/40174)), you'll need to use `cross` or another cross-compilation solution.
 
 ## Warnings
 
