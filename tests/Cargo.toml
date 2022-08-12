@@ -9,7 +9,7 @@ publish = false
 ctor = { path = "../ctor" }
 dlopen = "0.1.8"
 libc-print = "0.1.15"
-libc = { version = "0.2.96", default-features = false }
+libc = { version = "0.2.131", default-features = false }
 
 [[example]]
 name = "dylib"
