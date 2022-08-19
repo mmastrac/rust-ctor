@@ -1,7 +1,6 @@
 #![allow(dead_code, unused_imports)]
 
-use ctor::*;
-use libc_print::*;
+use ctor::{ctor, dtor};
 
 #[cfg(windows)]
 extern "C" {
@@ -20,7 +19,7 @@ unsafe fn sleep(seconds: u32) {
 
 #[ctor]
 pub static STATIC_INT: u8 = {
-    libc_ewriteln!("+++ ctor STATIC_INT");
+    eprintln!("+++ ctor STATIC_INT");
     200
 };
 
@@ -29,7 +28,7 @@ pub static STATIC_INT: u8 = {
 #[cfg(target_feature = "crt-static")]
 unsafe fn ctor() {
     sleep(1);
-    libc_ewriteln!("+++ ctor lib (+crt-static)");
+    eprintln!("+++ ctor lib (+crt-static)");
 }
 
 #[ctor]
@@ -37,12 +36,12 @@ unsafe fn ctor() {
 #[cfg(not(target_feature = "crt-static"))]
 unsafe fn ctor() {
     sleep(1);
-    libc_ewriteln!("+++ ctor lib (-crt-static)");
+    eprintln!("+++ ctor lib (-crt-static)");
 }
 
 #[dtor]
 #[cfg(not(test))]
 unsafe fn dtor() {
     sleep(1);
-    libc_ewriteln!("--- dtor lib");
+    eprintln!("--- dtor lib");
 }

@@ -26,9 +26,9 @@ this library explicitly subverts that. The code that runs in the `ctor`
 and `dtor` functions should be careful to limit itself to `libc` 
 functions and code that does not rely on Rust's stdlib services.
 
-For example, using stdout in a `dtor` function is a guaranteed panic. Consider
+For example, using stdout in a `dtor` function before 1.48.0 is a guaranteed panic. Consider
 using the [`libc-print` crate](https://crates.io/crates/libc-print) for output
-to stderr/stdout during `#[ctor]` and `#[dtor]` methods. Other issues
+to stderr/stdout during `#[dtor]` methods if you are using an old compiler. Other issues
 may involve signal processing or panic handling in that early code.
 
 In most cases, `sys_common::at_exit` is a better choice than `#[dtor]`. Caveat emptor!
@@ -73,7 +73,7 @@ some stdlib services at this time.
 ```rust
     #[dtor]
     unsafe fn shutdown() {
-        // Using println or eprintln here will panic as Rust has shut down
+        // Using println or eprintln here will panic as Rust has shut down before Rust 1.48.0
         libc::printf("Shutting down!\n\0".as_ptr() as *const i8);
     }
 ```

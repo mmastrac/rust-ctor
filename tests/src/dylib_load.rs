@@ -1,14 +1,14 @@
 #![allow(unused_imports)]
 
-use ctor::*;
+use ctor::{ctor, dtor};
 use dlopen::raw::Library;
-use libc_print::*;
+use libc_print::libc_ewriteln;
 
 #[ctor]
 #[cfg(not(test))]
 unsafe fn ctor() {
     sleep(1);
-    libc_ewriteln!("+ ctor bin");
+    eprintln!("+ ctor bin");
 }
 
 #[dtor]
@@ -91,7 +91,7 @@ unsafe fn sleep(seconds: u32) {
 pub fn main() {
     unsafe {
         sleep(1);
-        libc_ewriteln!("++ main start");
+        eprintln!("++ main start");
         let lib = Library::open(format!(
             "target/debug/examples/{}dylib.{}",
             prefix(),
@@ -100,6 +100,6 @@ pub fn main() {
         .unwrap();
         drop(lib);
         sleep(1);
-        libc_ewriteln!("-- main end");
+        eprintln!("-- main end");
     }
 }

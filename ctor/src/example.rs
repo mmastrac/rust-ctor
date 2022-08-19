@@ -1,8 +1,8 @@
 extern crate ctor;
 extern crate libc_print;
 
-use ctor::*;
-use libc_print::*;
+use ctor::{ctor, dtor};
+use libc_print::libc_eprintln;
 use std::collections::HashMap;
 
 #[ctor]
@@ -12,18 +12,18 @@ static STATIC_CTOR: HashMap<u32, &'static str> = {
     m.insert(0, "foo");
     m.insert(1, "bar");
     m.insert(2, "baz");
-    libc_eprintln!("STATIC_CTOR");
+    eprintln!("STATIC_CTOR");
     m
 };
 
 #[ctor]
 fn ctor() {
-    libc_eprintln!("ctor");
+    eprintln!("ctor");
 }
 
 #[ctor]
 unsafe fn ctor_unsafe() {
-    libc_eprintln!("ctor_unsafe");
+    eprintln!("ctor_unsafe");
 }
 
 #[dtor]
@@ -37,18 +37,17 @@ unsafe fn dtor_unsafe() {
 }
 
 mod module {
-    use ctor::*;
-    use libc_print::*;
+    use ctor::ctor;
 
     #[ctor]
     pub static STATIC_CTOR: u8 = {
-        libc_eprintln!("module::STATIC_CTOR");
+        eprintln!("module::STATIC_CTOR");
         42
     };
 }
 
 pub fn main() {
-    libc_eprintln!("main!");
-    libc_eprintln!("STATIC_CTOR = {:?}", *STATIC_CTOR);
-    libc_eprintln!("module::STATIC_CTOR = {:?}", *module::STATIC_CTOR);
+    eprintln!("main!");
+    eprintln!("STATIC_CTOR = {:?}", *STATIC_CTOR);
+    eprintln!("module::STATIC_CTOR = {:?}", *module::STATIC_CTOR);
 }

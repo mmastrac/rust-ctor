@@ -5,7 +5,7 @@ extern crate ctor;
 
 #[cfg(test)]
 mod test {
-    use libc_print::*;
+    use libc_print::libc_eprintln;
     use std::path::Path;
     use std::process::Command;
     use std::sync::atomic::{AtomicBool, Ordering};
@@ -37,8 +37,8 @@ mod test {
     #[test]
     fn test_initialized() {
         // Test to see that the ctor ran
-        assert_eq!(true, INITED.load(Ordering::SeqCst));
-        assert_eq!(true, INITED_2.load(Ordering::SeqCst));
+        assert!(INITED.load(Ordering::SeqCst));
+        assert!(INITED_2.load(Ordering::SeqCst));
         assert_eq!(*INITED_3, 42);
     }
 
@@ -88,6 +88,10 @@ mod test {
 
         // There are four possible outcomes for stderr, depending on the order
         // that functions are called
-        assert!(a == s || b == s || c == s || d == s, "s was unexpected:\n{}", s.replace("\n", "\\n"));
+        assert!(
+            a == s || b == s || c == s || d == s,
+            "s was unexpected:\n{}",
+            s.replace('\n', "\\n")
+        );
     }
 }

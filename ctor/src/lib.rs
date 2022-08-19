@@ -8,7 +8,7 @@
 //!
 //! This library works and is regularly tested on Linux, OSX and Windows, with both `+crt-static` and `-crt-static`.
 //! Other platforms are supported but not tested as part of the automatic builds. This library will also work as expected in both
-//! `bin` and `cdylib` outputs, ie: the `ctor` and `dtor` will run at executable or library 
+//! `bin` and `cdylib` outputs, ie: the `ctor` and `dtor` will run at executable or library
 //! startup/shutdown respectively.
 //!
 //! This library currently requires Rust > `1.31.0` at a minimum for the
@@ -38,13 +38,9 @@ use proc_macro::TokenStream;
 ///
 /// # Examples
 ///
-/// Print a startup message (using `libc_print` for safety):
-///
 /// ```rust
 /// # extern crate ctor;
-/// # use ctor::*;
-/// use libc_print::std_name::println;
-///
+/// # use ctor::ctor;
 /// #[ctor]
 /// fn foo() {
 ///   println!("Hello, world!");
@@ -59,7 +55,7 @@ use proc_macro::TokenStream;
 ///
 /// ```rust
 /// # extern crate ctor;
-/// # use ctor::*;
+/// # use ctor::ctor;
 /// # use std::sync::atomic::{AtomicBool, Ordering};
 /// static INITED: AtomicBool = AtomicBool::new(false);
 ///
@@ -74,7 +70,7 @@ use proc_macro::TokenStream;
 /// ```rust
 /// # extern crate ctor;
 /// # use std::collections::HashMap;
-/// # use ctor::*;
+/// # use ctor::ctor;
 /// #[ctor]
 /// static STATIC_CTOR: HashMap<u32, String> = {
 ///   let mut m = HashMap::new();
@@ -188,7 +184,7 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             ..
         } = var;
 
-        if let Some(_) = mutability {
+        if mutability.is_some() {
             panic!("#[ctor]-annotated static objects must not be mutable");
         }
 
@@ -275,7 +271,7 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
 ///
 /// ```rust
 /// # extern crate ctor;
-/// # use ctor::*;
+/// # use ctor::{ctor, dtor};
 /// # fn main() {}
 ///
 /// #[dtor]
@@ -389,7 +385,7 @@ fn validate_item(typ: &str, item: &syn::ItemFn) {
     }
 
     // No parameters allowed
-    if sig.inputs.len() > 0 {
+    if !sig.inputs.is_empty() {
         panic!("#[{}] methods may not have parameters", typ);
     }
 
