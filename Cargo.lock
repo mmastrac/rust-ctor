@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "ctor"
-version = "0.1.22"
+version = "0.1.23"
 dependencies = [
  "libc-print",
  "quote 1.0.20",
@@ -125,9 +125,9 @@ dependencies = [
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.2"
+version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "15c61ba63f9235225a22310255a29b806b907c9b8c964bcbd0a2c70f3f2deea7"
+checksum = "dcc811dc4066ac62f84f11307873c4850cb653bfa9b1719cee2bd2204a4bc5dd"
 
 [[package]]
 name = "unicode-xid"
