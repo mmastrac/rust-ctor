@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "ctor"
-version = "0.1.22"
+version = "0.1.23"
 dependencies = [
  "libc-print",
  "quote 1.0.20",
@@ -42,9 +42,9 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "libc"
-version = "0.2.126"
+version = "0.2.135"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "349d5a591cd28b49e1d1037471617a32ddcda5731b99419008085f72d5a53836"
+checksum = "68783febc7782c6c5cb401fbda4de5a9898be1762314da0bb2c10ced61f18b0c"
 
 [[package]]
 name = "libc-print"
