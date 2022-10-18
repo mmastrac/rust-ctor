@@ -320,11 +320,6 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
         #(#attrs)*
         #vis #unsafety extern #abi #constness fn #ident() #block
 
-        // Targets that use `atexit`.
-        #[cfg(not(any(
-            target_os = "macos",
-            target_os = "ios",
-        )))]
         mod #mod_ident {
             use super::#ident;
 
@@ -347,26 +342,6 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
                     atexit(#dtor_ident);
                 };
                 __dtor_atexit
-            };
-        }
-
-        // Targets that don't rely on `atexit`.
-        #[cfg(any(
-            target_os = "macos",
-            target_os = "ios",
-        ))]
-        mod #mod_ident {
-            use super::#ident;
-
-            #[used]
-            #[allow(non_upper_case_globals)]
-            #[cfg_attr(any(target_os = "macos", target_os = "ios"), link_section = "__DATA,__mod_term_func")]
-            static __dtor_export
-            :
-            unsafe extern "C" fn() =
-            {
-                unsafe extern fn __dtor() { #ident() };
-                __dtor
             };
         }
     );
