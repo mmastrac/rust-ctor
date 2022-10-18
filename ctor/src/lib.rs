@@ -323,9 +323,26 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
         mod #mod_ident {
             use super::#ident;
 
-            // Avoid a dep on libc by linking directly
-            extern "C" {
-                fn atexit(cb: unsafe extern fn());
+            // Note that we avoid a dep on the libc crate by linking directly to atexit functions
+
+            #[cfg(not(any(target_os = "macos", target_os = "ios")))]
+            #[inline(always)]
+            unsafe fn do_atexit(cb: unsafe extern fn()) {
+                extern "C" {
+                    fn atexit(cb: unsafe extern fn());
+                }
+                atexit(cb);
+            }
+
+            // For platforms that have __cxa_atexit, we register the dtor as scoped to dso_handle
+            #[cfg(any(target_os = "macos", target_os = "ios"))]
+            #[inline(always)]
+            unsafe fn do_atexit(cb: unsafe extern fn()) {
+                extern "C" {
+                    static __dso_handle: *const u8;
+                    fn __cxa_atexit(cb: unsafe extern fn(), arg: *const u8, dso_handle: *const u8);
+                }
+                __cxa_atexit(cb, std::ptr::null(), __dso_handle);
             }
 
             #[used]
@@ -339,7 +356,7 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
                 unsafe extern "C" fn #dtor_ident() { #ident() };
                 #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.startup")]
                 unsafe extern fn __dtor_atexit() {
-                    atexit(#dtor_ident);
+                    do_atexit(#dtor_ident);
                 };
                 __dtor_atexit
             };
