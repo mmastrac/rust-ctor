@@ -29,6 +29,26 @@ extern crate quote;
 
 use proc_macro::TokenStream;
 
+/// Attributes required to mark a function as a constructor. This may be exposed in the future if we determine
+/// it to be stable.
+#[doc(hidden)]
+#[proc_macro_attribute]
+pub fn __ctor_internal_decorator_attributes(_attribute: TokenStream, function: TokenStream) -> TokenStream {
+    let mut attrs: TokenStream = quote!(
+        #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
+        #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
+        #[cfg_attr(target_os = "netbsd", link_section = ".init_array")]
+        #[cfg_attr(target_os = "openbsd", link_section = ".init_array")]
+        #[cfg_attr(target_os = "dragonfly", link_section = ".init_array")]
+        #[cfg_attr(target_os = "illumos", link_section = ".init_array")]
+        #[cfg_attr(target_os = "haiku", link_section = ".init_array")]
+        #[cfg_attr(any(target_os = "macos", target_os = "ios"), link_section = "__DATA,__mod_init_func")]
+        #[cfg_attr(windows, link_section = ".CRT$XCU")]
+    ).into();
+    attrs.extend(function);
+    attrs
+}
+
 /// Marks a function or static variable as a library/executable constructor.
 /// This uses OS-specific linker sections to call a specific function at
 /// load time.
@@ -154,15 +174,7 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             #[used]
             #[allow(non_upper_case_globals)]
             #[doc(hidden)]
-            #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
-            #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
-            #[cfg_attr(target_os = "netbsd", link_section = ".init_array")]
-            #[cfg_attr(target_os = "openbsd", link_section = ".init_array")]
-            #[cfg_attr(target_os = "dragonfly", link_section = ".init_array")]
-            #[cfg_attr(target_os = "illumos", link_section = ".init_array")]
-            #[cfg_attr(target_os = "haiku", link_section = ".init_array")]
-            #[cfg_attr(any(target_os = "macos", target_os = "ios"), link_section = "__DATA,__mod_init_func")]
-            #[cfg_attr(windows, link_section = ".CRT$XCU")]
+            #[ctor::__ctor_internal_decorator_attributes]
             static #ctor_ident
             :
             unsafe extern "C" fn() =
@@ -237,15 +249,7 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
 
             #[used]
             #[allow(non_upper_case_globals)]
-            #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
-            #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
-            #[cfg_attr(target_os = "netbsd", link_section = ".init_array")]
-            #[cfg_attr(target_os = "openbsd", link_section = ".init_array")]
-            #[cfg_attr(target_os = "dragonfly", link_section = ".init_array")]
-            #[cfg_attr(target_os = "illumos", link_section = ".init_array")]
-            #[cfg_attr(target_os = "haiku", link_section = ".init_array")]
-            #[cfg_attr(any(target_os = "macos", target_os = "ios"), link_section = "__DATA,__mod_init_func")]
-            #[cfg_attr(windows, link_section = ".CRT$XCU")]
+            #[ctor::__ctor_internal_decorator_attributes]
             static #ctor_ident
             :
             unsafe extern "C" fn() = {
@@ -331,14 +335,7 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
 
             #[used]
             #[allow(non_upper_case_globals)]
-            #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
-            #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
-            #[cfg_attr(target_os = "netbsd", link_section = ".init_array")]
-            #[cfg_attr(target_os = "openbsd", link_section = ".init_array")]
-            #[cfg_attr(target_os = "dragonfly", link_section = ".init_array")]
-            #[cfg_attr(target_os = "illumos", link_section = ".init_array")]
-            #[cfg_attr(target_os = "haiku", link_section = ".init_array")]
-            #[cfg_attr(windows, link_section = ".CRT$XCU")]
+            #[ctor::__ctor_internal_decorator_attributes]
             static __dtor_export
             :
             unsafe extern "C" fn() =
