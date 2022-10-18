@@ -38,7 +38,10 @@ use proc_macro::TokenStream;
 /// it to be stable.
 #[doc(hidden)]
 #[proc_macro_attribute]
-pub fn __ctor_internal_decorator_attributes(_attribute: TokenStream, function: TokenStream) -> TokenStream {
+pub fn __ctor_internal_decorator_attributes(
+    _attribute: TokenStream,
+    function: TokenStream,
+) -> TokenStream {
     let mut attrs: TokenStream = quote!(
         #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
         #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
