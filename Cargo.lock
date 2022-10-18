@@ -4,11 +4,11 @@ version = 3
 
 [[package]]
 name = "ctor"
-version = "0.1.22"
+version = "0.1.23"
 dependencies = [
  "libc-print",
- "quote 1.0.20",
- "syn 1.0.98",
+ "quote 1.0.21",
+ "syn 1.0.102",
 ]
 
 [[package]]
@@ -42,9 +42,9 @@ checksum = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 
 [[package]]
 name = "libc"
-version = "0.2.126"
+version = "0.2.135"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "349d5a591cd28b49e1d1037471617a32ddcda5731b99419008085f72d5a53836"
+checksum = "68783febc7782c6c5cb401fbda4de5a9898be1762314da0bb2c10ced61f18b0c"
 
 [[package]]
 name = "libc-print"
@@ -66,9 +66,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.42"
+version = "1.0.47"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c278e965f1d8cf32d6e0e96de3d3e79712178ae67986d9cf9151f51e95aac89b"
+checksum = "5ea3d908b0e36316caf9e9e2c4625cdde190a7e6f440d794667ed17a1855e725"
 dependencies = [
  "unicode-ident",
 ]
@@ -84,11 +84,11 @@ dependencies = [
 
 [[package]]
 name = "quote"
-version = "1.0.20"
+version = "1.0.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3bcdf212e9776fbcb2d23ab029360416bb1706b1aea2d1a5ba002727cbcab804"
+checksum = "bbe448f377a7d6961e30f5955f9b8d106c3f5e449d493ee1b125c1d43c2b5179"
 dependencies = [
- "proc-macro2 1.0.42",
+ "proc-macro2 1.0.47",
 ]
 
 [[package]]
@@ -104,12 +104,12 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "1.0.98"
+version = "1.0.102"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c50aef8a904de4c23c788f104b7dddc7d6f79c647c7c8ce4cc8f73eb0ca773dd"
+checksum = "3fcd952facd492f9be3ef0d0b7032a6e442ee9b361d4acc2b1d0c4aaa5f613a1"
 dependencies = [
- "proc-macro2 1.0.42",
- "quote 1.0.20",
+ "proc-macro2 1.0.47",
+ "quote 1.0.21",
  "unicode-ident",
 ]
 
@@ -125,9 +125,9 @@ dependencies = [
 
 [[package]]
 name = "unicode-ident"
-version = "1.0.2"
+version = "1.0.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "15c61ba63f9235225a22310255a29b806b907c9b8c964bcbd0a2c70f3f2deea7"
+checksum = "6ceab39d59e4c9499d4e5a8ee0e2735b891bb7308ac83dfb4e80cad195c9f6f3"
 
 [[package]]
 name = "unicode-xid"
