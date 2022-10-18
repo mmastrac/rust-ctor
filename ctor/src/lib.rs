@@ -22,6 +22,11 @@
 
 // https://github.com/Alexpux/mingw-w64/blob/d0d7f784833bbb0b2d279310ddc6afb52fe47a46/mingw-w64-crt/crt/crtdll.c
 
+// In addition, OSX has removed support for section-based shutdown hooks after
+// warning about it for a number of years:
+
+// https://reviews.llvm.org/D45578
+
 extern crate proc_macro;
 extern crate syn;
 #[macro_use]
