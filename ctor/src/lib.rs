@@ -205,7 +205,7 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             ..
         } = var;
 
-        if let Some(_) = mutability {
+        if mutability.is_some() {
             panic!("#[ctor]-annotated static objects must not be mutable");
         }
 
@@ -383,7 +383,7 @@ fn validate_item(typ: &str, item: &syn::ItemFn) {
     }
 
     // No parameters allowed
-    if sig.inputs.len() > 0 {
+    if !sig.inputs.is_empty() {
         panic!("#[{}] methods may not have parameters", typ);
     }
 
