@@ -32,29 +32,25 @@ extern crate syn;
 #[macro_use]
 extern crate quote;
 
-use proc_macro::TokenStream;
+use proc_macro::{TokenStream};
 
 /// Attributes required to mark a function as a constructor. This may be exposed in the future if we determine
 /// it to be stable.
 #[doc(hidden)]
-#[proc_macro_attribute]
-pub fn __ctor_internal_decorator_attributes(
-    _attribute: TokenStream,
-    function: TokenStream,
-) -> TokenStream {
-    let mut attrs: TokenStream = quote!(
-        #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
-        #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
-        #[cfg_attr(target_os = "netbsd", link_section = ".init_array")]
-        #[cfg_attr(target_os = "openbsd", link_section = ".init_array")]
-        #[cfg_attr(target_os = "dragonfly", link_section = ".init_array")]
-        #[cfg_attr(target_os = "illumos", link_section = ".init_array")]
-        #[cfg_attr(target_os = "haiku", link_section = ".init_array")]
-        #[cfg_attr(any(target_os = "macos", target_os = "ios"), link_section = "__DATA,__mod_init_func")]
-        #[cfg_attr(windows, link_section = ".CRT$XCU")]
-    ).into();
-    attrs.extend(function);
-    attrs
+macro_rules! ctor_attributes {
+    () => {
+        quote!(
+            #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
+            #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
+            #[cfg_attr(target_os = "netbsd", link_section = ".init_array")]
+            #[cfg_attr(target_os = "openbsd", link_section = ".init_array")]
+            #[cfg_attr(target_os = "dragonfly", link_section = ".init_array")]
+            #[cfg_attr(target_os = "illumos", link_section = ".init_array")]
+            #[cfg_attr(target_os = "haiku", link_section = ".init_array")]
+            #[cfg_attr(any(target_os = "macos", target_os = "ios"), link_section = "__DATA,__mod_init_func")]
+            #[cfg_attr(windows, link_section = ".CRT$XCU")]
+        )
+    };
 }
 
 /// Marks a function or static variable as a library/executable constructor.
@@ -172,6 +168,7 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             syn::parse_str::<syn::Ident>(format!("{}___rust_ctor___ctor", ident).as_ref())
                 .expect("Unable to create identifier");
 
+        let tokens = ctor_attributes!();
         let output = quote!(
             #[cfg(not(any(target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "netbsd", target_os = "openbsd", target_os = "dragonfly", target_os = "illumos", target_os = "haiku", target_os = "macos", target_os = "ios", windows)))]
             compile_error!("#[ctor] is not supported on the current target");
@@ -182,7 +179,7 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             #[used]
             #[allow(non_upper_case_globals)]
             #[doc(hidden)]
-            #[ctor::__ctor_internal_decorator_attributes]
+            #tokens
             static #ctor_ident
             :
             unsafe extern "C" fn() =
@@ -228,6 +225,7 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             syn::parse_str::<syn::Ident>(format!("{}___rust_ctor___storage", ident).as_ref())
                 .expect("Unable to create identifier");
 
+        let tokens = ctor_attributes!();
         let output = quote!(
             #[cfg(not(any(target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "netbsd", target_os = "openbsd", target_os = "dragonfly", target_os = "illumos", target_os = "haiku", target_os = "macos", target_os = "ios", windows)))]
             compile_error!("#[ctor] is not supported on the current target");
@@ -257,7 +255,7 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
 
             #[used]
             #[allow(non_upper_case_globals)]
-            #[ctor::__ctor_internal_decorator_attributes]
+            #tokens
             static #ctor_ident
             :
             unsafe extern "C" fn() = {
@@ -321,6 +319,7 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
     let dtor_ident = syn::parse_str::<syn::Ident>(format!("{}___rust_dtor___dtor", ident).as_ref())
         .expect("Unable to create identifier");
 
+    let tokens = ctor_attributes!();
     let output = quote!(
         #[cfg(not(any(target_os = "linux", target_os = "android", target_os = "freebsd", target_os = "netbsd", target_os = "openbsd", target_os = "dragonfly", target_os = "illumos", target_os = "haiku", target_os = "macos", target_os = "ios", windows)))]
         compile_error!("#[dtor] is not supported on the current target");
@@ -355,7 +354,7 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
 
             #[used]
             #[allow(non_upper_case_globals)]
-            #[ctor::__ctor_internal_decorator_attributes]
+            #tokens
             static __dtor_export
             :
             unsafe extern "C" fn() =
