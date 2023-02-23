@@ -4,11 +4,11 @@ version = 3
 
 [[package]]
 name = "ctor"
-version = "0.1.24"
+version = "0.1.25"
 dependencies = [
  "libc-print",
  "quote 1.0.21",
- "syn 1.0.102",
+ "syn 1.0.108",
 ]
 
 [[package]]
@@ -104,9 +104,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "1.0.102"
+version = "1.0.108"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3fcd952facd492f9be3ef0d0b7032a6e442ee9b361d4acc2b1d0c4aaa5f613a1"
+checksum = "d56e159d99e6c2b93995d171050271edb50ecc5288fbc7cc17de8fdce4e58c14"
 dependencies = [
  "proc-macro2 1.0.47",
  "quote 1.0.21",
