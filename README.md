@@ -1,6 +1,6 @@
 # rust-ctor
 
-[![Build Status](https://api.travis-ci.com/mmastrac/rust-ctor.svg?branch=master)](https://travis-ci.com/mmastrac/rust-ctor)
+![Build Status](https://github.com/mmastrac/rust-ctor/actions/workflows/rust.yml/badge.svg)
 [![docs.rs](https://docs.rs/ctor/badge.svg)](https://docs.rs/ctor)
 [![crates.io](https://img.shields.io/crates/v/ctor.svg)](https://crates.io/crates/ctor)
 
