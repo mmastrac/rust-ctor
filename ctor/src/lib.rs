@@ -205,12 +205,12 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             ..
         } = var;
 
-        if mutability.is_some() {
+        if matches!(mutability, syn::StaticMutability::Mut(_)) {
             panic!("#[ctor]-annotated static objects must not be mutable");
         }
 
         if attrs.iter().any(|attr| {
-            attr.path
+            attr.path()
                 .segments
                 .iter()
                 .any(|segment| segment.ident == "no_mangle")
