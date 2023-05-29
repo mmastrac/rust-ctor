@@ -15,7 +15,7 @@ travis-ci = { repository = "mmastrac/rust-ctor", branch = "master" }
 quote = "1.0.20"
 
 [dependencies.syn]
-version = "2.0.12"
+version = "2.0.18"
 features = ["full", "parsing", "printing", "proc-macro"]
 default-features = false
 
