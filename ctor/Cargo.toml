@@ -11,6 +11,10 @@ readme = "../README.md"
 [badges]
 travis-ci = { repository = "mmastrac/rust-ctor", branch = "master" }
 
+[features]
+# For nightly users, used(linker) may be a better choice
+used_linker = []
+
 [dependencies]
 quote = "1.0.20"
 

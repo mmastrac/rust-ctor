@@ -1,3 +1,4 @@
+#![cfg_attr(feature = "used_linker", feature(used_with_arg))]
 // Prevent a spurious 'unused_imports' warning
 #[allow(unused_imports)]
 #[macro_use]
@@ -88,6 +89,10 @@ mod test {
 
         // There are four possible outcomes for stderr, depending on the order
         // that functions are called
-        assert!(a == s || b == s || c == s || d == s, "s was unexpected:\n{}", s.replace("\n", "\\n"));
+        assert!(
+            a == s || b == s || c == s || d == s,
+            "s was unexpected:\n{}",
+            s.replace("\n", "\\n")
+        );
     }
 }

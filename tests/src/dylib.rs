@@ -1,3 +1,4 @@
+#![cfg_attr(feature = "used_linker", feature(used_with_arg))]
 #![allow(dead_code, unused_imports)]
 
 use ctor::*;

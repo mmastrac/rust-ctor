@@ -1,3 +1,4 @@
+#![cfg_attr(feature = "used_linker", feature(used_with_arg))]
 extern crate ctor;
 extern crate libc_print;
 
