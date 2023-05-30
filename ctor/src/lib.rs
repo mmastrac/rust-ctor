@@ -32,7 +32,7 @@ extern crate syn;
 #[macro_use]
 extern crate quote;
 
-use proc_macro::{TokenStream};
+use proc_macro::TokenStream;
 
 /// Attributes required to mark a function as a constructor. This may be exposed in the future if we determine
 /// it to be stable.
@@ -65,6 +65,7 @@ macro_rules! ctor_attributes {
 /// Print a startup message (using `libc_print` for safety):
 ///
 /// ```rust
+/// # #![cfg_attr(feature="used_linker", feature(used_with_arg))]
 /// # extern crate ctor;
 /// # use ctor::*;
 /// use libc_print::std_name::println;
@@ -82,6 +83,7 @@ macro_rules! ctor_attributes {
 /// Make changes to `static` variables:
 ///
 /// ```rust
+/// # #![cfg_attr(feature="used_linker", feature(used_with_arg))]
 /// # extern crate ctor;
 /// # use ctor::*;
 /// # use std::sync::atomic::{AtomicBool, Ordering};
@@ -176,7 +178,9 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             #(#attrs)*
             #vis #unsafety extern #abi #constness fn #ident() #block
 
-            #[used]
+            #[cfg_attr(not(feature = "used_linker"), used)]
+            #[cfg_attr(feature = "used_linker", used(linker))]
+            #[no_mangle]
             #[allow(non_upper_case_globals)]
             #[doc(hidden)]
             #tokens
