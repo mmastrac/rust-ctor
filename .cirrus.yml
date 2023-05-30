@@ -1,0 +1,21 @@
+task:
+  name: FreeBSD 13.2
+  env:
+    VERSION: stable
+    HOME: /tmp # cargo needs it
+    RUST_BACKTRACE: full  # Better info for debugging test failures.
+  freebsd_instance:
+    image: freebsd-13-2-release-amd64
+  setup_script:
+    - fetch https://sh.rustup.rs -o rustup.sh
+    - sh rustup.sh -y --profile=minimal --default-toolchain ${VERSION}-x86_64-unknown-freebsd
+  cargo_cache:
+    folder: $HOME/.cargo/registry
+    fingerprint_script: cat Cargo.lock || echo ""
+  build_script:
+    - . $HOME/.cargo/env || true
+    - cargo build
+  test_script:
+    - . $HOME/.cargo/env || true
+    - cargo test
+  before_cache_script: rm -rf $HOME/.cargo/registry/index
