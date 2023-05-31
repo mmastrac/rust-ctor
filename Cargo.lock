@@ -4,7 +4,11 @@ version = 3
 
 [[package]]
 name = "ctor"
+<<<<<<< HEAD
 version = "0.2.0"
+=======
+version = "0.2.2"
+>>>>>>> 60de82a (Bump version)
 dependencies = [
  "libc-print",
  "quote 1.0.26",
