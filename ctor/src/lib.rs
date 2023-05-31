@@ -180,7 +180,6 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
 
             #[cfg_attr(not(feature = "used_linker"), used)]
             #[cfg_attr(feature = "used_linker", used(linker))]
-            #[no_mangle]
             #[allow(non_upper_case_globals)]
             #[doc(hidden)]
             #tokens
