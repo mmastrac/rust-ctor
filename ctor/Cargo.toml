@@ -19,7 +19,7 @@ used_linker = []
 quote = "1.0.20"
 
 [dependencies.syn]
-version = "2.0.12"
+version = "2.0.22"
 features = ["full", "parsing", "printing", "proc-macro"]
 default-features = false
 
