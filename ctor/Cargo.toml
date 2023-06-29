@@ -16,7 +16,7 @@ travis-ci = { repository = "mmastrac/rust-ctor", branch = "master" }
 used_linker = []
 
 [dependencies]
-quote = "1.0.20"
+quote = "1.0.29"
 
 [dependencies.syn]
 version = "2.0.12"
