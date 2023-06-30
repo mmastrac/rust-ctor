@@ -130,7 +130,7 @@ macro_rules! ctor_attributes {
 /// #[cfg_attr(target_os = "netbsd", link_section = ".init_array")]
 /// #[cfg_attr(target_os = "openbsd", link_section = ".init_array")]
 /// #[cfg_attr(target_os = "illumos", link_section = ".init_array")]
-/// #[cfg_attr(any(target_os = "macos", target_os = "ios"), link_section = "__DATA,__mod_init_func")]
+/// #[cfg_attr(any(target_os = "macos", target_os = "ios"), link_section = "__DATA_CONST,__mod_init_func")]
 /// #[cfg_attr(target_os = "windows", link_section = ".CRT$XCU")]
 /// static FOO: extern fn() = {
 ///   #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.startup")]
