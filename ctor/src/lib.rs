@@ -39,6 +39,12 @@ use proc_macro::TokenStream;
 #[doc(hidden)]
 macro_rules! ctor_attributes {
     () => {
+        // Linux/ELF: https://www.exploit-db.com/papers/13234
+
+        // Mac details: https://blog.timac.org/2016/0716-constructor-and-destructor-attributes/
+
+        // Why .CRT$XCU on Windows? https://www.cnblogs.com/sunkang/archive/2011/05/24/2055635.html
+        // 'I'=C init, 'C'=C++ init, 'P'=Pre-terminators and 'T'=Terminators
         quote!(
             #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
             #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
@@ -159,13 +165,6 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             ..
         } = function;
 
-        // Linux/ELF: https://www.exploit-db.com/papers/13234
-
-        // Mac details: https://blog.timac.org/2016/0716-constructor-and-destructor-attributes/
-
-        // Why .CRT$XCU on Windows? https://www.cnblogs.com/sunkang/archive/2011/05/24/2055635.html
-        // 'I'=C init, 'C'=C++ init, 'P'=Pre-terminators and 'T'=Terminators
-
         let ctor_ident =
             syn::parse_str::<syn::Ident>(format!("{}___rust_ctor___ctor", ident).as_ref())
                 .expect("Unable to create identifier");
@@ -185,10 +184,10 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             #tokens
             static #ctor_ident
             :
-            unsafe extern "C" fn() =
+            unsafe extern "C" fn() -> usize =
             {
                 #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.startup")]
-                unsafe extern "C" fn #ctor_ident() { #ident() };
+                unsafe extern "C" fn #ctor_ident() -> usize { #ident(); 0 };
                 #ctor_ident
             }
             ;
