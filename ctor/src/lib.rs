@@ -346,10 +346,10 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             // For platforms that have __cxa_atexit, we register the dtor as scoped to dso_handle
             #[cfg(any(target_os = "macos", target_os = "ios"))]
             #[inline(always)]
-            unsafe fn do_atexit(cb: unsafe extern fn()) {
+            unsafe fn do_atexit(cb: unsafe extern fn(_: *const u8)) {
                 extern "C" {
                     static __dso_handle: *const u8;
-                    fn __cxa_atexit(cb: unsafe extern fn(), arg: *const u8, dso_handle: *const u8);
+                    fn __cxa_atexit(cb: unsafe extern fn(_: *const u8), arg: *const u8, dso_handle: *const u8);
                 }
                 __cxa_atexit(cb, std::ptr::null(), __dso_handle);
             }
@@ -361,8 +361,11 @@ pub fn dtor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             :
             unsafe extern "C" fn() =
             {
+                #[cfg(not(any(target_os = "macos", target_os = "ios")))]
                 #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.exit")]
                 unsafe extern "C" fn #dtor_ident() { #ident() };
+                #[cfg(any(target_os = "macos", target_os = "ios"))]
+                unsafe extern "C" fn #dtor_ident(_: *const u8) { #ident() };
                 #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.startup")]
                 unsafe extern fn __dtor_atexit() {
                     do_atexit(#dtor_ident);
