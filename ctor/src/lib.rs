@@ -262,8 +262,12 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             :
             unsafe extern "C" fn() = {
                 #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.startup")]
-                unsafe extern "C" fn initer() {
-                    #storage_ident = Some(#expr);
+                extern "C" fn initer() {
+                    let val = Some(#expr);
+                    // Only write the value to `storage_ident` on startup
+                    unsafe {
+                        #storage_ident = val;
+                    }
                 }; initer }
             ;
         );
