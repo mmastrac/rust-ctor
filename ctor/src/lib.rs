@@ -179,13 +179,14 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
 
             #[cfg_attr(not(feature = "used_linker"), used)]
             #[cfg_attr(feature = "used_linker", used(linker))]
-            #[allow(non_upper_case_globals)]
+            #[allow(non_upper_case_globals, non_snake_case)]
             #[doc(hidden)]
             #tokens
             static #ctor_ident
             :
             unsafe extern "C" fn() -> usize =
             {
+                #[allow(non_snake_case)]
                 #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.startup")]
                 unsafe extern "C" fn #ctor_ident() -> usize { #ident(); 0 };
                 #ctor_ident
