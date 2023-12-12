@@ -239,15 +239,15 @@ pub fn ctor(_attribute: TokenStream, function: TokenStream) -> TokenStream {
             #[doc(hidden)]
             #[allow(non_camel_case_types)]
             #vis struct #ident<T> {
-                _data: core::marker::PhantomData<T>
+                _data: ::core::marker::PhantomData<T>
             }
 
             #(#attrs)*
             #vis static #ident: #ident<#ty> = #ident {
-                _data: core::marker::PhantomData::<#ty>
+                _data: ::core::marker::PhantomData::<#ty>
             };
 
-            impl core::ops::Deref for #ident<#ty> {
+            impl ::core::ops::Deref for #ident<#ty> {
                 type Target = #ty;
                 fn deref(&self) -> &'static #ty {
                     unsafe {
