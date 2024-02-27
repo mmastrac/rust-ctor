@@ -1,0 +1,16 @@
+[package]
+name = "dtor"
+version = "0.0.0"
+authors = ["Matt Mastracci <matthew@mastracci.com>"]
+edition = "2018"
+description = "__attribute__((destructor)) for Rust"
+license = "Apache-2.0 OR MIT"
+repository = "https://github.com/mmastrac/rust-ctor"
+readme = "README.md"
+
+[badges]
+travis-ci = { repository = "mmastrac/rust-ctor", branch = "master" }
+
+[lib]
+name = "dtor"
+proc-macro = true
