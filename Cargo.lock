@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "ctor"
-version = "0.2.6"
+version = "0.2.8"
 dependencies = [
  "libc-print",
  "quote 1.0.35",
@@ -33,6 +33,10 @@ dependencies = [
  "quote 0.6.13",
  "syn 0.15.44",
 ]
+
+[[package]]
+name = "dtor"
+version = "0.0.0"
 
 [[package]]
 name = "lazy_static"
