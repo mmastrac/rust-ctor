@@ -19,12 +19,7 @@ unsafe fn dtor() {
     libc_ewriteln!("- dtor bin");
 }
 
-#[cfg(any(
-    target_os = "macos",
-    target_os = "ios",
-    target_os = "visionos",
-    target_os = "tvos"
-))]
+#[cfg(target_vendor = "apple")]
 fn lib_extension() -> &'static str {
     "dylib"
 }

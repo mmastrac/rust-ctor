@@ -16,14 +16,14 @@ Idea inspired by [this code](https://github.com/neon-bindings/neon/blob/2277e943
 This library works and [is regularly tested](https://travis-ci.org/mmastrac/rust-ctor)
 on Linux, OSX and Windows, with both `+crt-static` and `-crt-static`. Other platforms are supported
 but not tested as part of the automatic builds. This library will also work as expected in both
-`bin` and `cdylib` outputs, ie: the `ctor` and `dtor` will run at executable or library 
+`bin` and `cdylib` outputs, ie: the `ctor` and `dtor` will run at executable or library
 startup/shutdown respectively.
 
 ## Warnings
 
-Rust's philosophy is that nothing happens before or after main and 
+Rust's philosophy is that nothing happens before or after main and
 this library explicitly subverts that. The code that runs in the `ctor`
-and `dtor` functions should be careful to limit itself to `libc` 
+and `dtor` functions should be careful to limit itself to `libc`
 functions and code that does not rely on Rust's stdlib services.
 
 For example, using stdout in a `dtor` function is a guaranteed panic. Consider
@@ -33,8 +33,8 @@ may involve signal processing or panic handling in that early code.
 
 In most cases, `sys_common::at_exit` is a better choice than `#[dtor]`. Caveat emptor!
 
-On some platforms, unloading of shared libraries may not actually 
-happen until process exit, even if explicitly unloaded. The rules for 
+On some platforms, unloading of shared libraries may not actually
+happen until process exit, even if explicitly unloaded. The rules for
 this are arcane and difficult to understand. For example, thread-local
 storage on OSX will affect this (see [this comment](https://github.com/rust-lang/rust/issues/28794#issuecomment-368693049)).
 
@@ -91,7 +91,7 @@ The above example translates into the following Rust code (approximately):
     #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
     #[cfg_attr(target_os = "netbsd", link_section = ".init_array")]
     #[cfg_attr(target_os = "openbsd", link_section = ".init_array")]
-    #[cfg_attr(target_os = "macos", link_section = "__DATA,__mod_init_func")]
+    #[cfg_attr(target_vendor = "apple", link_section = "__DATA,__mod_init_func")]
     #[cfg_attr(target_os = "windows", link_section = ".CRT$XCU")]
     static FOO: extern fn() = {
         #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.startup")]
