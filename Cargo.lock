@@ -4,7 +4,7 @@ version = 3
 
 [[package]]
 name = "ctor"
-version = "0.2.8"
+version = "0.2.9"
 dependencies = [
  "libc-print",
  "quote 1.0.36",
