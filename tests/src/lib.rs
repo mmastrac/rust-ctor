@@ -38,8 +38,8 @@ mod test {
     #[test]
     fn test_initialized() {
         // Test to see that the ctor ran
-        assert_eq!(true, INITED.load(Ordering::SeqCst));
-        assert_eq!(true, INITED_2.load(Ordering::SeqCst));
+        assert!(INITED.load(Ordering::SeqCst));
+        assert!(INITED_2.load(Ordering::SeqCst));
         assert_eq!(*INITED_3, 42);
     }
 
@@ -92,7 +92,7 @@ mod test {
         assert!(
             a == s || b == s || c == s || d == s,
             "s was unexpected:\n{}",
-            s.replace("\n", "\\n")
+            s.replace('\n', "\\n")
         );
     }
 }
