@@ -127,16 +127,16 @@ mod gen;
 /// ```
 #[proc_macro_attribute]
 pub fn ctor(_attribute: TokenStream, item: TokenStream) -> TokenStream {
-    fn identify_item(item: TokenStream) -> (String, String) {
-        let mut ctor_type = String::new();
+    fn identify_item(item: TokenStream) -> String {
+        let mut next_is_name = false;
         for token in item {
             if let TokenTree::Ident(ident) = token {
                 let ident = ident.to_string();
-                if !ctor_type.is_empty() {
-                    return (ident, ctor_type);
+                if next_is_name {
+                    return ident;
                 }
                 if ident == "fn" || ident == "static" {
-                    ctor_type = ident;
+                    next_is_name = true;
                 }
             }
         }
@@ -144,8 +144,8 @@ pub fn ctor(_attribute: TokenStream, item: TokenStream) -> TokenStream {
         panic!("#[ctor] may only be applied to `fn` or `static` items");
     }
 
-    let (name, ctor_type) = identify_item(item.clone());
-    generate(&name, &ctor_type, item)
+    let name = identify_item(item.clone());
+    generate(&name, "ctor", item)
 }
 
 /// Marks a function as a library/executable destructor. This uses OS-specific
@@ -170,81 +170,91 @@ pub fn ctor(_attribute: TokenStream, item: TokenStream) -> TokenStream {
 /// ```
 #[proc_macro_attribute]
 pub fn dtor(_attribute: TokenStream, item: TokenStream) -> TokenStream {
-    fn identify_item(item: TokenStream) -> (String, String) {
-        let mut ctor_type = String::new();
+    fn identify_item(item: TokenStream) -> String {
+        let mut next_is_name = false;
         for token in item {
             if let TokenTree::Ident(ident) = token {
                 let ident = ident.to_string();
-                if !ctor_type.is_empty() {
-                    return (ident, ctor_type);
+                if next_is_name {
+                    return ident;
                 }
-                if ident == "fn" {
-                    "dtor".clone_into(&mut ctor_type);
+                if ident == "fn" || ident == "static" {
+                    next_is_name = true;
                 }
             }
         }
 
-        panic!("#[dtor] may only be applied to `fn`items");
+        panic!("#[dtor] may only be applied to `fn` items");
     }
 
-    let (name, ctor_type) = identify_item(item.clone());
-    generate(&name, &ctor_type, item)
+    let name = identify_item(item.clone());
+    generate(&name, "dtor", item)
 }
 
 fn generate(name: &str, ctor_type: &str, item: TokenStream) -> TokenStream {
     use proc_macro::TokenTree as T;
 
-    let support_name = format!("__rust_ctor__{name}");
     let macros_name = format!("__rust_ctor_macros_{name}");
-    TokenStream::from_iter([
-        T::Ident(Ident::new(&macros_name, Span::call_site())),
-        T::Punct(Punct::new(':', Spacing::Joint)),
-        T::Punct(Punct::new(':', Spacing::Alone)),
-        T::Ident(Ident::new("ctor_impl", Span::call_site())),
-        T::Punct(Punct::new('!', Spacing::Alone)),
-        T::Group(Group::new(
-            Delimiter::Parenthesis,
-            TokenStream::from_iter([
-                T::Ident(Ident::new(ctor_type, Span::call_site())),
-                T::Ident(Ident::new("macros", Span::call_site())),
-                T::Punct(Punct::new('=', Spacing::Alone)),
-                T::Ident(Ident::new(&macros_name, Span::call_site())),
-                T::Ident(Ident::new("name", Span::call_site())),
-                T::Punct(Punct::new('=', Spacing::Alone)),
-                T::Ident(Ident::new(&support_name, Span::call_site())),
-                T::Ident(Ident::new("used", Span::call_site())),
-                T::Punct(Punct::new('=', Spacing::Alone)),
-                T::Ident(Ident::new("used", Span::call_site())),
-                #[cfg(feature = "used_linker")]
-                T::Group(Group::new(
-                    Delimiter::Parenthesis,
-                    TokenStream::from_iter([T::Ident(Ident::new("linker", Span::call_site()))]),
-                )),
-                T::Ident(Ident::new("item", Span::call_site())),
-                T::Punct(Punct::new('=', Spacing::Alone)),
-                T::Group(Group::new(Delimiter::Brace, item)),
-            ]),
-        )),
-        T::Punct(Punct::new(';', Spacing::Alone)),
+    let mut macro_inner = TokenStream::from_iter([
         T::Punct(Punct::new('#', Spacing::Alone)),
         T::Group(Group::new(
             Delimiter::Bracket,
+            TokenStream::from_iter([T::Ident(Ident::new(ctor_type, Span::call_site()))]),
+        )),
+        #[cfg(feature = "used_linker")]
+        T::Punct(Punct::new('#', Spacing::Alone)),
+        #[cfg(feature = "used_linker")]
+        T::Group(Group::new(
+            Delimiter::Bracket,
             TokenStream::from_iter([
-                T::Ident(Ident::new("allow", Span::call_site())),
+                T::Ident(Ident::new("feature", Span::call_site())),
                 T::Group(Group::new(
                     Delimiter::Parenthesis,
                     TokenStream::from_iter([T::Ident(Ident::new(
-                        "non_snake_case",
+                        "used_linker",
                         Span::call_site(),
                     ))]),
                 )),
             ]),
         )),
+        #[cfg(feature = "__warn_on_missing_unsafe")]
+        T::Punct(Punct::new('#', Spacing::Alone)),
+        #[cfg(feature = "__warn_on_missing_unsafe")]
+        T::Group(Group::new(
+            Delimiter::Bracket,
+            TokenStream::from_iter([
+                T::Ident(Ident::new("feature", Span::call_site())),
+                T::Group(Group::new(
+                    Delimiter::Parenthesis,
+                    TokenStream::from_iter([T::Ident(Ident::new(
+                        "__warn_on_missing_unsafe",
+                        Span::call_site(),
+                    ))]),
+                )),
+            ]),
+        )),
+        T::Punct(Punct::new('#', Spacing::Alone)),
+        T::Group(Group::new(
+            Delimiter::Bracket,
+            TokenStream::from_iter([
+                T::Ident(Ident::new("macro_path", Span::call_site())),
+                T::Punct(Punct::new('=', Spacing::Alone)),
+                T::Ident(Ident::new(&macros_name, Span::call_site())),
+            ]),
+        )),
+    ]);
+    macro_inner.extend(item.into_iter());
+
+    TokenStream::from_iter([
+        T::Ident(Ident::new(&macros_name, Span::call_site())),
+        T::Punct(Punct::new(':', Spacing::Joint)),
+        T::Punct(Punct::new(':', Spacing::Alone)),
+        T::Ident(Ident::new("ctor_parse", Span::call_site())),
+        T::Punct(Punct::new('!', Spacing::Alone)),
+        T::Group(Group::new(Delimiter::Parenthesis, macro_inner)),
+        T::Punct(Punct::new(';', Spacing::Alone)),
         T::Ident(Ident::new("mod", Span::call_site())),
         T::Ident(Ident::new(&macros_name, Span::call_site())),
-        T::Group(Group::new(
-            Delimiter::Brace,
-            TokenStream::from_iter([gen::ctor(), gen::ctor_raw()]),
-        )),
+        T::Group(Group::new(Delimiter::Brace, gen::ctor())),
     ])
 }

@@ -1,22 +1,24 @@
-use std::collections::HashMap;
 use std::fmt::Write;
 
 pub mod macros;
 
 #[macro_export]
-macro_rules! declare_macro {
-    (macro_rules ! $name:ident $($defn:tt)* ) => {
-        macro_rules! $name $($defn)*
+macro_rules! declare_macros {
+    (
+        $( $( #[doc = $doc:literal] )* macro_rules ! $name:ident $defn:tt )*
+    ) => {
+        $( macro_rules! $name $defn )*
 
-        pub(crate) use $name;
+        $( pub(crate) use $name; )*
 
-        ::paste::paste!(pub fn [<$name _tokens>]() -> ::proc_macro2::TokenStream {
+        pub fn tokens() -> ::proc_macro2::TokenStream {
             quote::quote! {
-                macro_rules! $name $($defn)*
-
-                pub(crate) use $name;
+                $(
+                    #[allow(unused)] macro_rules! $name $defn
+                    pub(crate) use $name;
+                )*
             }
-        });
+        }
     };
 }
 
@@ -99,62 +101,78 @@ fn generate_code() -> Result<String, std::fmt::Error> {
     writeln!(&mut s, "fn c() -> Span {{ Span::call_site() }}")?;
     writeln!(&mut s)?;
 
-    dump_tokens(&mut s, "ctor", macros::ctor_impl_tokens())?;
-    dump_tokens(&mut s, "ctor_raw", macros::ctor_raw_tokens())?;
+    dump_tokens(&mut s, "ctor", macros::tokens())?;
 
     Ok(s)
 }
 
-macros::ctor_impl!(
-    fn
-    macros=macros
-    name=foo_impl
-    used=used
-    item={
-        fn foo() {
-
-        }
-    }
+macros::ctor_parse!(
+    #[ctor]
+    #[feature(__warn_on_missing_unsafe)]
+    #[macro_path=macros]
+    #[allow(deprecated)]
+    fn foo_missing_unsafe() {}
 );
 
-macros::ctor_impl!(
-    static
-    macros=macros
-    name=static_impl
-    used=used
-    item={
-        pub static STATIC_U8: u8 = { 1 };
-    }
+macros::ctor_parse!(
+    #[ctor]
+    #[feature(__warn_on_missing_unsafe)]
+    #[macro_path=macros]
+    /// Doc
+    #[deprecated]
+    #[allow(deprecated)]
+    fn dtor_foo_missing_unsafe() {}
 );
 
-macros::ctor_impl!(
-    dtor
-    macros=macros
-    name=dtor_impl
-    used=used
-    item={
-        fn bar() {
-
-        }
-    }
+macros::ctor_parse!(
+    #[ctor]
+    #[feature(__warn_on_missing_unsafe)]
+    #[macro_path=macros]
+    /// Doc
+    static STATIC_U8: u8 = { 1 };
 );
+
+macros::ctor_parse! {
+    #[dtor]
+    #[macro_path=macros]
+    fn dtor() {
+
+    }
+}
+
+macros::ctor_parse! {
+    #[dtor]
+    #[macro_path=macros]
+    #[cfg(not(test))]
+    fn dtor_with_cfg() {
+
+    }
+}
+
+macros::ctor_parse! {
+    #[dtor]
+    #[macro_path=macros]
+    #[cfg(test)]
+    fn dtor_with_cfg() {
+
+    }
+}
 
 mod module {
     use super::*;
-    macros::ctor_impl!(
-        static
-        macros=macros
-        name=static_hash_impl
-        used=used
-        item={
-            pub static STATIC_CTOR: HashMap<u32, &'static str> = {
-                let mut m = HashMap::new();
-                m.insert(0, "foo");
-                m.insert(1, "bar");
-                m.insert(2, "baz");
-                m
-            };
-        }
+    use std::collections::HashMap;
+
+    macros::ctor_parse!(
+        #[ctor]
+        #[feature(__warn_on_missing_unsafe)]
+        #[macro_path=macros]
+        pub(crate) static STATIC_CTOR: HashMap<u32, &'static str> = {
+            let mut m = HashMap::new();
+            m.insert(0, "foo");
+            m.insert(1, "bar");
+            m.insert(2, "baz");
+            m
+        };
     );
 }
 
