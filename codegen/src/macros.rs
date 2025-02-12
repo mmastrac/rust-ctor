@@ -54,6 +54,15 @@ declare_macros!(
 
     macro_rules! ctor_entry {
         (meta=[$($meta:meta)?], macro_path=$($macro_path:ident)::+, features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], item=fn $ident:ident() $block:block) => {
+            #[cfg(target_family="wasm")]
+            $(#[$fnmeta])*
+            #[allow(unused)]
+            #[wasm_bindgen(start)]
+            $($vis)* fn $ident() {
+                $block
+            }
+
+            #[cfg(not(target_family="wasm"))]
             $(#[$fnmeta])*
             #[allow(unused)]
             $($vis)* fn $ident() {
@@ -90,6 +99,15 @@ declare_macros!(
             }
         };
         (meta=[$($meta:meta)?], macro_path=$($macro_path:ident)::+, features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], item=unsafe fn $ident:ident() $block:block) => {
+            #[cfg(target_family="wasm")]
+            $(#[$fnmeta])*
+            #[allow(unused)]
+            #[wasm_bindgen(start)]
+            $($vis)* unsafe fn $ident() {
+                $block
+            }
+
+            #[cfg(not(target_family="wasm"))]
             $(#[$fnmeta])*
             #[allow(unused)]
             $($vis)* unsafe fn $ident() {
@@ -144,6 +162,25 @@ declare_macros!(
                 }
             }
 
+            #[cfg(target_family="wasm")]
+            #[doc(hidden)]
+            #[allow(non_upper_case_globals, non_snake_case)]
+            mod $ident {
+                #[derive(Default)]
+                #[allow(non_camel_case_types)]
+                pub struct Static<T> {
+                    pub _storage: ::std::cell::UnsafeCell<::std::option::Option<T>>
+                }
+
+                unsafe impl <T> std::marker::Sync for Static<T> {}
+
+                #[wasm_bindgen(start)]
+                fn init() {
+                    super::$ident.init_once();
+                }
+            }
+
+            #[cfg(not(target_family="wasm"))]
             #[doc(hidden)]
             #[allow(non_upper_case_globals, non_snake_case)]
             mod $ident {
