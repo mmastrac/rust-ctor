@@ -195,7 +195,7 @@ mod tests {
     fn test_up_to_date() {
         let contents = generate_code().expect("Failed to generate code");
         assert_eq!(
-            std::fs::read_to_string("../ctor/src/gen.rs").unwrap(),
+            std::fs::read_to_string("../ctor/src/gen.rs").unwrap().replace("\r\n", "\n"),
             contents
         );
     }
