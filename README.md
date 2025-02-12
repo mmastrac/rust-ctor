@@ -22,6 +22,9 @@ but not tested as part of the automatic builds. This library will also work as e
 `bin` and `cdylib` outputs, ie: the `ctor` and `dtor` will run at executable or library
 startup/shutdown respectively.
 
+This library supports WASM targets, but note that only a single `#[ctor]` function is
+supported due to platform limitations.
+
 ## Warnings
 
 Rust's philosophy is that nothing happens before or after main and
