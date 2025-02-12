@@ -166,6 +166,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "tests-static"
+version = "0.1.0"
+dependencies = [
+ "ctor",
+ "libc-print",
+]
+
+[[package]]
+name = "tests-static-main"
+version = "0.1.0"
+dependencies = [
+ "ctor",
+ "libc-print",
+ "tests-static",
+]
+
+[[package]]
 name = "tests-wasm"
 version = "0.1.0"
 dependencies = [

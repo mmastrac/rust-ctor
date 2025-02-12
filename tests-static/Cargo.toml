@@ -1,0 +1,14 @@
+[package]
+name = "tests-static"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[features]
+used_linker = ["ctor/used_linker"]
+
+[lib]
+
+[dependencies]
+ctor = { path = "../ctor" }
+libc-print = "0.1.15"

@@ -4,7 +4,9 @@
 [![docs.rs](https://docs.rs/ctor/badge.svg)](https://docs.rs/ctor)
 [![crates.io](https://img.shields.io/crates/v/ctor.svg)](https://crates.io/crates/ctor)
 
-Module initialization/teardown functions for Rust (like `__attribute__((constructor))` in C/C++) for Linux, OSX, FreeBSD, NetBSD, Illumos, OpenBSD, DragonFlyBSD, Android, iOS, and Windows.
+Module initialization/teardown functions for Rust (like
+`__attribute__((constructor))` in C/C++) for Linux, OSX, FreeBSD, NetBSD,
+Illumos, OpenBSD, DragonFlyBSD, Android, iOS, WASM, and Windows.
 
 This library currently requires **Rust > 1.31.0** at a minimum for the
 procedural macro support.
@@ -24,6 +26,18 @@ startup/shutdown respectively.
 
 This library supports WASM targets, but note that only a single `#[ctor]` function is
 supported due to platform limitations.
+
+## Linking
+
+The `#[ctor]` and `#[dtor]` macros make use of linker sections to ensure that a
+function is run at startup time.
+
+Because of various platform linking issues, you may need to ensure that you
+reference a symbol in each module that provides a `#[ctor]` or `#[dtor]`. If the
+functions do not run as expected, `use other_crate` may be sufficient to fix
+things.
+
+See https://github.com/rust-lang/rust/issues/133491 for more information.
 
 ## Warnings
 
