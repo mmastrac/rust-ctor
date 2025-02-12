@@ -186,3 +186,17 @@ fn main() {
     let contents = generate_code().expect("Failed to generate code");
     std::fs::write("ctor/src/gen.rs", contents).expect("Failed to write code");
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_up_to_date() {
+        let contents = generate_code().expect("Failed to generate code");
+        assert_eq!(
+            std::fs::read_to_string("../ctor/src/gen.rs").unwrap(),
+            contents
+        );
+    }
+}

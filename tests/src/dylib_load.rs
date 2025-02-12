@@ -24,37 +24,12 @@ fn lib_extension() -> &'static str {
     "dylib"
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(windows)]
 fn lib_extension() -> &'static str {
-    "so"
+    "dll"
 }
 
-#[cfg(target_os = "freebsd")]
-fn lib_extension() -> &'static str {
-    "so"
-}
-
-#[cfg(target_os = "netbsd")]
-fn lib_extension() -> &'static str {
-    "so"
-}
-
-#[cfg(target_os = "openbsd")]
-fn lib_extension() -> &'static str {
-    "so"
-}
-
-#[cfg(target_os = "dragonfly")]
-fn lib_extension() -> &'static str {
-    "so"
-}
-
-#[cfg(target_os = "illumos")]
-fn lib_extension() -> &'static str {
-    "so"
-}
-
-#[cfg(target_os = "haiku")]
+#[cfg(all(not(windows), not(target_vendor = "apple")))]
 fn lib_extension() -> &'static str {
     "so"
 }

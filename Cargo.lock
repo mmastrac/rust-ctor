@@ -14,7 +14,6 @@ name = "ctor-codegen"
 version = "0.1.0"
 dependencies = [
  "libc-print",
- "paste",
  "proc-macro2 1.0.89",
  "quote 1.0.37",
  "syn 2.0.87",
@@ -67,12 +66,6 @@ checksum = "a4a660208db49e35faf57b37484350f1a61072f2a5becf0592af6015d9ddd4b0"
 dependencies = [
  "libc",
 ]
-
-[[package]]
-name = "paste"
-version = "1.0.15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57c0d7b74b563b49d38dae00a0c37d4d6de9b432382b2892f0574ddcae73fd0a"
 
 [[package]]
 name = "proc-macro2"
