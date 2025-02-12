@@ -1,6 +1,5 @@
-use ctor::ctor;
-
-#[ctor]
+#[cfg(target_family="wasm")]
+#[ctor::ctor]
 unsafe fn hello() {
     use wasm_bindgen::prelude::wasm_bindgen;
 
