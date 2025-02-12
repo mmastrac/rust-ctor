@@ -2,4 +2,5 @@
 **/*.rs.bk
 .vscode
 .DS_Store
+pkg
 
