@@ -2623,6 +2623,14 @@ pub fn ctor() -> TokenStream {
             T::Punct(Punct::new('#', Alone)),
             T::Group(Group::new(Bracket, 
               TokenStream::from_iter([
+                T::Punct(Punct::new(':', Joint)),
+                T::Punct(Punct::new(':', Alone)),
+                T::Ident(Ident::new("wasm_bindgen", c())),
+                T::Punct(Punct::new(':', Joint)),
+                T::Punct(Punct::new(':', Alone)),
+                T::Ident(Ident::new("prelude", c())),
+                T::Punct(Punct::new(':', Joint)),
+                T::Punct(Punct::new(':', Alone)),
                 T::Ident(Ident::new("wasm_bindgen", c())),
                 T::Group(Group::new(Parenthesis, 
                   TokenStream::from_iter([
@@ -3105,6 +3113,14 @@ pub fn ctor() -> TokenStream {
             T::Punct(Punct::new('#', Alone)),
             T::Group(Group::new(Bracket, 
               TokenStream::from_iter([
+                T::Punct(Punct::new(':', Joint)),
+                T::Punct(Punct::new(':', Alone)),
+                T::Ident(Ident::new("wasm_bindgen", c())),
+                T::Punct(Punct::new(':', Joint)),
+                T::Punct(Punct::new(':', Alone)),
+                T::Ident(Ident::new("prelude", c())),
+                T::Punct(Punct::new(':', Joint)),
+                T::Punct(Punct::new(':', Alone)),
                 T::Ident(Ident::new("wasm_bindgen", c())),
                 T::Group(Group::new(Parenthesis, 
                   TokenStream::from_iter([
@@ -3821,6 +3837,14 @@ pub fn ctor() -> TokenStream {
                 T::Punct(Punct::new('#', Alone)),
                 T::Group(Group::new(Bracket, 
                   TokenStream::from_iter([
+                    T::Punct(Punct::new(':', Joint)),
+                    T::Punct(Punct::new(':', Alone)),
+                    T::Ident(Ident::new("wasm_bindgen", c())),
+                    T::Punct(Punct::new(':', Joint)),
+                    T::Punct(Punct::new(':', Alone)),
+                    T::Ident(Ident::new("prelude", c())),
+                    T::Punct(Punct::new(':', Joint)),
+                    T::Punct(Punct::new(':', Alone)),
                     T::Ident(Ident::new("wasm_bindgen", c())),
                     T::Group(Group::new(Parenthesis, 
                       TokenStream::from_iter([

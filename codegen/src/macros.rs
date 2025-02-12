@@ -57,7 +57,7 @@ declare_macros!(
             #[cfg(target_family="wasm")]
             $(#[$fnmeta])*
             #[allow(unused)]
-            #[wasm_bindgen(start)]
+            #[::wasm_bindgen::prelude::wasm_bindgen(start)]
             $($vis)* fn $ident() {
                 $block
             }
@@ -102,7 +102,7 @@ declare_macros!(
             #[cfg(target_family="wasm")]
             $(#[$fnmeta])*
             #[allow(unused)]
-            #[wasm_bindgen(start)]
+            #[::wasm_bindgen::prelude::wasm_bindgen(start)]
             $($vis)* unsafe fn $ident() {
                 $block
             }
@@ -174,7 +174,7 @@ declare_macros!(
 
                 unsafe impl <T> std::marker::Sync for Static<T> {}
 
-                #[wasm_bindgen(start)]
+                #[::wasm_bindgen::prelude::wasm_bindgen(start)]
                 fn init() {
                     super::$ident.init_once();
                 }
