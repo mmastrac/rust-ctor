@@ -290,6 +290,16 @@ declare_macros!(
     /// Annotate a block with its appropriate link section.
     macro_rules! ctor_link_section {
         (macro_path=$($macro_path:ident)::+, features=$features:tt, $($block:tt)+) => {
+            $($macro_path)::+::if_has_feature!(macro_path=$($macro_path)::+, used_linker, $features, {
+                $($macro_path)::+::ctor_link_section_attr!(used(linker), $($block)+);
+            }, {
+                $($macro_path)::+::ctor_link_section_attr!(used, $($block)+);
+            });
+        }
+    }
+
+    macro_rules! ctor_link_section_attr {
+        ($used:meta, $item:item) => {
             #[cfg(not(any(
                 target_os = "linux",
                 target_os = "android",
@@ -300,34 +310,27 @@ declare_macros!(
                 target_os = "illumos",
                 target_os = "haiku",
                 target_vendor = "apple",
-                windows)))]
-            compile_error!("#[ctor] is not supported on the current target");
+                windows
+            )))]
+            compile_error!("#[ctor]/#[dtor] is not supported on the current target");
 
-            $($macro_path)::+::if_has_feature!(macro_path=$($macro_path)::+, used_linker, $features, {
-                #[used(linker)]
-                #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
-                #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
-                #[cfg_attr(target_os = "netbsd", link_section = ".init_array")]
-                #[cfg_attr(target_os = "openbsd", link_section = ".init_array")]
-                #[cfg_attr(target_os = "dragonfly", link_section = ".init_array")]
-                #[cfg_attr(target_os = "illumos", link_section = ".init_array")]
-                #[cfg_attr(target_os = "haiku", link_section = ".init_array")]
-                #[cfg_attr(target_vendor = "apple", link_section = "__DATA,__mod_init_func")]
-                #[cfg_attr(windows, link_section = ".CRT$XCU")]
-                $($block)+
-            }, {
-                #[used]
-                #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
-                #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
-                #[cfg_attr(target_os = "netbsd", link_section = ".init_array")]
-                #[cfg_attr(target_os = "openbsd", link_section = ".init_array")]
-                #[cfg_attr(target_os = "dragonfly", link_section = ".init_array")]
-                #[cfg_attr(target_os = "illumos", link_section = ".init_array")]
-                #[cfg_attr(target_os = "haiku", link_section = ".init_array")]
-                #[cfg_attr(target_vendor = "apple", link_section = "__DATA,__mod_init_func")]
-                #[cfg_attr(windows, link_section = ".CRT$XCU")]
-                $($block)+
-            });
-        }
+            #[cfg_attr(
+                any(
+                    target_os = "linux",
+                    target_os = "android",
+                    target_os = "freebsd",
+                    target_os = "netbsd",
+                    target_os = "openbsd",
+                    target_os = "dragonfly",
+                    target_os = "illumos",
+                    target_os = "haiku"
+                ),
+                link_section = ".init_array"
+            )]
+            #[cfg_attr(target_vendor = "apple", link_section = "__DATA,__mod_init_func")]
+            #[cfg_attr(windows, link_section = ".CRT$XCU")]
+            #[$used]
+            $item
+        };
     }
 );
