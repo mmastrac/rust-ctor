@@ -12,8 +12,12 @@ readme = "../README.md"
 travis-ci = { repository = "mmastrac/rust-ctor", branch = "master" }
 
 [features]
+default = []
+
 # For nightly users, used(linker) may be a better choice
 used_linker = []
+# This will eventually become the default
+__warn_on_missing_unsafe = []
 
 [dev-dependencies]
 libc-print = "0.1.20"
