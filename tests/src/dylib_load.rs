@@ -34,11 +34,6 @@ fn lib_extension() -> &'static str {
     "so"
 }
 
-#[cfg(windows)]
-fn lib_extension() -> &'static str {
-    "dll"
-}
-
 #[cfg(not(windows))]
 fn prefix() -> &'static str {
     "lib"
