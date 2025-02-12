@@ -1,2 +1,3 @@
 [workspace]
 members = [ "ctor", "codegen", "dtor", "tests", "tests-wasm" ]
+resolver = "2"

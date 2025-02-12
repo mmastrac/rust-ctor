@@ -243,7 +243,7 @@ fn generate(name: &str, ctor_type: &str, item: TokenStream) -> TokenStream {
             ]),
         )),
     ]);
-    macro_inner.extend(item.into_iter());
+    macro_inner.extend(item);
 
     TokenStream::from_iter([
         T::Ident(Ident::new(&macros_name, Span::call_site())),
