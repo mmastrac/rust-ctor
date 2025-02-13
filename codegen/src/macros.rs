@@ -65,6 +65,7 @@ declare_macros!(
             #[cfg(not(target_family="wasm"))]
             $(#[$fnmeta])*
             #[allow(unused)]
+            #[allow(unsafe_code)]
             $($vis)* fn $ident() {
                 mod __ctor_internal {
                     super::$($macro_path)::+::if_has_feature!(macro_path=super::$($macro_path)::+, __warn_on_missing_unsafe, $features, {
@@ -110,6 +111,7 @@ declare_macros!(
             #[cfg(not(target_family="wasm"))]
             $(#[$fnmeta])*
             #[allow(unused)]
+            #[allow(unsafe_code)]
             $($vis)* unsafe fn $ident() {
                 #[doc(hidden)]
                 mod __ctor_internal {
@@ -143,6 +145,7 @@ declare_macros!(
             impl ::core::ops::Deref for $ident::Static<$ty> {
                 type Target = $ty;
                 fn deref(&self) -> &'static $ty {
+                    #[allow(unsafe_code)]
                     unsafe {
                         let ptr = self._storage.get();
                         let val = (&*ptr).as_ref().unwrap();
@@ -155,6 +158,7 @@ declare_macros!(
                 fn init_once(&self) {
                     let val = Some($expr);
                     // Only write the value to `storage_ident` on startup
+                    #[allow(unsafe_code)]
                     unsafe {
                         let ptr = self._storage.get();
                         ::std::ptr::write(ptr, val);
@@ -165,6 +169,7 @@ declare_macros!(
             #[cfg(target_family="wasm")]
             #[doc(hidden)]
             #[allow(non_upper_case_globals, non_snake_case)]
+            #[allow(unsafe_code)]
             mod $ident {
                 #[derive(Default)]
                 #[allow(non_camel_case_types)]
@@ -183,6 +188,7 @@ declare_macros!(
             #[cfg(not(target_family="wasm"))]
             #[doc(hidden)]
             #[allow(non_upper_case_globals, non_snake_case)]
+            #[allow(unsafe_code)]
             mod $ident {
                 #[derive(Default)]
                 #[allow(non_camel_case_types)]
@@ -190,6 +196,7 @@ declare_macros!(
                     pub _storage: ::std::cell::UnsafeCell<::std::option::Option<T>>
                 }
 
+                #[allow(unsafe_code)]
                 unsafe impl <T> std::marker::Sync for Static<T> {}
 
                 super::$($macro_path)::+::ctor_link_section!(
@@ -214,6 +221,7 @@ declare_macros!(
     macro_rules! dtor_entry {
         (meta=[$($meta:meta)?], macro_path=$($macro_path:ident)::+, features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], item=fn $ident:ident() $block:block) => {
             $(#[$fnmeta])*
+            #[allow(unsafe_code)]
             $($vis)* fn $ident() {
                 mod __dtor_internal {
                     super::$($macro_path)::+::if_has_feature!(macro_path=super::$($macro_path)::+, __warn_on_missing_unsafe, $features, {
@@ -274,6 +282,7 @@ declare_macros!(
         };
         (meta=[$($meta:meta)?], macro_path=$($macro_path:ident)::+, features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)?], item=unsafe fn $ident:ident() $block:block) => {
             $(#[$fnmeta])*
+            #[allow(unsafe_code)]
             $($vis)* unsafe fn $ident() {
                 mod __dtor_internal {
                     super::$($macro_path)::+::ctor_link_section!(
