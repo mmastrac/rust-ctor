@@ -4906,8 +4906,6 @@ pub(crate) fn ctor() -> TokenStream {
                 T::Ident(Ident::new("allow", c())),
                 T::Group(Group::new(Parenthesis, 
                   TokenStream::from_iter([
-                    T::Ident(Ident::new("unsafe_code", c())),
-                    T::Punct(Punct::new(',', Alone)),
                     T::Ident(Ident::new("unused", c())),
                   ])
                 )),
@@ -4921,6 +4919,14 @@ pub(crate) fn ctor() -> TokenStream {
               ])
             )),
             T::Punct(Punct::new('*', Alone)),
+            T::Punct(Punct::new('$', Alone)),
+            T::Group(Group::new(Parenthesis, 
+              TokenStream::from_iter([
+                T::Punct(Punct::new('$', Alone)),
+                T::Ident(Ident::new("unsafe", c())),
+              ])
+            )),
+            T::Punct(Punct::new('?', Alone)),
             T::Ident(Ident::new("fn", c())),
             T::Punct(Punct::new('$', Alone)),
             T::Ident(Ident::new("ident", c())),
@@ -4929,6 +4935,17 @@ pub(crate) fn ctor() -> TokenStream {
             )),
             T::Group(Group::new(Brace, 
               TokenStream::from_iter([
+                T::Punct(Punct::new('#', Alone)),
+                T::Group(Group::new(Bracket, 
+                  TokenStream::from_iter([
+                    T::Ident(Ident::new("allow", c())),
+                    T::Group(Group::new(Parenthesis, 
+                      TokenStream::from_iter([
+                        T::Ident(Ident::new("unsafe_code", c())),
+                      ])
+                    )),
+                  ])
+                )),
                 T::Ident(Ident::new("mod", c())),
                 T::Ident(Ident::new("__dtor_internal", c())),
                 T::Group(Group::new(Brace, 
@@ -5313,13 +5330,18 @@ pub(crate) fn ctor() -> TokenStream {
                         )),
                         T::Group(Group::new(Brace, 
                           TokenStream::from_iter([
-                            T::Ident(Ident::new("super", c())),
-                            T::Punct(Punct::new(':', Joint)),
-                            T::Punct(Punct::new(':', Alone)),
-                            T::Punct(Punct::new('$', Alone)),
-                            T::Ident(Ident::new("ident", c())),
-                            T::Group(Group::new(Parenthesis, 
-                              TokenStream::new()
+                            T::Ident(Ident::new("unsafe", c())),
+                            T::Group(Group::new(Brace, 
+                              TokenStream::from_iter([
+                                T::Ident(Ident::new("super", c())),
+                                T::Punct(Punct::new(':', Joint)),
+                                T::Punct(Punct::new(':', Alone)),
+                                T::Punct(Punct::new('$', Alone)),
+                                T::Ident(Ident::new("ident", c())),
+                                T::Group(Group::new(Parenthesis, 
+                                  TokenStream::new()
+                                )),
+                              ])
                             )),
                           ])
                         )),

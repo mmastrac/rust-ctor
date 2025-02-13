@@ -202,8 +202,9 @@ declare_macros!(
         };
         (meta=[$($meta:meta)?], macro_path=$($macro_path:ident)::+, features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=fn $ident:ident() $block:block) => {
             $(#[$fnmeta])*
-            #[allow(unsafe_code, unused)]
-            $($vis)* fn $ident() {
+            #[allow(unused)]
+            $($vis)* $($unsafe)? fn $ident() {
+                #[allow(unsafe_code)]
                 mod __dtor_internal {
                     super::$($macro_path)::+::if_unsafe!($($unsafe)?, {}, {
                         super::$($macro_path)::+::if_has_feature!(macro_path=super::$($macro_path)::+, __warn_on_missing_unsafe, $features, {
@@ -246,7 +247,7 @@ declare_macros!(
 
                         unsafe extern "C" fn __dtor(
                             #[cfg(target_vendor = "apple")] _: *const u8
-                        ) { super::$ident() }
+                        ) { unsafe { super::$ident() } }
                     );
 
                     #[cfg(not(target_vendor = "apple"))]
