@@ -19,7 +19,7 @@ jobs:
         os: [ubuntu-latest, macOS-latest, windows-latest]
     env:
       CLIPPY_LINTS: >-
-        -Dclippy::all
+        -D clippy::all
         -D deprecated-safe
         -D future-incompatible
         -D keyword-idents

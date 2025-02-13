@@ -9,7 +9,9 @@ use libc_print::*;
 #[cfg(not(test))]
 #[allow(unsafe_code)]
 unsafe fn ctor() {
-    unsafe { sleep(1); }
+    unsafe {
+        sleep(1);
+    }
     libc_ewriteln!("+ ctor bin");
 }
 
@@ -17,7 +19,9 @@ unsafe fn ctor() {
 #[cfg(not(test))]
 #[allow(unsafe_code)]
 unsafe fn dtor() {
-    unsafe { sleep(1); }
+    unsafe {
+        sleep(1);
+    }
     libc_ewriteln!("- dtor bin");
 }
 
@@ -60,7 +64,9 @@ unsafe fn sleep(seconds: u32) {
 #[cfg(not(windows))]
 #[allow(unsafe_code)]
 unsafe fn sleep(seconds: u32) {
-    unsafe { libc::sleep(seconds); }
+    unsafe {
+        libc::sleep(seconds);
+    }
 }
 
 pub fn main() {

@@ -3456,6 +3456,8 @@ pub(crate) fn ctor() -> TokenStream {
                     T::Punct(Punct::new('!', Alone)),
                     T::Group(Group::new(Parenthesis, 
                       TokenStream::from_iter([
+                        T::Ident(Ident::new("array", c())),
+                        T::Punct(Punct::new(',', Alone)),
                         T::Ident(Ident::new("macro_path", c())),
                         T::Punct(Punct::new('=', Alone)),
                         T::Ident(Ident::new("super", c())),
@@ -3518,69 +3520,88 @@ pub(crate) fn ctor() -> TokenStream {
                         T::Punct(Punct::new('=', Alone)),
                         T::Group(Group::new(Brace, 
                           TokenStream::from_iter([
-                            T::Punct(Punct::new('#', Alone)),
-                            T::Group(Group::new(Bracket, 
-                              TokenStream::from_iter([
-                                T::Ident(Ident::new("allow", c())),
-                                T::Group(Group::new(Parenthesis, 
-                                  TokenStream::from_iter([
-                                    T::Ident(Ident::new("non_snake_case", c())),
-                                  ])
-                                )),
-                              ])
-                            )),
-                            T::Punct(Punct::new('#', Alone)),
-                            T::Group(Group::new(Bracket, 
-                              TokenStream::from_iter([
-                                T::Ident(Ident::new("cfg_attr", c())),
-                                T::Group(Group::new(Parenthesis, 
-                                  TokenStream::from_iter([
-                                    T::Ident(Ident::new("any", c())),
-                                    T::Group(Group::new(Parenthesis, 
-                                      TokenStream::from_iter([
-                                        T::Ident(Ident::new("target_os", c())),
-                                        T::Punct(Punct::new('=', Alone)),
-                                        T::Literal(Literal::string("linux")),
-                                        T::Punct(Punct::new(',', Alone)),
-                                        T::Ident(Ident::new("target_os", c())),
-                                        T::Punct(Punct::new('=', Alone)),
-                                        T::Literal(Literal::string("android")),
-                                      ])
-                                    )),
-                                    T::Punct(Punct::new(',', Alone)),
-                                    T::Ident(Ident::new("link_section", c())),
-                                    T::Punct(Punct::new('=', Alone)),
-                                    T::Literal(Literal::string(".text.startup")),
-                                  ])
-                                )),
-                              ])
-                            )),
-                            T::Ident(Ident::new("unsafe", c())),
-                            T::Ident(Ident::new("extern", c())),
-                            T::Literal(Literal::string("C")),
-                            T::Ident(Ident::new("fn", c())),
+                            T::Ident(Ident::new("super", c())),
+                            T::Punct(Punct::new(':', Joint)),
+                            T::Punct(Punct::new(':', Alone)),
                             T::Punct(Punct::new('$', Alone)),
-                            T::Ident(Ident::new("ident", c())),
                             T::Group(Group::new(Parenthesis, 
-                              TokenStream::new()
-                            )),
-                            T::Punct(Punct::new('-', Joint)),
-                            T::Punct(Punct::new('>', Alone)),
-                            T::Ident(Ident::new("usize", c())),
-                            T::Group(Group::new(Brace, 
                               TokenStream::from_iter([
+                                T::Punct(Punct::new('$', Alone)),
+                                T::Ident(Ident::new("macro_path", c())),
+                              ])
+                            )),
+                            T::Punct(Punct::new(':', Joint)),
+                            T::Punct(Punct::new(':', Alone)),
+                            T::Punct(Punct::new('+', Alone)),
+                            T::Punct(Punct::new(':', Joint)),
+                            T::Punct(Punct::new(':', Alone)),
+                            T::Ident(Ident::new("ctor_link_section", c())),
+                            T::Punct(Punct::new('!', Alone)),
+                            T::Group(Group::new(Parenthesis, 
+                              TokenStream::from_iter([
+                                T::Ident(Ident::new("startup", c())),
+                                T::Punct(Punct::new(',', Alone)),
+                                T::Ident(Ident::new("macro_path", c())),
+                                T::Punct(Punct::new('=', Alone)),
                                 T::Ident(Ident::new("super", c())),
                                 T::Punct(Punct::new(':', Joint)),
                                 T::Punct(Punct::new(':', Alone)),
+                                T::Punct(Punct::new('$', Alone)),
+                                T::Group(Group::new(Parenthesis, 
+                                  TokenStream::from_iter([
+                                    T::Punct(Punct::new('$', Alone)),
+                                    T::Ident(Ident::new("macro_path", c())),
+                                  ])
+                                )),
+                                T::Punct(Punct::new(':', Joint)),
+                                T::Punct(Punct::new(':', Alone)),
+                                T::Punct(Punct::new('+', Alone)),
+                                T::Punct(Punct::new(',', Alone)),
+                                T::Ident(Ident::new("features", c())),
+                                T::Punct(Punct::new('=', Alone)),
+                                T::Punct(Punct::new('$', Alone)),
+                                T::Ident(Ident::new("features", c())),
+                                T::Punct(Punct::new(',', Alone)),
+                                T::Punct(Punct::new('#', Alone)),
+                                T::Group(Group::new(Bracket, 
+                                  TokenStream::from_iter([
+                                    T::Ident(Ident::new("allow", c())),
+                                    T::Group(Group::new(Parenthesis, 
+                                      TokenStream::from_iter([
+                                        T::Ident(Ident::new("non_snake_case", c())),
+                                      ])
+                                    )),
+                                  ])
+                                )),
+                                T::Ident(Ident::new("unsafe", c())),
+                                T::Ident(Ident::new("extern", c())),
+                                T::Literal(Literal::string("C")),
+                                T::Ident(Ident::new("fn", c())),
                                 T::Punct(Punct::new('$', Alone)),
                                 T::Ident(Ident::new("ident", c())),
                                 T::Group(Group::new(Parenthesis, 
                                   TokenStream::new()
                                 )),
-                                T::Punct(Punct::new(';', Alone)),
-                                T::Literal(Literal::usize_unsuffixed(0)),
+                                T::Punct(Punct::new('-', Joint)),
+                                T::Punct(Punct::new('>', Alone)),
+                                T::Ident(Ident::new("usize", c())),
+                                T::Group(Group::new(Brace, 
+                                  TokenStream::from_iter([
+                                    T::Ident(Ident::new("super", c())),
+                                    T::Punct(Punct::new(':', Joint)),
+                                    T::Punct(Punct::new(':', Alone)),
+                                    T::Punct(Punct::new('$', Alone)),
+                                    T::Ident(Ident::new("ident", c())),
+                                    T::Group(Group::new(Parenthesis, 
+                                      TokenStream::new()
+                                    )),
+                                    T::Punct(Punct::new(';', Alone)),
+                                    T::Literal(Literal::usize_unsuffixed(0)),
+                                  ])
+                                )),
                               ])
                             )),
+                            T::Punct(Punct::new(';', Alone)),
                             T::Punct(Punct::new('$', Alone)),
                             T::Ident(Ident::new("ident", c())),
                           ])
@@ -4169,6 +4190,8 @@ pub(crate) fn ctor() -> TokenStream {
                 T::Punct(Punct::new('!', Alone)),
                 T::Group(Group::new(Parenthesis, 
                   TokenStream::from_iter([
+                    T::Ident(Ident::new("array", c())),
+                    T::Punct(Punct::new(',', Alone)),
                     T::Ident(Ident::new("macro_path", c())),
                     T::Punct(Punct::new('=', Alone)),
                     T::Ident(Ident::new("super", c())),
@@ -4231,71 +4254,90 @@ pub(crate) fn ctor() -> TokenStream {
                     T::Punct(Punct::new('=', Alone)),
                     T::Group(Group::new(Brace, 
                       TokenStream::from_iter([
-                        T::Punct(Punct::new('#', Alone)),
-                        T::Group(Group::new(Bracket, 
-                          TokenStream::from_iter([
-                            T::Ident(Ident::new("allow", c())),
-                            T::Group(Group::new(Parenthesis, 
-                              TokenStream::from_iter([
-                                T::Ident(Ident::new("non_snake_case", c())),
-                              ])
-                            )),
-                          ])
-                        )),
-                        T::Punct(Punct::new('#', Alone)),
-                        T::Group(Group::new(Bracket, 
-                          TokenStream::from_iter([
-                            T::Ident(Ident::new("cfg_attr", c())),
-                            T::Group(Group::new(Parenthesis, 
-                              TokenStream::from_iter([
-                                T::Ident(Ident::new("any", c())),
-                                T::Group(Group::new(Parenthesis, 
-                                  TokenStream::from_iter([
-                                    T::Ident(Ident::new("target_os", c())),
-                                    T::Punct(Punct::new('=', Alone)),
-                                    T::Literal(Literal::string("linux")),
-                                    T::Punct(Punct::new(',', Alone)),
-                                    T::Ident(Ident::new("target_os", c())),
-                                    T::Punct(Punct::new('=', Alone)),
-                                    T::Literal(Literal::string("android")),
-                                  ])
-                                )),
-                                T::Punct(Punct::new(',', Alone)),
-                                T::Ident(Ident::new("link_section", c())),
-                                T::Punct(Punct::new('=', Alone)),
-                                T::Literal(Literal::string(".text.startup")),
-                              ])
-                            )),
-                          ])
-                        )),
-                        T::Ident(Ident::new("unsafe", c())),
-                        T::Ident(Ident::new("extern", c())),
-                        T::Literal(Literal::string("C")),
-                        T::Ident(Ident::new("fn", c())),
+                        T::Ident(Ident::new("super", c())),
+                        T::Punct(Punct::new(':', Joint)),
+                        T::Punct(Punct::new(':', Alone)),
                         T::Punct(Punct::new('$', Alone)),
-                        T::Ident(Ident::new("ident", c())),
                         T::Group(Group::new(Parenthesis, 
-                          TokenStream::new()
-                        )),
-                        T::Punct(Punct::new('-', Joint)),
-                        T::Punct(Punct::new('>', Alone)),
-                        T::Ident(Ident::new("usize", c())),
-                        T::Group(Group::new(Brace, 
                           TokenStream::from_iter([
+                            T::Punct(Punct::new('$', Alone)),
+                            T::Ident(Ident::new("macro_path", c())),
+                          ])
+                        )),
+                        T::Punct(Punct::new(':', Joint)),
+                        T::Punct(Punct::new(':', Alone)),
+                        T::Punct(Punct::new('+', Alone)),
+                        T::Punct(Punct::new(':', Joint)),
+                        T::Punct(Punct::new(':', Alone)),
+                        T::Ident(Ident::new("ctor_link_section", c())),
+                        T::Punct(Punct::new('!', Alone)),
+                        T::Group(Group::new(Parenthesis, 
+                          TokenStream::from_iter([
+                            T::Ident(Ident::new("startup", c())),
+                            T::Punct(Punct::new(',', Alone)),
+                            T::Ident(Ident::new("macro_path", c())),
+                            T::Punct(Punct::new('=', Alone)),
                             T::Ident(Ident::new("super", c())),
                             T::Punct(Punct::new(':', Joint)),
                             T::Punct(Punct::new(':', Alone)),
                             T::Punct(Punct::new('$', Alone)),
+                            T::Group(Group::new(Parenthesis, 
+                              TokenStream::from_iter([
+                                T::Punct(Punct::new('$', Alone)),
+                                T::Ident(Ident::new("macro_path", c())),
+                              ])
+                            )),
+                            T::Punct(Punct::new(':', Joint)),
+                            T::Punct(Punct::new(':', Alone)),
+                            T::Punct(Punct::new('+', Alone)),
+                            T::Punct(Punct::new(',', Alone)),
+                            T::Ident(Ident::new("features", c())),
+                            T::Punct(Punct::new('=', Alone)),
+                            T::Punct(Punct::new('$', Alone)),
+                            T::Ident(Ident::new("features", c())),
+                            T::Punct(Punct::new(',', Alone)),
+                            T::Punct(Punct::new('#', Alone)),
+                            T::Group(Group::new(Bracket, 
+                              TokenStream::from_iter([
+                                T::Ident(Ident::new("allow", c())),
+                                T::Group(Group::new(Parenthesis, 
+                                  TokenStream::from_iter([
+                                    T::Ident(Ident::new("non_snake_case", c())),
+                                  ])
+                                )),
+                              ])
+                            )),
+                            T::Ident(Ident::new("unsafe", c())),
+                            T::Ident(Ident::new("extern", c())),
+                            T::Literal(Literal::string("C")),
+                            T::Ident(Ident::new("fn", c())),
+                            T::Punct(Punct::new('$', Alone)),
                             T::Ident(Ident::new("ident", c())),
-                            T::Punct(Punct::new('.', Alone)),
-                            T::Ident(Ident::new("init_once", c())),
                             T::Group(Group::new(Parenthesis, 
                               TokenStream::new()
                             )),
-                            T::Punct(Punct::new(';', Alone)),
-                            T::Literal(Literal::usize_unsuffixed(0)),
+                            T::Punct(Punct::new('-', Joint)),
+                            T::Punct(Punct::new('>', Alone)),
+                            T::Ident(Ident::new("usize", c())),
+                            T::Group(Group::new(Brace, 
+                              TokenStream::from_iter([
+                                T::Ident(Ident::new("super", c())),
+                                T::Punct(Punct::new(':', Joint)),
+                                T::Punct(Punct::new(':', Alone)),
+                                T::Punct(Punct::new('$', Alone)),
+                                T::Ident(Ident::new("ident", c())),
+                                T::Punct(Punct::new('.', Alone)),
+                                T::Ident(Ident::new("init_once", c())),
+                                T::Group(Group::new(Parenthesis, 
+                                  TokenStream::new()
+                                )),
+                                T::Punct(Punct::new(';', Alone)),
+                                T::Literal(Literal::usize_unsuffixed(0)),
+                              ])
+                            )),
                           ])
                         )),
+                        T::Punct(Punct::new(';', Alone)),
                         T::Punct(Punct::new('$', Alone)),
                         T::Ident(Ident::new("ident", c())),
                       ])
@@ -5041,6 +5083,8 @@ pub(crate) fn ctor() -> TokenStream {
                     T::Punct(Punct::new('!', Alone)),
                     T::Group(Group::new(Parenthesis, 
                       TokenStream::from_iter([
+                        T::Ident(Ident::new("array", c())),
+                        T::Punct(Punct::new(',', Alone)),
                         T::Ident(Ident::new("macro_path", c())),
                         T::Punct(Punct::new('=', Alone)),
                         T::Ident(Ident::new("super", c())),
@@ -5103,72 +5147,91 @@ pub(crate) fn ctor() -> TokenStream {
                         T::Punct(Punct::new('=', Alone)),
                         T::Group(Group::new(Brace, 
                           TokenStream::from_iter([
-                            T::Punct(Punct::new('#', Alone)),
-                            T::Group(Group::new(Bracket, 
+                            T::Ident(Ident::new("super", c())),
+                            T::Punct(Punct::new(':', Joint)),
+                            T::Punct(Punct::new(':', Alone)),
+                            T::Punct(Punct::new('$', Alone)),
+                            T::Group(Group::new(Parenthesis, 
                               TokenStream::from_iter([
-                                T::Ident(Ident::new("allow", c())),
-                                T::Group(Group::new(Parenthesis, 
-                                  TokenStream::from_iter([
-                                    T::Ident(Ident::new("non_snake_case", c())),
-                                  ])
-                                )),
+                                T::Punct(Punct::new('$', Alone)),
+                                T::Ident(Ident::new("macro_path", c())),
                               ])
                             )),
-                            T::Punct(Punct::new('#', Alone)),
-                            T::Group(Group::new(Bracket, 
+                            T::Punct(Punct::new(':', Joint)),
+                            T::Punct(Punct::new(':', Alone)),
+                            T::Punct(Punct::new('+', Alone)),
+                            T::Punct(Punct::new(':', Joint)),
+                            T::Punct(Punct::new(':', Alone)),
+                            T::Ident(Ident::new("ctor_link_section", c())),
+                            T::Punct(Punct::new('!', Alone)),
+                            T::Group(Group::new(Parenthesis, 
                               TokenStream::from_iter([
-                                T::Ident(Ident::new("cfg_attr", c())),
+                                T::Ident(Ident::new("startup", c())),
+                                T::Punct(Punct::new(',', Alone)),
+                                T::Ident(Ident::new("macro_path", c())),
+                                T::Punct(Punct::new('=', Alone)),
+                                T::Ident(Ident::new("super", c())),
+                                T::Punct(Punct::new(':', Joint)),
+                                T::Punct(Punct::new(':', Alone)),
+                                T::Punct(Punct::new('$', Alone)),
                                 T::Group(Group::new(Parenthesis, 
                                   TokenStream::from_iter([
-                                    T::Ident(Ident::new("any", c())),
+                                    T::Punct(Punct::new('$', Alone)),
+                                    T::Ident(Ident::new("macro_path", c())),
+                                  ])
+                                )),
+                                T::Punct(Punct::new(':', Joint)),
+                                T::Punct(Punct::new(':', Alone)),
+                                T::Punct(Punct::new('+', Alone)),
+                                T::Punct(Punct::new(',', Alone)),
+                                T::Ident(Ident::new("features", c())),
+                                T::Punct(Punct::new('=', Alone)),
+                                T::Punct(Punct::new('$', Alone)),
+                                T::Ident(Ident::new("features", c())),
+                                T::Punct(Punct::new(',', Alone)),
+                                T::Punct(Punct::new('#', Alone)),
+                                T::Group(Group::new(Bracket, 
+                                  TokenStream::from_iter([
+                                    T::Ident(Ident::new("allow", c())),
                                     T::Group(Group::new(Parenthesis, 
                                       TokenStream::from_iter([
-                                        T::Ident(Ident::new("target_os", c())),
-                                        T::Punct(Punct::new('=', Alone)),
-                                        T::Literal(Literal::string("linux")),
-                                        T::Punct(Punct::new(',', Alone)),
-                                        T::Ident(Ident::new("target_os", c())),
-                                        T::Punct(Punct::new('=', Alone)),
-                                        T::Literal(Literal::string("android")),
+                                        T::Ident(Ident::new("non_snake_case", c())),
                                       ])
                                     )),
-                                    T::Punct(Punct::new(',', Alone)),
-                                    T::Ident(Ident::new("link_section", c())),
-                                    T::Punct(Punct::new('=', Alone)),
-                                    T::Literal(Literal::string(".text.startup")),
                                   ])
                                 )),
-                              ])
-                            )),
-                            T::Ident(Ident::new("unsafe", c())),
-                            T::Ident(Ident::new("extern", c())),
-                            T::Literal(Literal::string("C")),
-                            T::Ident(Ident::new("fn", c())),
-                            T::Punct(Punct::new('$', Alone)),
-                            T::Ident(Ident::new("ident", c())),
-                            T::Group(Group::new(Parenthesis, 
-                              TokenStream::new()
-                            )),
-                            T::Punct(Punct::new('-', Joint)),
-                            T::Punct(Punct::new('>', Alone)),
-                            T::Ident(Ident::new("usize", c())),
-                            T::Group(Group::new(Brace, 
-                              TokenStream::from_iter([
                                 T::Ident(Ident::new("unsafe", c())),
+                                T::Ident(Ident::new("extern", c())),
+                                T::Literal(Literal::string("C")),
+                                T::Ident(Ident::new("fn", c())),
+                                T::Punct(Punct::new('$', Alone)),
+                                T::Ident(Ident::new("ident", c())),
+                                T::Group(Group::new(Parenthesis, 
+                                  TokenStream::new()
+                                )),
+                                T::Punct(Punct::new('-', Joint)),
+                                T::Punct(Punct::new('>', Alone)),
+                                T::Ident(Ident::new("usize", c())),
                                 T::Group(Group::new(Brace, 
                                   TokenStream::from_iter([
-                                    T::Ident(Ident::new("do_atexit", c())),
-                                    T::Group(Group::new(Parenthesis, 
+                                    T::Ident(Ident::new("unsafe", c())),
+                                    T::Group(Group::new(Brace, 
                                       TokenStream::from_iter([
-                                        T::Ident(Ident::new("__dtor", c())),
+                                        T::Ident(Ident::new("do_atexit", c())),
+                                        T::Group(Group::new(Parenthesis, 
+                                          TokenStream::from_iter([
+                                            T::Ident(Ident::new("__dtor", c())),
+                                          ])
+                                        )),
+                                        T::Punct(Punct::new(';', Alone)),
+                                        T::Literal(Literal::usize_unsuffixed(0)),
                                       ])
                                     )),
-                                    T::Punct(Punct::new(';', Alone)),
-                                    T::Literal(Literal::usize_unsuffixed(0)),
                                   ])
                                 )),
                               ])
                             )),
+                            T::Punct(Punct::new(';', Alone)),
                             T::Punct(Punct::new('$', Alone)),
                             T::Ident(Ident::new("ident", c())),
                           ])
@@ -5177,109 +5240,90 @@ pub(crate) fn ctor() -> TokenStream {
                       ])
                     )),
                     T::Punct(Punct::new(';', Alone)),
-                    T::Punct(Punct::new('#', Alone)),
-                    T::Group(Group::new(Bracket, 
+                    T::Ident(Ident::new("super", c())),
+                    T::Punct(Punct::new(':', Joint)),
+                    T::Punct(Punct::new(':', Alone)),
+                    T::Punct(Punct::new('$', Alone)),
+                    T::Group(Group::new(Parenthesis, 
                       TokenStream::from_iter([
-                        T::Ident(Ident::new("cfg", c())),
+                        T::Punct(Punct::new('$', Alone)),
+                        T::Ident(Ident::new("macro_path", c())),
+                      ])
+                    )),
+                    T::Punct(Punct::new(':', Joint)),
+                    T::Punct(Punct::new(':', Alone)),
+                    T::Punct(Punct::new('+', Alone)),
+                    T::Punct(Punct::new(':', Joint)),
+                    T::Punct(Punct::new(':', Alone)),
+                    T::Ident(Ident::new("ctor_link_section", c())),
+                    T::Punct(Punct::new('!', Alone)),
+                    T::Group(Group::new(Parenthesis, 
+                      TokenStream::from_iter([
+                        T::Ident(Ident::new("exit", c())),
+                        T::Punct(Punct::new(',', Alone)),
+                        T::Ident(Ident::new("macro_path", c())),
+                        T::Punct(Punct::new('=', Alone)),
+                        T::Ident(Ident::new("super", c())),
+                        T::Punct(Punct::new(':', Joint)),
+                        T::Punct(Punct::new(':', Alone)),
+                        T::Punct(Punct::new('$', Alone)),
                         T::Group(Group::new(Parenthesis, 
                           TokenStream::from_iter([
-                            T::Ident(Ident::new("not", c())),
-                            T::Group(Group::new(Parenthesis, 
+                            T::Punct(Punct::new('$', Alone)),
+                            T::Ident(Ident::new("macro_path", c())),
+                          ])
+                        )),
+                        T::Punct(Punct::new(':', Joint)),
+                        T::Punct(Punct::new(':', Alone)),
+                        T::Punct(Punct::new('+', Alone)),
+                        T::Punct(Punct::new(',', Alone)),
+                        T::Ident(Ident::new("features", c())),
+                        T::Punct(Punct::new('=', Alone)),
+                        T::Punct(Punct::new('$', Alone)),
+                        T::Ident(Ident::new("features", c())),
+                        T::Punct(Punct::new(',', Alone)),
+                        T::Ident(Ident::new("unsafe", c())),
+                        T::Ident(Ident::new("extern", c())),
+                        T::Literal(Literal::string("C")),
+                        T::Ident(Ident::new("fn", c())),
+                        T::Ident(Ident::new("__dtor", c())),
+                        T::Group(Group::new(Parenthesis, 
+                          TokenStream::from_iter([
+                            T::Punct(Punct::new('#', Alone)),
+                            T::Group(Group::new(Bracket, 
                               TokenStream::from_iter([
-                                T::Ident(Ident::new("target_vendor", c())),
-                                T::Punct(Punct::new('=', Alone)),
-                                T::Literal(Literal::string("apple")),
+                                T::Ident(Ident::new("cfg", c())),
+                                T::Group(Group::new(Parenthesis, 
+                                  TokenStream::from_iter([
+                                    T::Ident(Ident::new("target_vendor", c())),
+                                    T::Punct(Punct::new('=', Alone)),
+                                    T::Literal(Literal::string("apple")),
+                                  ])
+                                )),
                               ])
+                            )),
+                            T::Ident(Ident::new("_", c())),
+                            T::Punct(Punct::new(':', Alone)),
+                            T::Punct(Punct::new('*', Alone)),
+                            T::Ident(Ident::new("const", c())),
+                            T::Ident(Ident::new("u8", c())),
+                          ])
+                        )),
+                        T::Group(Group::new(Brace, 
+                          TokenStream::from_iter([
+                            T::Ident(Ident::new("super", c())),
+                            T::Punct(Punct::new(':', Joint)),
+                            T::Punct(Punct::new(':', Alone)),
+                            T::Punct(Punct::new('$', Alone)),
+                            T::Ident(Ident::new("ident", c())),
+                            T::Group(Group::new(Parenthesis, 
+                              TokenStream::new()
                             )),
                           ])
                         )),
                       ])
                     )),
-                    T::Punct(Punct::new('#', Alone)),
-                    T::Group(Group::new(Bracket, 
-                      TokenStream::from_iter([
-                        T::Ident(Ident::new("cfg_attr", c())),
-                        T::Group(Group::new(Parenthesis, 
-                          TokenStream::from_iter([
-                            T::Ident(Ident::new("any", c())),
-                            T::Group(Group::new(Parenthesis, 
-                              TokenStream::from_iter([
-                                T::Ident(Ident::new("target_os", c())),
-                                T::Punct(Punct::new('=', Alone)),
-                                T::Literal(Literal::string("linux")),
-                                T::Punct(Punct::new(',', Alone)),
-                                T::Ident(Ident::new("target_os", c())),
-                                T::Punct(Punct::new('=', Alone)),
-                                T::Literal(Literal::string("android")),
-                              ])
-                            )),
-                            T::Punct(Punct::new(',', Alone)),
-                            T::Ident(Ident::new("link_section", c())),
-                            T::Punct(Punct::new('=', Alone)),
-                            T::Literal(Literal::string(".text.exit")),
-                          ])
-                        )),
-                      ])
-                    )),
-                    T::Ident(Ident::new("unsafe", c())),
-                    T::Ident(Ident::new("extern", c())),
-                    T::Literal(Literal::string("C")),
-                    T::Ident(Ident::new("fn", c())),
-                    T::Ident(Ident::new("__dtor", c())),
-                    T::Group(Group::new(Parenthesis, 
-                      TokenStream::new()
-                    )),
-                    T::Group(Group::new(Brace, 
-                      TokenStream::from_iter([
-                        T::Ident(Ident::new("super", c())),
-                        T::Punct(Punct::new(':', Joint)),
-                        T::Punct(Punct::new(':', Alone)),
-                        T::Punct(Punct::new('$', Alone)),
-                        T::Ident(Ident::new("ident", c())),
-                        T::Group(Group::new(Parenthesis, 
-                          TokenStream::new()
-                        )),
-                      ])
-                    )),
-                    T::Punct(Punct::new('#', Alone)),
-                    T::Group(Group::new(Bracket, 
-                      TokenStream::from_iter([
-                        T::Ident(Ident::new("cfg", c())),
-                        T::Group(Group::new(Parenthesis, 
-                          TokenStream::from_iter([
-                            T::Ident(Ident::new("target_vendor", c())),
-                            T::Punct(Punct::new('=', Alone)),
-                            T::Literal(Literal::string("apple")),
-                          ])
-                        )),
-                      ])
-                    )),
-                    T::Ident(Ident::new("unsafe", c())),
-                    T::Ident(Ident::new("extern", c())),
-                    T::Literal(Literal::string("C")),
-                    T::Ident(Ident::new("fn", c())),
-                    T::Ident(Ident::new("__dtor", c())),
-                    T::Group(Group::new(Parenthesis, 
-                      TokenStream::from_iter([
-                        T::Ident(Ident::new("_", c())),
-                        T::Punct(Punct::new(':', Alone)),
-                        T::Punct(Punct::new('*', Alone)),
-                        T::Ident(Ident::new("const", c())),
-                        T::Ident(Ident::new("u8", c())),
-                      ])
-                    )),
-                    T::Group(Group::new(Brace, 
-                      TokenStream::from_iter([
-                        T::Ident(Ident::new("super", c())),
-                        T::Punct(Punct::new(':', Joint)),
-                        T::Punct(Punct::new(':', Alone)),
-                        T::Punct(Punct::new('$', Alone)),
-                        T::Ident(Ident::new("ident", c())),
-                        T::Group(Group::new(Parenthesis, 
-                          TokenStream::new()
-                        )),
-                      ])
-                    )),
+                    T::Punct(Punct::new(';', Alone)),
                     T::Punct(Punct::new('#', Alone)),
                     T::Group(Group::new(Bracket, 
                       TokenStream::from_iter([
@@ -5332,6 +5376,7 @@ pub(crate) fn ctor() -> TokenStream {
                     )),
                     T::Group(Group::new(Brace, 
                       TokenStream::from_iter([
+                        T::Ident(Ident::new("unsafe", c())),
                         T::Ident(Ident::new("extern", c())),
                         T::Literal(Literal::string("C")),
                         T::Group(Group::new(Brace, 
@@ -5353,13 +5398,18 @@ pub(crate) fn ctor() -> TokenStream {
                             T::Punct(Punct::new(';', Alone)),
                           ])
                         )),
-                        T::Ident(Ident::new("atexit", c())),
-                        T::Group(Group::new(Parenthesis, 
+                        T::Ident(Ident::new("unsafe", c())),
+                        T::Group(Group::new(Brace, 
                           TokenStream::from_iter([
-                            T::Ident(Ident::new("cb", c())),
+                            T::Ident(Ident::new("atexit", c())),
+                            T::Group(Group::new(Parenthesis, 
+                              TokenStream::from_iter([
+                                T::Ident(Ident::new("cb", c())),
+                              ])
+                            )),
+                            T::Punct(Punct::new(';', Alone)),
                           ])
                         )),
-                        T::Punct(Punct::new(';', Alone)),
                       ])
                     )),
                     T::Punct(Punct::new('#', Alone)),
@@ -5533,6 +5583,11 @@ pub(crate) fn ctor() -> TokenStream {
       TokenStream::from_iter([
         T::Group(Group::new(Parenthesis, 
           TokenStream::from_iter([
+            T::Punct(Punct::new('$', Alone)),
+            T::Ident(Ident::new("section", c())),
+            T::Punct(Punct::new(':', Alone)),
+            T::Ident(Ident::new("ident", c())),
+            T::Punct(Punct::new(',', Alone)),
             T::Ident(Ident::new("macro_path", c())),
             T::Punct(Punct::new('=', Alone)),
             T::Punct(Punct::new('$', Alone)),
@@ -5623,6 +5678,9 @@ pub(crate) fn ctor() -> TokenStream {
                     T::Punct(Punct::new('!', Alone)),
                     T::Group(Group::new(Parenthesis, 
                       TokenStream::from_iter([
+                        T::Punct(Punct::new('$', Alone)),
+                        T::Ident(Ident::new("section", c())),
+                        T::Punct(Punct::new(',', Alone)),
                         T::Ident(Ident::new("const", c())),
                         T::Group(Group::new(Brace, 
                           TokenStream::from_iter([
@@ -5669,6 +5727,9 @@ pub(crate) fn ctor() -> TokenStream {
                     T::Punct(Punct::new('!', Alone)),
                     T::Group(Group::new(Parenthesis, 
                       TokenStream::from_iter([
+                        T::Punct(Punct::new('$', Alone)),
+                        T::Ident(Ident::new("section", c())),
+                        T::Punct(Punct::new(',', Alone)),
                         T::Ident(Ident::new("const", c())),
                         T::Group(Group::new(Brace, 
                           TokenStream::from_iter([
@@ -5794,6 +5855,8 @@ pub(crate) fn ctor() -> TokenStream {
       TokenStream::from_iter([
         T::Group(Group::new(Parenthesis, 
           TokenStream::from_iter([
+            T::Ident(Ident::new("array", c())),
+            T::Punct(Punct::new(',', Alone)),
             T::Punct(Punct::new('$', Alone)),
             T::Ident(Ident::new("e", c())),
             T::Punct(Punct::new(':', Alone)),
@@ -5936,6 +5999,8 @@ pub(crate) fn ctor() -> TokenStream {
         T::Punct(Punct::new(';', Alone)),
         T::Group(Group::new(Parenthesis, 
           TokenStream::from_iter([
+            T::Ident(Ident::new("array", c())),
+            T::Punct(Punct::new(',', Alone)),
             T::Ident(Ident::new("const", c())),
             T::Punct(Punct::new('$', Alone)),
             T::Ident(Ident::new("e", c())),
@@ -5957,26 +6022,6 @@ pub(crate) fn ctor() -> TokenStream {
         T::Punct(Punct::new('>', Alone)),
         T::Group(Group::new(Brace, 
           TokenStream::from_iter([
-            T::Punct(Punct::new('#', Alone)),
-            T::Group(Group::new(Bracket, 
-              TokenStream::from_iter([
-                T::Ident(Ident::new("cfg", c())),
-                T::Group(Group::new(Parenthesis, 
-                  TokenStream::from_iter([
-                    T::Ident(Ident::new("clippy", c())),
-                  ])
-                )),
-              ])
-            )),
-            T::Punct(Punct::new('#', Alone)),
-            T::Group(Group::new(Bracket, 
-              TokenStream::from_iter([
-                T::Punct(Punct::new('$', Alone)),
-                T::Ident(Ident::new("used", c())),
-              ])
-            )),
-            T::Punct(Punct::new('$', Alone)),
-            T::Ident(Ident::new("item", c())),
             T::Punct(Punct::new('#', Alone)),
             T::Group(Group::new(Bracket, 
               TokenStream::from_iter([
@@ -6091,6 +6136,315 @@ pub(crate) fn ctor() -> TokenStream {
               TokenStream::from_iter([
                 T::Punct(Punct::new('$', Alone)),
                 T::Ident(Ident::new("used", c())),
+              ])
+            )),
+            T::Punct(Punct::new('$', Alone)),
+            T::Ident(Ident::new("item", c())),
+            T::Punct(Punct::new('#', Alone)),
+            T::Group(Group::new(Bracket, 
+              TokenStream::from_iter([
+                T::Ident(Ident::new("cfg", c())),
+                T::Group(Group::new(Parenthesis, 
+                  TokenStream::from_iter([
+                    T::Ident(Ident::new("clippy", c())),
+                  ])
+                )),
+              ])
+            )),
+            T::Punct(Punct::new('#', Alone)),
+            T::Group(Group::new(Bracket, 
+              TokenStream::from_iter([
+                T::Ident(Ident::new("used", c())),
+              ])
+            )),
+            T::Punct(Punct::new('$', Alone)),
+            T::Ident(Ident::new("item", c())),
+          ])
+        )),
+        T::Punct(Punct::new(';', Alone)),
+        T::Group(Group::new(Parenthesis, 
+          TokenStream::from_iter([
+            T::Ident(Ident::new("startup", c())),
+            T::Punct(Punct::new(',', Alone)),
+            T::Punct(Punct::new('$', Alone)),
+            T::Ident(Ident::new("e", c())),
+            T::Punct(Punct::new(':', Alone)),
+            T::Ident(Ident::new("expr", c())),
+            T::Punct(Punct::new(',', Alone)),
+            T::Punct(Punct::new('$', Alone)),
+            T::Ident(Ident::new("used", c())),
+            T::Punct(Punct::new(':', Alone)),
+            T::Ident(Ident::new("meta", c())),
+            T::Punct(Punct::new(',', Alone)),
+            T::Punct(Punct::new('$', Alone)),
+            T::Ident(Ident::new("item", c())),
+            T::Punct(Punct::new(':', Alone)),
+            T::Ident(Ident::new("item", c())),
+          ])
+        )),
+        T::Punct(Punct::new('=', Joint)),
+        T::Punct(Punct::new('>', Alone)),
+        T::Group(Group::new(Brace, 
+          TokenStream::from_iter([
+            T::Punct(Punct::new('#', Alone)),
+            T::Group(Group::new(Bracket, 
+              TokenStream::from_iter([
+                T::Ident(Ident::new("cfg", c())),
+                T::Group(Group::new(Parenthesis, 
+                  TokenStream::from_iter([
+                    T::Ident(Ident::new("not", c())),
+                    T::Group(Group::new(Parenthesis, 
+                      TokenStream::from_iter([
+                        T::Ident(Ident::new("clippy", c())),
+                      ])
+                    )),
+                  ])
+                )),
+              ])
+            )),
+            T::Punct(Punct::new('#', Alone)),
+            T::Group(Group::new(Bracket, 
+              TokenStream::from_iter([
+                T::Ident(Ident::new("cfg_attr", c())),
+                T::Group(Group::new(Parenthesis, 
+                  TokenStream::from_iter([
+                    T::Ident(Ident::new("any", c())),
+                    T::Group(Group::new(Parenthesis, 
+                      TokenStream::from_iter([
+                        T::Ident(Ident::new("target_os", c())),
+                        T::Punct(Punct::new('=', Alone)),
+                        T::Literal(Literal::string("linux")),
+                        T::Punct(Punct::new(',', Alone)),
+                        T::Ident(Ident::new("target_os", c())),
+                        T::Punct(Punct::new('=', Alone)),
+                        T::Literal(Literal::string("android")),
+                      ])
+                    )),
+                    T::Punct(Punct::new(',', Alone)),
+                    T::Ident(Ident::new("link_section", c())),
+                    T::Punct(Punct::new('=', Alone)),
+                    T::Literal(Literal::string(".text.startup")),
+                  ])
+                )),
+              ])
+            )),
+            T::Punct(Punct::new('$', Alone)),
+            T::Ident(Ident::new("item", c())),
+            T::Punct(Punct::new('#', Alone)),
+            T::Group(Group::new(Bracket, 
+              TokenStream::from_iter([
+                T::Ident(Ident::new("cfg", c())),
+                T::Group(Group::new(Parenthesis, 
+                  TokenStream::from_iter([
+                    T::Ident(Ident::new("clippy", c())),
+                  ])
+                )),
+              ])
+            )),
+            T::Punct(Punct::new('$', Alone)),
+            T::Ident(Ident::new("item", c())),
+          ])
+        )),
+        T::Punct(Punct::new(';', Alone)),
+        T::Group(Group::new(Parenthesis, 
+          TokenStream::from_iter([
+            T::Ident(Ident::new("startup", c())),
+            T::Punct(Punct::new(',', Alone)),
+            T::Ident(Ident::new("const", c())),
+            T::Punct(Punct::new('$', Alone)),
+            T::Ident(Ident::new("e", c())),
+            T::Punct(Punct::new(':', Alone)),
+            T::Ident(Ident::new("expr", c())),
+            T::Punct(Punct::new(',', Alone)),
+            T::Punct(Punct::new('$', Alone)),
+            T::Ident(Ident::new("used", c())),
+            T::Punct(Punct::new(':', Alone)),
+            T::Ident(Ident::new("meta", c())),
+            T::Punct(Punct::new(',', Alone)),
+            T::Punct(Punct::new('$', Alone)),
+            T::Ident(Ident::new("item", c())),
+            T::Punct(Punct::new(':', Alone)),
+            T::Ident(Ident::new("item", c())),
+          ])
+        )),
+        T::Punct(Punct::new('=', Joint)),
+        T::Punct(Punct::new('>', Alone)),
+        T::Group(Group::new(Brace, 
+          TokenStream::from_iter([
+            T::Punct(Punct::new('#', Alone)),
+            T::Group(Group::new(Bracket, 
+              TokenStream::from_iter([
+                T::Ident(Ident::new("cfg_attr", c())),
+                T::Group(Group::new(Parenthesis, 
+                  TokenStream::from_iter([
+                    T::Ident(Ident::new("any", c())),
+                    T::Group(Group::new(Parenthesis, 
+                      TokenStream::from_iter([
+                        T::Ident(Ident::new("target_os", c())),
+                        T::Punct(Punct::new('=', Alone)),
+                        T::Literal(Literal::string("linux")),
+                        T::Punct(Punct::new(',', Alone)),
+                        T::Ident(Ident::new("target_os", c())),
+                        T::Punct(Punct::new('=', Alone)),
+                        T::Literal(Literal::string("android")),
+                      ])
+                    )),
+                    T::Punct(Punct::new(',', Alone)),
+                    T::Ident(Ident::new("unsafe", c())),
+                    T::Group(Group::new(Parenthesis, 
+                      TokenStream::from_iter([
+                        T::Ident(Ident::new("link_section", c())),
+                        T::Punct(Punct::new('=', Alone)),
+                        T::Literal(Literal::string(".text.startup")),
+                      ])
+                    )),
+                  ])
+                )),
+              ])
+            )),
+            T::Punct(Punct::new('$', Alone)),
+            T::Ident(Ident::new("item", c())),
+          ])
+        )),
+        T::Punct(Punct::new(';', Alone)),
+        T::Group(Group::new(Parenthesis, 
+          TokenStream::from_iter([
+            T::Ident(Ident::new("exit", c())),
+            T::Punct(Punct::new(',', Alone)),
+            T::Punct(Punct::new('$', Alone)),
+            T::Ident(Ident::new("e", c())),
+            T::Punct(Punct::new(':', Alone)),
+            T::Ident(Ident::new("expr", c())),
+            T::Punct(Punct::new(',', Alone)),
+            T::Punct(Punct::new('$', Alone)),
+            T::Ident(Ident::new("used", c())),
+            T::Punct(Punct::new(':', Alone)),
+            T::Ident(Ident::new("meta", c())),
+            T::Punct(Punct::new(',', Alone)),
+            T::Punct(Punct::new('$', Alone)),
+            T::Ident(Ident::new("item", c())),
+            T::Punct(Punct::new(':', Alone)),
+            T::Ident(Ident::new("item", c())),
+          ])
+        )),
+        T::Punct(Punct::new('=', Joint)),
+        T::Punct(Punct::new('>', Alone)),
+        T::Group(Group::new(Brace, 
+          TokenStream::from_iter([
+            T::Punct(Punct::new('#', Alone)),
+            T::Group(Group::new(Bracket, 
+              TokenStream::from_iter([
+                T::Ident(Ident::new("cfg", c())),
+                T::Group(Group::new(Parenthesis, 
+                  TokenStream::from_iter([
+                    T::Ident(Ident::new("not", c())),
+                    T::Group(Group::new(Parenthesis, 
+                      TokenStream::from_iter([
+                        T::Ident(Ident::new("clippy", c())),
+                      ])
+                    )),
+                  ])
+                )),
+              ])
+            )),
+            T::Punct(Punct::new('#', Alone)),
+            T::Group(Group::new(Bracket, 
+              TokenStream::from_iter([
+                T::Ident(Ident::new("cfg_attr", c())),
+                T::Group(Group::new(Parenthesis, 
+                  TokenStream::from_iter([
+                    T::Ident(Ident::new("any", c())),
+                    T::Group(Group::new(Parenthesis, 
+                      TokenStream::from_iter([
+                        T::Ident(Ident::new("target_os", c())),
+                        T::Punct(Punct::new('=', Alone)),
+                        T::Literal(Literal::string("linux")),
+                        T::Punct(Punct::new(',', Alone)),
+                        T::Ident(Ident::new("target_os", c())),
+                        T::Punct(Punct::new('=', Alone)),
+                        T::Literal(Literal::string("android")),
+                      ])
+                    )),
+                    T::Punct(Punct::new(',', Alone)),
+                    T::Ident(Ident::new("link_section", c())),
+                    T::Punct(Punct::new('=', Alone)),
+                    T::Literal(Literal::string(".text.exit")),
+                  ])
+                )),
+              ])
+            )),
+            T::Punct(Punct::new('$', Alone)),
+            T::Ident(Ident::new("item", c())),
+            T::Punct(Punct::new('#', Alone)),
+            T::Group(Group::new(Bracket, 
+              TokenStream::from_iter([
+                T::Ident(Ident::new("cfg", c())),
+                T::Group(Group::new(Parenthesis, 
+                  TokenStream::from_iter([
+                    T::Ident(Ident::new("clippy", c())),
+                  ])
+                )),
+              ])
+            )),
+            T::Punct(Punct::new('$', Alone)),
+            T::Ident(Ident::new("item", c())),
+          ])
+        )),
+        T::Punct(Punct::new(';', Alone)),
+        T::Group(Group::new(Parenthesis, 
+          TokenStream::from_iter([
+            T::Ident(Ident::new("exit", c())),
+            T::Punct(Punct::new(',', Alone)),
+            T::Ident(Ident::new("const", c())),
+            T::Punct(Punct::new('$', Alone)),
+            T::Ident(Ident::new("e", c())),
+            T::Punct(Punct::new(':', Alone)),
+            T::Ident(Ident::new("expr", c())),
+            T::Punct(Punct::new(',', Alone)),
+            T::Punct(Punct::new('$', Alone)),
+            T::Ident(Ident::new("used", c())),
+            T::Punct(Punct::new(':', Alone)),
+            T::Ident(Ident::new("meta", c())),
+            T::Punct(Punct::new(',', Alone)),
+            T::Punct(Punct::new('$', Alone)),
+            T::Ident(Ident::new("item", c())),
+            T::Punct(Punct::new(':', Alone)),
+            T::Ident(Ident::new("item", c())),
+          ])
+        )),
+        T::Punct(Punct::new('=', Joint)),
+        T::Punct(Punct::new('>', Alone)),
+        T::Group(Group::new(Brace, 
+          TokenStream::from_iter([
+            T::Punct(Punct::new('#', Alone)),
+            T::Group(Group::new(Bracket, 
+              TokenStream::from_iter([
+                T::Ident(Ident::new("cfg_attr", c())),
+                T::Group(Group::new(Parenthesis, 
+                  TokenStream::from_iter([
+                    T::Ident(Ident::new("any", c())),
+                    T::Group(Group::new(Parenthesis, 
+                      TokenStream::from_iter([
+                        T::Ident(Ident::new("target_os", c())),
+                        T::Punct(Punct::new('=', Alone)),
+                        T::Literal(Literal::string("linux")),
+                        T::Punct(Punct::new(',', Alone)),
+                        T::Ident(Ident::new("target_os", c())),
+                        T::Punct(Punct::new('=', Alone)),
+                        T::Literal(Literal::string("android")),
+                      ])
+                    )),
+                    T::Punct(Punct::new(',', Alone)),
+                    T::Ident(Ident::new("unsafe", c())),
+                    T::Group(Group::new(Parenthesis, 
+                      TokenStream::from_iter([
+                        T::Ident(Ident::new("link_section", c())),
+                        T::Punct(Punct::new('=', Alone)),
+                        T::Literal(Literal::string(".text.exit")),
+                      ])
+                    )),
+                  ])
+                )),
               ])
             )),
             T::Punct(Punct::new('$', Alone)),

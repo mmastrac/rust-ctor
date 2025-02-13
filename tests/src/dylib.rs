@@ -13,13 +13,17 @@ unsafe extern "C" {
 #[cfg(windows)]
 #[allow(unsafe_code)]
 unsafe fn sleep(seconds: u32) {
-    unsafe { Sleep(seconds * 1000); }
+    unsafe {
+        Sleep(seconds * 1000);
+    }
 }
 
 #[cfg(not(windows))]
 #[allow(unsafe_code)]
 unsafe fn sleep(seconds: u32) {
-    unsafe { libc::sleep(seconds); }
+    unsafe {
+        libc::sleep(seconds);
+    }
 }
 
 #[ctor]
@@ -33,7 +37,9 @@ pub static STATIC_INT: u8 = {
 #[cfg(target_feature = "crt-static")]
 #[allow(unsafe_code)]
 unsafe fn ctor() {
-    unsafe { sleep(1); }
+    unsafe {
+        sleep(1);
+    }
     libc_ewriteln!("+++ ctor lib (+crt-static)");
 }
 
@@ -42,7 +48,9 @@ unsafe fn ctor() {
 #[cfg(not(target_feature = "crt-static"))]
 #[allow(unsafe_code)]
 unsafe fn ctor() {
-    unsafe { sleep(1); }
+    unsafe {
+        sleep(1);
+    }
     libc_ewriteln!("+++ ctor lib (-crt-static)");
 }
 
@@ -50,6 +58,8 @@ unsafe fn ctor() {
 #[cfg(not(test))]
 #[allow(unsafe_code)]
 unsafe fn dtor() {
-    unsafe { sleep(1); }
+    unsafe {
+        sleep(1);
+    }
     libc_ewriteln!("--- dtor lib");
 }

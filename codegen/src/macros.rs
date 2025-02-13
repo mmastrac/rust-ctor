@@ -94,6 +94,7 @@ declare_macros!(
                     });
 
                     super::$($macro_path)::+::ctor_link_section!(
+                        array,
                         macro_path=super::$($macro_path)::+,
                         features=$features,
 
@@ -101,10 +102,14 @@ declare_macros!(
                         #[doc(hidden)]
                         static $ident: unsafe extern "C" fn() -> usize =
                         {
-                            // This function must be callable from the C runtime, so it must be marked extern "C"
-                            #[allow(non_snake_case)]
-                            #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.startup")]
-                            unsafe extern "C" fn $ident() -> usize { super::$ident(); 0 }
+                            super::$($macro_path)::+::ctor_link_section!(
+                                startup,
+                                macro_path=super::$($macro_path)::+,
+                                features=$features,
+
+                                #[allow(non_snake_case)]
+                                unsafe extern "C" fn $ident() -> usize { super::$ident(); 0 }
+                            );
 
                             $ident
                         };
@@ -165,6 +170,7 @@ declare_macros!(
 
                 #[cfg(not(target_family="wasm"))]
                 super::$($macro_path)::+::ctor_link_section!(
+                    array,
                     macro_path=super::$($macro_path)::+,
                     features=$features,
 
@@ -172,9 +178,14 @@ declare_macros!(
                     #[doc(hidden)]
                     static $ident: unsafe extern "C" fn() -> usize =
                     {
-                        #[allow(non_snake_case)]
-                        #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.startup")]
-                        unsafe extern "C" fn $ident() -> usize { super::$ident.init_once(); 0 }
+                        super::$($macro_path)::+::ctor_link_section!(
+                            startup,
+                            macro_path=super::$($macro_path)::+,
+                            features=$features,
+
+                            #[allow(non_snake_case)]
+                            unsafe extern "C" fn $ident() -> usize { super::$ident.init_once(); 0 }
+                        );
 
                         $ident
                     };
@@ -208,6 +219,7 @@ declare_macros!(
                     });
 
                     super::$($macro_path)::+::ctor_link_section!(
+                        array,
                         macro_path=super::$($macro_path)::+,
                         features=$features,
 
@@ -215,27 +227,38 @@ declare_macros!(
                         #[doc(hidden)]
                         static $ident: unsafe extern "C" fn() -> usize =
                         {
-                            #[allow(non_snake_case)]
-                            #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.startup")]
-                            unsafe extern "C" fn $ident() -> usize { unsafe { do_atexit(__dtor); 0 } }
+                            super::$($macro_path)::+::ctor_link_section!(
+                                startup,
+                                macro_path=super::$($macro_path)::+,
+                                features=$features,
+
+                                #[allow(non_snake_case)]
+                                unsafe extern "C" fn $ident() -> usize { unsafe { do_atexit(__dtor); 0 } }
+                            );
 
                             $ident
                         };
                     );
 
-                    #[cfg(not(target_vendor = "apple"))]
-                    #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.exit")]
-                    unsafe extern "C" fn __dtor() { super::$ident() }
-                    #[cfg(target_vendor = "apple")]
-                    unsafe extern "C" fn __dtor(_: *const u8) { super::$ident() }
+                    super::$($macro_path)::+::ctor_link_section!(
+                        exit,
+                        macro_path=super::$($macro_path)::+,
+                        features=$features,
+
+                        unsafe extern "C" fn __dtor(
+                            #[cfg(target_vendor = "apple")] _: *const u8
+                        ) { super::$ident() }
+                    );
 
                     #[cfg(not(target_vendor = "apple"))]
                     #[inline(always)]
                     pub(super) unsafe fn do_atexit(cb: unsafe extern fn()) {
-                        extern "C" {
+                        unsafe extern "C" {
                             fn atexit(cb: unsafe extern fn());
                         }
-                        atexit(cb);
+                        unsafe {
+                            atexit(cb);
+                        }
                     }
 
                     // For platforms that have __cxa_atexit, we register the dtor as scoped to dso_handle
@@ -259,11 +282,11 @@ declare_macros!(
 
     /// Annotate a block with its appropriate link section.
     macro_rules! ctor_link_section {
-        (macro_path=$($macro_path:ident)::+, features=$features:tt, $($block:tt)+) => {
+        ($section:ident,macro_path=$($macro_path:ident)::+, features=$features:tt, $($block:tt)+) => {
             $($macro_path)::+::if_has_feature!(macro_path=$($macro_path)::+, used_linker, $features, {
-                $($macro_path)::+::ctor_link_section_attr!(const {1}, used(linker), $($block)+);
+                $($macro_path)::+::ctor_link_section_attr!($section, const {1}, used(linker), $($block)+);
             }, {
-                $($macro_path)::+::ctor_link_section_attr!(const {1}, used, $($block)+);
+                $($macro_path)::+::ctor_link_section_attr!($section, const {1}, used, $($block)+);
             });
 
             #[cfg(not(any(
@@ -284,11 +307,11 @@ declare_macros!(
 
     /// Depending on the edition, we use either the top or bottom path because
     /// of the change in how `const {1}` is parsed in edition 2021/2024 macros.
-    /// 
+    ///
     /// Because of some strangeness around clippy validation of unsafe(...)
     /// attributes, we just skip them entirely when clippy-ing.
     macro_rules! ctor_link_section_attr {
-        ($e:expr, $used:meta, $item:item) => {
+        (array, $e:expr, $used:meta, $item:item) => {
             #[allow(unsafe_code)]
             #[cfg_attr(
                 any(
@@ -308,11 +331,7 @@ declare_macros!(
             #[$used]
             $item
         };
-        (const $e:expr, $used:meta, $item:item) => {
-            #[cfg(clippy)]
-            #[$used]
-            $item
-
+        (array, const $e:expr, $used:meta, $item:item) => {
             #[cfg(not(clippy))]
             #[allow(unsafe_code)]
             #[cfg_attr(
@@ -331,6 +350,34 @@ declare_macros!(
             #[cfg_attr(target_vendor = "apple", link_section = "__DATA,__mod_init_func")]
             #[cfg_attr(windows, link_section = ".CRT$XCU")]
             #[$used]
+            $item
+
+            #[cfg(clippy)]
+            #[used]
+            $item
+        };
+        (startup, $e:expr, $used:meta, $item:item) => {
+            #[cfg(not(clippy))]
+            #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.startup")]
+            $item
+
+            #[cfg(clippy)]
+            $item
+        };
+        (startup, const $e:expr, $used:meta, $item:item) => {
+            #[cfg_attr(any(target_os = "linux", target_os = "android"), unsafe(link_section = ".text.startup"))]
+            $item
+        };
+        (exit, $e:expr, $used:meta, $item:item) => {
+            #[cfg(not(clippy))]
+            #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.exit")]
+            $item
+
+            #[cfg(clippy)]
+            $item
+        };
+        (exit, const $e:expr, $used:meta, $item:item) => {
+            #[cfg_attr(any(target_os = "linux", target_os = "android"), unsafe(link_section = ".text.exit"))]
             $item
         };
     }
