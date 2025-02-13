@@ -1,3 +1,7 @@
 [workspace]
-members = [ "ctor", "codegen", "dtor", "tests", "tests-wasm" ]
+members = [ "ctor", "codegen", "dtor", "tests", "tests-wasm", "tests-static", "tests-static-main" ]
 resolver = "2"
+
+
+[profile.dev]
+codegen-units = 1
