@@ -1,3 +1,4 @@
+//! Tests for ctor in dylibs.
 #![cfg_attr(feature = "used_linker", feature(used_with_arg))]
 #![allow(dead_code, unused_imports)]
 
@@ -28,7 +29,7 @@ unsafe fn sleep(seconds: u32) {
 }
 
 #[ctor]
-pub static STATIC_INT: u8 = {
+static STATIC_INT: u8 = {
     libc_ewriteln!("+++ ctor STATIC_INT");
     200
 };

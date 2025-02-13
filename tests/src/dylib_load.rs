@@ -1,3 +1,4 @@
+//! Tests for ctor in an executable that loads a dylib.
 #![cfg_attr(feature = "used_linker", feature(used_with_arg))]
 #![allow(unused_imports)]
 
@@ -72,6 +73,7 @@ unsafe fn sleep(seconds: u32) {
     }
 }
 
+/// Entry point for the executable.
 pub fn main() {
     #[allow(unsafe_code)]
     unsafe {

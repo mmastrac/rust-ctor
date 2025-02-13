@@ -33,6 +33,7 @@ jobs:
         -D unused
         -D unsafe_code
         -D unreachable-pub
+        -D missing-docs
 
     steps:
     - uses: actions/checkout@v3

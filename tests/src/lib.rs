@@ -1,3 +1,4 @@
+//! Tests for various configurations of the crate.
 #![cfg_attr(feature = "used_linker", feature(used_with_arg))]
 // Prevent a spurious 'unused_imports' warning
 #[allow(unused_imports)]
