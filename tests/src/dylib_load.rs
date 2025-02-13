@@ -51,6 +51,7 @@ fn prefix() -> &'static str {
 }
 
 #[cfg(windows)]
+#[allow(unsafe_code)]
 unsafe extern "C" {
     unsafe fn Sleep(ms: u32);
 }
