@@ -3,6 +3,7 @@
 use ctor::ctor;
 
 #[ctor]
+#[allow(unsafe_code)]
 unsafe fn foo() {
     println!("foo");
 }

@@ -19,21 +19,25 @@ static STATIC_CTOR: HashMap<u32, &'static str> = {
 };
 
 #[ctor]
+#[allow(unsafe_code)]
 unsafe fn ctor() {
     libc_eprintln!("ctor");
 }
 
 #[ctor]
+#[allow(unsafe_code)]
 unsafe fn ctor_unsafe() {
     libc_eprintln!("ctor_unsafe");
 }
 
 #[dtor]
+#[allow(unsafe_code)]
 unsafe fn dtor() {
     libc_eprintln!("dtor");
 }
 
 #[dtor]
+#[allow(unsafe_code)]
 unsafe fn dtor_unsafe() {
     libc_eprintln!("dtor_unsafe");
 }

@@ -76,8 +76,7 @@ declare_macros!(
             #[cfg(not(target_family="wasm"))]
             $(#[$fnmeta])*
             #[allow(unused)]
-            #[allow(unsafe_code)]
-            $($vis)* fn $ident() {
+            $($vis)* $($unsafe)? fn $ident() {
                 #[doc(hidden)]
                 #[allow(unsafe_code)]
                 mod __ctor_internal {
@@ -108,7 +107,7 @@ declare_macros!(
                                 features=$features,
 
                                 #[allow(non_snake_case)]
-                                unsafe extern "C" fn $ident() -> usize { super::$ident(); 0 }
+                                unsafe extern "C" fn $ident() -> usize { unsafe { super::$ident(); 0 } }
                             );
 
                             $ident

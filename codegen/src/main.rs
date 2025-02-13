@@ -124,7 +124,7 @@ macros::ctor_parse!(
     #[ctor]
     #[feature(__warn_on_missing_unsafe)]
     #[macro_path=macros]
-    #[allow(deprecated)]
+    #[allow(unsafe_code)]
     unsafe fn foo_with_unsafe() {}
 );
 
