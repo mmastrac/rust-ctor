@@ -5,7 +5,6 @@ edition = "2021"
 publish = false
 
 [features]
-# For nightly users, used(linker) may be a better choice
 used_linker = ["ctor/used_linker"]
 
 [dependencies]
@@ -13,7 +12,6 @@ ctor = { path = "../ctor" }
 dlopen = "0.1.8"
 libc-print = "0.1.15"
 libc = { version = "0.2.96", default-features = false }
-rustversion = "1"
 
 [[example]]
 name = "dylib"
