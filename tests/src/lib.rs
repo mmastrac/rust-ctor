@@ -1,3 +1,4 @@
+//! Tests for various configurations of the crate.
 #![cfg_attr(feature = "used_linker", feature(used_with_arg))]
 // Prevent a spurious 'unused_imports' warning
 #[allow(unused_imports)]
@@ -16,13 +17,13 @@ mod test {
 
     /// Doc comment
     #[ctor]
-    fn foo() {
+    unsafe fn foo() {
         INITED.store(true, Ordering::SeqCst);
     }
 
     /// This ensures that we support more than of these
     #[ctor]
-    fn foo_2() {
+    unsafe fn foo_2() {
         INITED_2.store(true, Ordering::SeqCst);
     }
 
@@ -30,7 +31,7 @@ mod test {
     static INITED_3: u8 = 42;
 
     #[dtor]
-    fn shutdown() {
+    unsafe fn shutdown() {
         // Using println or eprintln here will panic as Rust has shut down
         libc_eprintln!("We don't test shutdown, but if you see this message it worked!");
     }

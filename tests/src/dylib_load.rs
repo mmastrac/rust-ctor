@@ -1,3 +1,4 @@
+//! Tests for ctor in an executable that loads a dylib.
 #![cfg_attr(feature = "used_linker", feature(used_with_arg))]
 #![allow(unused_imports)]
 
@@ -7,15 +8,21 @@ use libc_print::*;
 
 #[ctor]
 #[cfg(not(test))]
+#[allow(unsafe_code)]
 unsafe fn ctor() {
-    sleep(1);
+    unsafe {
+        sleep(1);
+    }
     libc_ewriteln!("+ ctor bin");
 }
 
 #[dtor]
 #[cfg(not(test))]
+#[allow(unsafe_code)]
 unsafe fn dtor() {
-    sleep(1);
+    unsafe {
+        sleep(1);
+    }
     libc_ewriteln!("- dtor bin");
 }
 
@@ -45,21 +52,30 @@ fn prefix() -> &'static str {
 }
 
 #[cfg(windows)]
-extern "C" {
-    fn Sleep(ms: u32);
+#[allow(unsafe_code)]
+unsafe extern "C" {
+    unsafe fn Sleep(ms: u32);
 }
 
 #[cfg(windows)]
+#[allow(unsafe_code)]
 unsafe fn sleep(seconds: u32) {
-    Sleep(seconds * 1000);
+    unsafe {
+        Sleep(seconds * 1000);
+    }
 }
 
 #[cfg(not(windows))]
+#[allow(unsafe_code)]
 unsafe fn sleep(seconds: u32) {
-    libc::sleep(seconds);
+    unsafe {
+        libc::sleep(seconds);
+    }
 }
 
+/// Entry point for the executable.
 pub fn main() {
+    #[allow(unsafe_code)]
     unsafe {
         sleep(1);
         libc_ewriteln!("++ main start");

@@ -25,10 +25,8 @@ dependencies = [
 name = "ctor-codegen"
 version = "0.1.0"
 dependencies = [
- "libc-print",
  "proc-macro2 1.0.89",
  "quote 1.0.37",
- "syn 2.0.87",
 ]
 
 [[package]]
@@ -163,6 +161,27 @@ dependencies = [
  "dlopen",
  "libc",
  "libc-print",
+]
+
+[[package]]
+name = "tests-edition-2018"
+version = "0.1.0"
+dependencies = [
+ "ctor",
+]
+
+[[package]]
+name = "tests-edition-2021"
+version = "0.1.0"
+dependencies = [
+ "ctor",
+]
+
+[[package]]
+name = "tests-edition-2024"
+version = "0.1.0"
+dependencies = [
+ "ctor",
 ]
 
 [[package]]

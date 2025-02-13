@@ -1,20 +1,25 @@
+//! This crate is used to generate the token streams for the macros in the `ctor` crate.
 use std::fmt::Write;
 
 pub mod macros;
 
+/// Declare the macros in this crate. These macros will be available in the
+/// codegen crate for testing, as well as in `TokenStream` form in the `ctor`
+/// crate.
 #[macro_export]
 macro_rules! declare_macros {
     (
         $( $( #[doc = $doc:literal] )* macro_rules ! $name:ident $defn:tt )*
     ) => {
-        $( macro_rules! $name $defn )*
+        $( #[allow(unused, unused_macro_rules, edition_2024_expr_fragment_specifier)] macro_rules! $name $defn )*
 
         $( pub(crate) use $name; )*
 
+        /// Generate the token streams for the macros in this crate using `quote`.
         pub fn tokens() -> ::proc_macro2::TokenStream {
             quote::quote! {
                 $(
-                    #[allow(unused)] macro_rules! $name $defn
+                    #[allow(unused, unused_macro_rules, edition_2024_expr_fragment_specifier)] macro_rules! $name $defn
                     pub(crate) use $name;
                 )*
             }
@@ -80,7 +85,8 @@ fn dump_tokens(
     name: &str,
     tokens: ::proc_macro2::TokenStream,
 ) -> Result<(), std::fmt::Error> {
-    writeln!(w, "pub fn {name}() -> TokenStream {{")?;
+    writeln!(w, "/// Generated macro token stream.")?;
+    writeln!(w, "pub(crate) fn {name}() -> TokenStream {{")?;
     dump_tokens_recursive("  ", w, tokens).unwrap();
     writeln!(w, "}}")?;
     writeln!(w)?;
@@ -112,6 +118,14 @@ macros::ctor_parse!(
     #[macro_path=macros]
     #[allow(deprecated)]
     fn foo_missing_unsafe() {}
+);
+
+macros::ctor_parse!(
+    #[ctor]
+    #[feature(__warn_on_missing_unsafe)]
+    #[macro_path=macros]
+    #[allow(unsafe_code)]
+    unsafe fn foo_with_unsafe() {}
 );
 
 macros::ctor_parse!(
@@ -168,9 +182,9 @@ mod module {
         #[macro_path=macros]
         pub(crate) static STATIC_CTOR: HashMap<u32, &'static str> = {
             let mut m = HashMap::new();
-            m.insert(0, "foo");
-            m.insert(1, "bar");
-            m.insert(2, "baz");
+            _ = m.insert(0, "foo");
+            _ = m.insert(1, "bar");
+            _ = m.insert(2, "baz");
             m
         };
     );

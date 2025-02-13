@@ -1,3 +1,4 @@
+//! Tests for ctor in dylibs.
 #![cfg_attr(feature = "used_linker", feature(used_with_arg))]
 #![allow(dead_code, unused_imports)]
 
@@ -5,22 +6,30 @@ use ctor::*;
 use libc_print::*;
 
 #[cfg(windows)]
-extern "C" {
-    fn Sleep(ms: u32);
+#[allow(unsafe_code)]
+unsafe extern "C" {
+    #[allow(unused)]
+    unsafe fn Sleep(ms: u32);
 }
 
 #[cfg(windows)]
+#[allow(unsafe_code)]
 unsafe fn sleep(seconds: u32) {
-    Sleep(seconds * 1000);
+    unsafe {
+        Sleep(seconds * 1000);
+    }
 }
 
 #[cfg(not(windows))]
+#[allow(unsafe_code)]
 unsafe fn sleep(seconds: u32) {
-    libc::sleep(seconds);
+    unsafe {
+        libc::sleep(seconds);
+    }
 }
 
 #[ctor]
-pub static STATIC_INT: u8 = {
+static STATIC_INT: u8 = {
     libc_ewriteln!("+++ ctor STATIC_INT");
     200
 };
@@ -28,22 +37,31 @@ pub static STATIC_INT: u8 = {
 #[ctor]
 #[cfg(not(test))]
 #[cfg(target_feature = "crt-static")]
+#[allow(unsafe_code)]
 unsafe fn ctor() {
-    sleep(1);
+    unsafe {
+        sleep(1);
+    }
     libc_ewriteln!("+++ ctor lib (+crt-static)");
 }
 
 #[ctor]
 #[cfg(not(test))]
 #[cfg(not(target_feature = "crt-static"))]
+#[allow(unsafe_code)]
 unsafe fn ctor() {
-    sleep(1);
+    unsafe {
+        sleep(1);
+    }
     libc_ewriteln!("+++ ctor lib (-crt-static)");
 }
 
 #[dtor]
 #[cfg(not(test))]
+#[allow(unsafe_code)]
 unsafe fn dtor() {
-    sleep(1);
+    unsafe {
+        sleep(1);
+    }
     libc_ewriteln!("--- dtor lib");
 }
