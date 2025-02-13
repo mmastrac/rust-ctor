@@ -1,4 +1,5 @@
 #![recursion_limit = "256"]
+#![allow(if_let_rescope)]
 
 //! Procedural macro for defining global constructor/destructor functions.
 //!
@@ -27,14 +28,10 @@
 
 // https://reviews.llvm.org/D45578
 
-extern crate proc_macro;
-
-use std::iter::FromIterator;
-
 use proc_macro::*;
 
 #[rustfmt::skip]
-mod gen;
+mod r#gen;
 
 /// Marks a function or static variable as a library/executable constructor.
 /// This uses OS-specific linker sections to call a specific function at
@@ -255,6 +252,6 @@ fn generate(name: &str, ctor_type: &str, item: TokenStream) -> TokenStream {
         T::Punct(Punct::new(';', Spacing::Alone)),
         T::Ident(Ident::new("mod", Span::call_site())),
         T::Ident(Ident::new(&macros_name, Span::call_site())),
-        T::Group(Group::new(Delimiter::Brace, gen::ctor())),
+        T::Group(Group::new(Delimiter::Brace, r#gen::ctor())),
     ])
 }

@@ -17,6 +17,22 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
+    env:
+      CLIPPY_LINTS: >-
+        -Dclippy::all
+        -D deprecated-safe
+        -D future-incompatible
+        -D keyword-idents
+        -D let-underscore
+        -D nonstandard-style
+        -D refining-impl-trait
+        -D rust-2018-compatibility
+        -D rust-2018-idioms
+        -D rust-2021-compatibility
+        -D rust-2024-compatibility
+        -D unused
+        -D unsafe_code
+        -D unreachable-pub
 
     steps:
     - uses: actions/checkout@v3
@@ -24,6 +40,10 @@ jobs:
       run: cargo build --verbose
     - name: Run tests
       run: cargo test --verbose
+    - name: Clippy
+      run: cargo clippy --examples --bins --all -- ${{ env.CLIPPY_LINTS }}
+    - name: Clippy (all features)
+      run: cargo clippy --all-features --examples --bins --all -- ${{ env.CLIPPY_LINTS }}
     - name: Build with static CRT
       if: matrix.os == 'ubuntu-latest'
       run: RUSTFLAGS="-C target-feature=+crt-static" cargo run --example example --target x86_64-unknown-linux-gnu --verbose
