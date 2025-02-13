@@ -5,6 +5,7 @@ use ctor::*;
 use libc_print::*;
 
 #[cfg(windows)]
+#[allow(unsafe_code)]
 unsafe extern "C" {
     #[allow(unused)]
     unsafe fn Sleep(ms: u32);
