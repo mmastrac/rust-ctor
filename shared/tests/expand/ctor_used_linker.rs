@@ -1,6 +1,7 @@
 shared::ctor_parse!(
+    #[feature(used_linker)]
     #[ctor]
-    unsafe fn foo() {
+    fn foo() {
         println!("foo");
     }
 );

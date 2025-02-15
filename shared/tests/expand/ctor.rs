@@ -1,4 +1,4 @@
-::shared::ctor_parse!(
+shared::ctor_parse!(
     #[ctor]
     fn foo() {
         println!("foo");
