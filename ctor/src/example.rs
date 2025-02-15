@@ -42,6 +42,7 @@ unsafe fn dtor_unsafe() {
     libc_eprintln!("dtor_unsafe");
 }
 
+/// A module with a static ctor/dtor
 pub mod module {
     use ctor::*;
     use libc_print::*;
@@ -51,6 +52,12 @@ pub mod module {
         libc_eprintln!("module::STATIC_CTOR");
         42
     };
+
+    #[dtor]
+    #[allow(unsafe_code)]
+    unsafe fn dtor_module() {
+        libc_eprintln!("module::dtor_module");
+    }
 }
 
 /// Executable main which demonstrates the various types of ctor/dtor.
