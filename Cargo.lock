@@ -30,6 +30,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "ctor-proc-macro"
+version = "0.0.0"
+
+[[package]]
 name = "dlopen"
 version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -54,6 +58,10 @@ dependencies = [
 
 [[package]]
 name = "dtor"
+version = "0.0.0"
+
+[[package]]
+name = "dtor-proc-macro"
 version = "0.0.0"
 
 [[package]]
