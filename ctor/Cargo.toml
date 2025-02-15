@@ -15,16 +15,15 @@ travis-ci = { repository = "mmastrac/rust-ctor", branch = "master" }
 default = []
 
 # For nightly users, used(linker) may be a better choice
-used_linker = []
+used_linker = ["ctor-proc-macro/used_linker"]
 # This will eventually become the default
-__warn_on_missing_unsafe = []
+__warn_on_missing_unsafe = ["ctor-proc-macro/__warn_on_missing_unsafe"]
+
+[dependencies]
+ctor-proc-macro = "=0.0.2"
 
 [dev-dependencies]
 libc-print = "0.1.20"
-
-[lib]
-name = "ctor"
-proc-macro = true
 
 [[example]]
 name = "example"

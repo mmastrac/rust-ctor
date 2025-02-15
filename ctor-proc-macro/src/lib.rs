@@ -4,7 +4,14 @@ use proc_macro::{Delimiter, Group, Ident, Punct, Spacing, Span, TokenStream, Tok
 
 #[proc_macro_attribute]
 pub fn ctor(attribute: TokenStream, item: TokenStream) -> TokenStream {
-    generate("ctor", attribute, item)
+    generate("ctor", "ctor", attribute, item)
+}
+
+// Legacy dtor macro.
+
+#[proc_macro_attribute]
+pub fn dtor(attribute: TokenStream, item: TokenStream) -> TokenStream {
+    generate("dtor", "ctor", attribute, item)
 }
 
 /// Generates the equivalent of this Rust code as a TokenStream:
@@ -13,25 +20,8 @@ pub fn ctor(attribute: TokenStream, item: TokenStream) -> TokenStream {
 /// ::ctor::__support::ctor_parse!(#[ctor] fn foo() { ... });
 /// ::dtor::__support::dtor_parse!(#[dtor] fn foo() { ... });
 /// ```
-fn generate(macro_type: &str, attribute: TokenStream, item: TokenStream) -> TokenStream {
+fn generate(macro_type: &str, macro_crate: &str, attribute: TokenStream, item: TokenStream) -> TokenStream {
     let mut inner = TokenStream::new();
-    if attribute.is_empty() {
-        // #[ctor]
-        inner.extend([
-            TokenTree::Punct(Punct::new('#', Spacing::Alone)),
-            TokenTree::Group(Group::new(Delimiter::Bracket, TokenStream::from_iter([
-                TokenTree::Ident(Ident::new(macro_type, Span::call_site())),
-            ]))),
-        ]);
-    } else {
-        inner.extend([
-            TokenTree::Punct(Punct::new('#', Spacing::Alone)),
-            TokenTree::Group(Group::new(Delimiter::Bracket, TokenStream::from_iter([
-                TokenTree::Ident(Ident::new(macro_type, Span::call_site())),
-                TokenTree::Group(Group::new(Delimiter::Parenthesis, attribute)),
-            ]))),
-        ]);
-    }
 
     #[cfg(feature = "used_linker")]
     inner.extend([
@@ -55,18 +45,36 @@ fn generate(macro_type: &str, attribute: TokenStream, item: TokenStream) -> Toke
         ]))),
     ]);
 
+    if attribute.is_empty() {
+        // #[ctor]
+        inner.extend([
+            TokenTree::Punct(Punct::new('#', Spacing::Alone)),
+            TokenTree::Group(Group::new(Delimiter::Bracket, TokenStream::from_iter([
+                TokenTree::Ident(Ident::new(macro_type, Span::call_site())),
+            ]))),
+        ]);
+    } else {
+        inner.extend([
+            TokenTree::Punct(Punct::new('#', Spacing::Alone)),
+            TokenTree::Group(Group::new(Delimiter::Bracket, TokenStream::from_iter([
+                TokenTree::Ident(Ident::new(macro_type, Span::call_site())),
+                TokenTree::Group(Group::new(Delimiter::Parenthesis, attribute)),
+            ]))),
+        ]);
+    }
+
     inner.extend(item);
 
     TokenStream::from_iter([
         TokenTree::Punct(Punct::new(':', Spacing::Joint)),
         TokenTree::Punct(Punct::new(':', Spacing::Alone)),
-        TokenTree::Ident(Ident::new(macro_type, Span::call_site())),
+        TokenTree::Ident(Ident::new(macro_crate, Span::call_site())),
         TokenTree::Punct(Punct::new(':', Spacing::Joint)),
         TokenTree::Punct(Punct::new(':', Spacing::Alone)),
         TokenTree::Ident(Ident::new("__support", Span::call_site())),
         TokenTree::Punct(Punct::new(':', Spacing::Joint)),
         TokenTree::Punct(Punct::new(':', Spacing::Alone)),
-        TokenTree::Ident(Ident::new(&format!("{}_parse", macro_type), Span::call_site())),
+        TokenTree::Ident(Ident::new(&format!("{}_parse", macro_crate), Span::call_site())),
         TokenTree::Punct(Punct::new('!', Spacing::Alone)),
         TokenTree::Group(Group::new(Delimiter::Parenthesis, inner)),
         TokenTree::Punct(Punct::new(';', Spacing::Alone)),

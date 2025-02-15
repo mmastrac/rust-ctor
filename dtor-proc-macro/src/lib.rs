@@ -15,23 +15,6 @@ pub fn dtor(attribute: TokenStream, item: TokenStream) -> TokenStream {
 /// ```
 fn generate(macro_type: &str, attribute: TokenStream, item: TokenStream) -> TokenStream {
     let mut inner = TokenStream::new();
-    if attribute.is_empty() {
-        // #[ctor]
-        inner.extend([
-            TokenTree::Punct(Punct::new('#', Spacing::Alone)),
-            TokenTree::Group(Group::new(Delimiter::Bracket, TokenStream::from_iter([
-                TokenTree::Ident(Ident::new(macro_type, Span::call_site())),
-            ]))),
-        ]);
-    } else {
-        inner.extend([
-            TokenTree::Punct(Punct::new('#', Spacing::Alone)),
-            TokenTree::Group(Group::new(Delimiter::Bracket, TokenStream::from_iter([
-                TokenTree::Ident(Ident::new(macro_type, Span::call_site())),
-                TokenTree::Group(Group::new(Delimiter::Parenthesis, attribute)),
-            ]))),
-        ]);
-    }
 
     #[cfg(feature = "used_linker")]
     inner.extend([
@@ -54,6 +37,24 @@ fn generate(macro_type: &str, attribute: TokenStream, item: TokenStream) -> Toke
             ]))),
         ]))),
     ]);
+
+    if attribute.is_empty() {
+        // #[ctor]
+        inner.extend([
+            TokenTree::Punct(Punct::new('#', Spacing::Alone)),
+            TokenTree::Group(Group::new(Delimiter::Bracket, TokenStream::from_iter([
+                TokenTree::Ident(Ident::new(macro_type, Span::call_site())),
+            ]))),
+        ]);
+    } else {
+        inner.extend([
+            TokenTree::Punct(Punct::new('#', Spacing::Alone)),
+            TokenTree::Group(Group::new(Delimiter::Bracket, TokenStream::from_iter([
+                TokenTree::Ident(Ident::new(macro_type, Span::call_site())),
+                TokenTree::Group(Group::new(Delimiter::Parenthesis, attribute)),
+            ]))),
+        ]);
+    }
 
     inner.extend(item);
 

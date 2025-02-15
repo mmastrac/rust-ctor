@@ -1,5 +1,3 @@
-#![recursion_limit = "256"]
-#![allow(if_let_rescope)]
 
 //! Procedural macro for defining global constructor/destructor functions.
 //!
@@ -15,6 +13,23 @@
 //! This library currently requires Rust > `1.31.0` at a minimum for the
 //! procedural macro support.
 
+#![recursion_limit = "256"]
+
+#[doc(hidden)]
+#[allow(unused)]
+pub mod __support {
+    #[doc(hidden)]
+    pub use crate::__ctor_parse as ctor_parse;
+    pub use crate::__ctor_entry as ctor_entry;
+    pub use crate::__dtor_entry as dtor_entry;
+    pub use crate::__if_unsafe as if_unsafe;
+    pub use crate::__if_has_feature as if_has_feature;
+    pub use crate::__ctor_link_section as ctor_link_section;
+    pub use crate::__ctor_link_section_attr as ctor_link_section_attr;
+}
+
+mod macros;
+
 // Code note:
 
 // You might wonder why we don't use `__attribute__((destructor))`/etc for
@@ -27,11 +42,6 @@
 // warning about it for a number of years:
 
 // https://reviews.llvm.org/D45578
-
-use proc_macro::*;
-
-#[rustfmt::skip]
-mod r#gen;
 
 /// Marks a function or static variable as a library/executable constructor.
 /// This uses OS-specific linker sections to call a specific function at
@@ -122,28 +132,7 @@ mod r#gen;
 ///   foo
 /// };
 /// ```
-#[proc_macro_attribute]
-pub fn ctor(_attribute: TokenStream, item: TokenStream) -> TokenStream {
-    fn identify_item(item: TokenStream) -> String {
-        let mut next_is_name = false;
-        for token in item {
-            if let TokenTree::Ident(ident) = token {
-                let ident = ident.to_string();
-                if next_is_name {
-                    return ident;
-                }
-                if ident == "fn" || ident == "static" {
-                    next_is_name = true;
-                }
-            }
-        }
-
-        panic!("#[ctor] may only be applied to `fn` or `static` items");
-    }
-
-    let name = identify_item(item.clone());
-    generate(&name, "ctor", item)
-}
+pub use ctor_proc_macro::ctor;
 
 /// Marks a function as a library/executable destructor. This uses OS-specific
 /// linker sections to call a specific function at termination time.
@@ -165,93 +154,4 @@ pub fn ctor(_attribute: TokenStream, item: TokenStream) -> TokenStream {
 ///   /* ... */
 /// }
 /// ```
-#[proc_macro_attribute]
-pub fn dtor(_attribute: TokenStream, item: TokenStream) -> TokenStream {
-    fn identify_item(item: TokenStream) -> String {
-        let mut next_is_name = false;
-        for token in item {
-            if let TokenTree::Ident(ident) = token {
-                let ident = ident.to_string();
-                if next_is_name {
-                    return ident;
-                }
-                if ident == "fn" || ident == "static" {
-                    next_is_name = true;
-                }
-            }
-        }
-
-        panic!("#[dtor] may only be applied to `fn` items");
-    }
-
-    let name = identify_item(item.clone());
-    generate(&name, "dtor", item)
-}
-
-fn generate(name: &str, ctor_type: &str, item: TokenStream) -> TokenStream {
-    use proc_macro::TokenTree as T;
-
-    let macros_name = format!("__rust_ctor_macros_{name}");
-    let mut macro_inner = TokenStream::from_iter([
-        T::Punct(Punct::new('#', Spacing::Alone)),
-        T::Group(Group::new(
-            Delimiter::Bracket,
-            TokenStream::from_iter([T::Ident(Ident::new(ctor_type, Span::call_site()))]),
-        )),
-        #[cfg(feature = "used_linker")]
-        T::Punct(Punct::new('#', Spacing::Alone)),
-        #[cfg(feature = "used_linker")]
-        T::Group(Group::new(
-            Delimiter::Bracket,
-            TokenStream::from_iter([
-                T::Ident(Ident::new("feature", Span::call_site())),
-                T::Group(Group::new(
-                    Delimiter::Parenthesis,
-                    TokenStream::from_iter([T::Ident(Ident::new(
-                        "used_linker",
-                        Span::call_site(),
-                    ))]),
-                )),
-            ]),
-        )),
-        #[cfg(feature = "__warn_on_missing_unsafe")]
-        T::Punct(Punct::new('#', Spacing::Alone)),
-        #[cfg(feature = "__warn_on_missing_unsafe")]
-        T::Group(Group::new(
-            Delimiter::Bracket,
-            TokenStream::from_iter([
-                T::Ident(Ident::new("feature", Span::call_site())),
-                T::Group(Group::new(
-                    Delimiter::Parenthesis,
-                    TokenStream::from_iter([T::Ident(Ident::new(
-                        "__warn_on_missing_unsafe",
-                        Span::call_site(),
-                    ))]),
-                )),
-            ]),
-        )),
-        T::Punct(Punct::new('#', Spacing::Alone)),
-        T::Group(Group::new(
-            Delimiter::Bracket,
-            TokenStream::from_iter([
-                T::Ident(Ident::new("macro_path", Span::call_site())),
-                T::Punct(Punct::new('=', Spacing::Alone)),
-                T::Ident(Ident::new(&macros_name, Span::call_site())),
-            ]),
-        )),
-    ]);
-    macro_inner.extend(item);
-
-    TokenStream::from_iter([
-        T::Ident(Ident::new(&macros_name, Span::call_site())),
-        T::Punct(Punct::new(':', Spacing::Joint)),
-        T::Punct(Punct::new(':', Spacing::Alone)),
-        T::Ident(Ident::new("ctor_parse", Span::call_site())),
-        T::Punct(Punct::new('!', Spacing::Alone)),
-        T::Group(Group::new(Delimiter::Parenthesis, macro_inner)),
-        T::Punct(Punct::new(';', Spacing::Alone)),
-        T::Ident(Ident::new("mod", Span::call_site())),
-        T::Ident(Ident::new(&macros_name, Span::call_site())),
-        T::Group(Group::new(Delimiter::Brace, r#gen::ctor())),
-    ])
-}
+pub use ctor_proc_macro::dtor;

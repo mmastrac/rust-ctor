@@ -1,14 +1,14 @@
 [workspace]
 members = [ 
     "ctor", 
-    "codegen",
     "dtor", 
     "ctor-proc-macro",
     "dtor-proc-macro",
+    "shared",
     "tests", 
     "tests-wasm", 
     "tests-edition-2018", 
     "tests-edition-2021", 
-    "tests-edition-2024" 
+#    "tests-edition-2024" 
 ]
 resolver = "2"

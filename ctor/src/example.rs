@@ -3,9 +3,9 @@
 
 #![cfg_attr(feature = "used_linker", feature(used_with_arg))]
 
-use ctor::*;
 use libc_print::*;
 use std::collections::HashMap;
+use ctor::{ctor, dtor};
 
 #[ctor]
 /// This is an immutable static, evaluated at init time
@@ -42,7 +42,7 @@ unsafe fn dtor_unsafe() {
     libc_eprintln!("dtor_unsafe");
 }
 
-mod module {
+pub mod module {
     use ctor::*;
     use libc_print::*;
 
@@ -55,6 +55,7 @@ mod module {
 
 /// Executable main which demonstrates the various types of ctor/dtor.
 pub fn main() {
+    use libc_print::*;
     libc_eprintln!("main!");
     libc_eprintln!("STATIC_CTOR = {:?}", *STATIC_CTOR);
     libc_eprintln!("module::STATIC_CTOR = {:?}", *module::STATIC_CTOR);

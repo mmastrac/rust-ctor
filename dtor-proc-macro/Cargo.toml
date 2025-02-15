@@ -1,6 +1,6 @@
 [package]
 name = "dtor-proc-macro"
-version = "0.0.0"
+version = "0.0.1"
 authors = ["Matt Mastracci <matthew@mastracci.com>"]
 edition = "2018"
 description = "proc-macro support for the dtor crate"
