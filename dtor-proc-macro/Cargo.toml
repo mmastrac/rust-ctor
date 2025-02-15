@@ -1,0 +1,20 @@
+[package]
+name = "dtor-proc-macro"
+version = "0.0.1"
+authors = ["Matt Mastracci <matthew@mastracci.com>"]
+edition = "2018"
+description = "proc-macro support for the dtor crate"
+license = "Apache-2.0 OR MIT"
+repository = "https://github.com/mmastrac/rust-ctor"
+readme = "README.md"
+
+[features]
+default = []
+
+# For nightly users, used(linker) may be a better choice
+used_linker = []
+# This will eventually become the default
+__warn_on_missing_unsafe = []
+
+[lib]
+proc-macro = true

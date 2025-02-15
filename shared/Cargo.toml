@@ -1,0 +1,12 @@
+[package]
+name = "shared"
+version = "0.1.0"
+edition = "2018"
+publish = false
+
+[features]
+used_linker = []
+__warn_on_missing_unsafe = []
+
+[dependencies]
+macrotest = "1"

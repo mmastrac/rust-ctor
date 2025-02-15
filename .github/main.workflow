@@ -5,5 +5,5 @@ workflow "New workflow" {
 
 action "icepuma/rust-action@master" {
   uses = "icepuma/rust-action@master"
-  args = "cargo test"
+  args = "cargo install cargo-expand && cargo test"
 }
