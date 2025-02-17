@@ -3,10 +3,11 @@
 fn foo() {
     #[doc(hidden)]
     /// Internal module.
-    ///features=[]
+    ///features=[(link_section = ".ctors"),]
     #[allow(unsafe_code)]
     mod __ctor_internal {
-        #[link_section = "__DATA,__mod_init_func"]
+        #[link_section = ".ctors"]
+        #[allow(unsafe_code)]
         #[used]
         #[allow(non_upper_case_globals, non_snake_case)]
         #[doc(hidden)]

@@ -1,15 +1,14 @@
-
 #[doc(hidden)]
 #[allow(unused)]
 pub mod __support {
-    #[doc(hidden)]
-    pub use crate::__ctor_parse as dtor_parse;
     pub use crate::__ctor_entry as ctor_entry;
-    pub use crate::__dtor_entry as dtor_entry;
-    pub use crate::__if_unsafe as if_unsafe;
-    pub use crate::__if_has_feature as if_has_feature;
     pub use crate::__ctor_link_section as ctor_link_section;
     pub use crate::__ctor_link_section_attr as ctor_link_section_attr;
+    #[doc(hidden)]
+    pub use crate::__ctor_parse as dtor_parse;
+    pub use crate::__dtor_entry as dtor_entry;
+    pub use crate::__if_has_feature as if_has_feature;
+    pub use crate::__if_unsafe as if_unsafe;
 }
 
 mod macros;

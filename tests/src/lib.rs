@@ -30,6 +30,13 @@ mod test {
     #[ctor]
     static INITED_3: u8 = 42;
 
+    /// Override the default link section for Linux
+    #[cfg_attr(target_os = "linux", ctor(link_section = ".ctors"))]
+    #[cfg_attr(not(target_os = "linux"), ctor)]
+    unsafe fn foo_custom_section() {
+        // ...
+    }
+
     #[dtor]
     unsafe fn shutdown() {
         // Using println or eprintln here will panic as Rust has shut down
