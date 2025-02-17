@@ -9,7 +9,7 @@ use std::collections::HashMap;
 
 #[ctor]
 /// This is an immutable static, evaluated at init time
-static STATIC_CTOR: HashMap<u32, &'static str> = {
+static STATIC_CTOR: HashMap<u32, &'static str> = unsafe {
     let mut m = HashMap::new();
     _ = m.insert(0, "foo");
     _ = m.insert(1, "bar");
@@ -48,7 +48,7 @@ pub mod module {
     use libc_print::*;
 
     #[ctor]
-    pub(crate) static STATIC_CTOR: u8 = {
+    pub(crate) static STATIC_CTOR: u8 = unsafe {
         libc_eprintln!("module::STATIC_CTOR");
         42
     };

@@ -28,7 +28,10 @@ mod test {
     }
 
     #[ctor]
-    static INITED_3: u8 = 42;
+    static INITED_3: u8 = unsafe {
+        libc_eprintln!("Initialized static");
+        42
+    };
 
     /// Override the default link section for Linux
     #[cfg_attr(target_os = "linux", ctor(link_section = ".ctors"))]

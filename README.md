@@ -73,6 +73,10 @@ library is loaded or an executable is started:
 Creates a `HashMap` populated with strings when a static
 library is loaded or an executable is started (new in `0.1.7`):
 
+`static` items are equivalent to `std::cell::OnceCell`, but with
+an automatic deref implementation and eager initialization at
+startup time.
+
 ```rust
     #[ctor]
     /// This is an immutable static, evaluated at init time
