@@ -65,6 +65,7 @@ macro_rules! __unify_features {
 /// Example: `[(link_section = ".ctors") , used_linker , __warn_on_missing_unsafe ,]`
 #[doc(hidden)]
 #[macro_export]
+#[allow(unknown_lints, edition_2024_expr_fragment_specifier)]
 macro_rules! __if_has_feature {
     (used_linker,              [used_linker,                     $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
     (__warn_on_missing_unsafe, [__warn_on_missing_unsafe,        $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
