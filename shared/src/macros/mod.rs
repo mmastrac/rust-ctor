@@ -6,48 +6,74 @@
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __ctor_parse {
-    ($( #[feature($fname:ident)] )* #[ctor $( ($meta:meta) )?] $(#[$imeta:meta])* pub ( $($extra:tt)* ) $($item:tt)*) => {
-        $crate::__support::ctor_entry!(meta=[$($meta,)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[pub($($extra)*)], item=$($item)*);
+    ($( #[feature($fname:ident)] )* #[ctor $(($($meta:tt)*))?] $(#[$imeta:meta])* pub ( $($extra:tt)* ) $($item:tt)*) => {
+        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[pub($($extra)*)], item=$($item)*);
     };
-    ($( #[feature($fname:ident)] )* #[ctor $( ($meta:meta) )?] $(#[$imeta:meta])* pub $($item:tt)*) => {
-        $crate::__support::ctor_entry!(meta=[$($meta,)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[pub], item=$($item)*);
+    ($( #[feature($fname:ident)] )* #[ctor $(($($meta:tt)*))?] $(#[$imeta:meta])* pub $($item:tt)*) => {
+        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[pub], item=$($item)*);
     };
-    ($( #[feature($fname:ident)] )* #[ctor $( ($meta:meta) )?] $(#[$imeta:meta])* fn $($item:tt)*) => {
-        $crate::__support::ctor_entry!(meta=[$($meta,)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[], item=fn $($item)*);
+    ($( #[feature($fname:ident)] )* #[ctor $(($($meta:tt)*))?] $(#[$imeta:meta])* fn $($item:tt)*) => {
+        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[], item=fn $($item)*);
     };
-    ($( #[feature($fname:ident)] )* #[ctor $( ($meta:meta) )?] $(#[$imeta:meta])* unsafe $($item:tt)*) => {
-        $crate::__support::ctor_entry!(meta=[$($meta,)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[], item=unsafe $($item)*);
+    ($( #[feature($fname:ident)] )* #[ctor $(($($meta:tt)*))?] $(#[$imeta:meta])* unsafe $($item:tt)*) => {
+        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[], item=unsafe $($item)*);
     };
-    ($( #[feature($fname:ident)] )* #[ctor $( ($meta:meta) )?] $(#[$imeta:meta])* static $($item:tt)*) => {
-        $crate::__support::ctor_entry!(meta=[$($meta,)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[], item=static $($item)*);
+    ($( #[feature($fname:ident)] )* #[ctor $(($($meta:tt)*))?] $(#[$imeta:meta])* static $($item:tt)*) => {
+        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[], item=static $($item)*);
     };
 
-    ($( #[feature($fname:ident)] )* #[dtor $( ($meta:meta) )?] $(#[$imeta:meta])* pub ( $($extra:tt)* ) $($item:tt)*) => {
-        $crate::__support::dtor_entry!(meta=[$($meta,)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[pub($($extra)*)], item=$($item)*);
+    ($( #[feature($fname:ident)] )* #[dtor $(($($meta:tt)*))?] $(#[$imeta:meta])* pub ( $($extra:tt)* ) $($item:tt)*) => {
+        $crate::__support::dtor_entry!(meta=[$($($meta)*)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[pub($($extra)*)], item=$($item)*);
     };
-    ($( #[feature($fname:ident)] )* #[dtor $( ($meta:meta) )?] $(#[$imeta:meta])* pub $($item:tt)*) => {
-        $crate::__support::dtor_entry!(meta=[$($meta,)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[pub], item=$($item)*);
+    ($( #[feature($fname:ident)] )* #[dtor $(($($meta:tt)*))?] $(#[$imeta:meta])* pub $($item:tt)*) => {
+        $crate::__support::dtor_entry!(meta=[$($($meta)*)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[pub], item=$($item)*);
     };
-    ($( #[feature($fname:ident)] )* #[dtor $( ($meta:meta) )?] $(#[$imeta:meta])* fn $($item:tt)*) => {
-        $crate::__support::dtor_entry!(meta=[$($meta,)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[], item=fn $($item)*);
+    ($( #[feature($fname:ident)] )* #[dtor $(($($meta:tt)*))?] $(#[$imeta:meta])* fn $($item:tt)*) => {
+        $crate::__support::dtor_entry!(meta=[$($($meta)*)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[], item=fn $($item)*);
     };
-    ($( #[feature($fname:ident)] )* #[dtor $( ($meta:meta) )?] $(#[$imeta:meta])* unsafe $($item:tt)*) => {
-        $crate::__support::dtor_entry!(meta=[$($meta,)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[], item=unsafe $($item)*);
+    ($( #[feature($fname:ident)] )* #[dtor $(($($meta:tt)*))?] $(#[$imeta:meta])* unsafe $($item:tt)*) => {
+        $crate::__support::dtor_entry!(meta=[$($($meta)*)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[], item=unsafe $($item)*);
+    };
+}
+
+/// Extract #[ctor/dtor] attribute parameters and turn them into features.
+/// 
+/// Supported attributes:
+/// - `used(linker)` -> feature: `used_linker`
+/// - `link_section = ...` -> feature: `(link_section = ...)`
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __unify_features {
+    (next=$next_macro:path, meta=[used(linker) $(, $($meta:tt)* )?], features=[$($features:tt,)*], $($rest:tt)*) => {
+        $crate::__support::unify_features!(next=$next_macro, meta=[$($($meta)*)?], features=[used_linker,$($features,)*], $($rest)*);
+    };
+    (next=$next_macro:path, meta=[link_section = $section:tt $(, $($meta:tt)* )?], features=[$($features:tt,)*], $($rest:tt)*) => {
+        $crate::__support::unify_features!(next=$next_macro, meta=[$($($meta)*)?], features=[(link_section=$section),$($features,)*], $($rest)*);
+    };
+    (next=$next_macro:path, meta=[$unknown_meta:meta $($meta:tt)*], features=[$($features:tt,)*], $($rest:tt)*) => {
+        compile_error!(concat!("Unknown attribute parameter: ", stringify!($unknown_meta)));
+    };
+    (next=$next_macro:path, meta=[], features=$features:tt, $($rest:tt)*) => {
+        $next_macro!(features=$features, $($rest)*);
     };
 }
 
 /// If the features array contains the requested feature, generates `if_true`, else `if_false`.
 ///
 /// This macro matches the features recursively.
+/// 
+/// Example: `[(link_section = ".ctors") , used_linker , __warn_on_missing_unsafe ,]`
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __if_has_feature {
-    (used_linker, [used_linker, $(rest:ident,)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
-    (used_linker, [$x:ident, $($rest:ident,)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $crate::__support::if_has_feature!(used_linker, [$($rest,)*], {$($if_true)*}, {$($if_false)*}); };
-    (used_linker, [], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_false)* };
-    (__warn_on_missing_unsafe, [$(a:ident,)* __warn_on_missing_unsafe, $(b:ident,)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
-    (__warn_on_missing_unsafe, [$x:ident, $($rest:ident,)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $crate::__support::if_has_feature!(__warn_on_missing_unsafe, [$($rest,)*], {$($if_true)*}, {$($if_false)*}); };
-    (__warn_on_missing_unsafe, [], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_false)* };
+    (used_linker,              [used_linker,                     $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
+    (__warn_on_missing_unsafe, [__warn_on_missing_unsafe,        $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
+    ((link_section(c)),        [(link_section=$section:literal), $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { #[link_section = $section] $($if_true)* };
+
+    // Fallback rules
+    ($anything:tt, [$x:ident, $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $crate::__support::if_has_feature!($anything, [$($rest)*], {$($if_true)*}, {#[doc = "no"] $($if_false)*}); };
+    ($anything:tt, [($x:ident=$y:expr), $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $crate::__support::if_has_feature!($anything, [$($rest)*], {$($if_true)*}, {#[doc = "no"] $($if_false)*}); };
+    ($anything:tt, [], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_false)* };
 }
 
 #[doc(hidden)]
@@ -61,13 +87,13 @@ macro_rules! __if_unsafe {
 #[macro_export]
 #[allow(unknown_lints, edition_2024_expr_fragment_specifier)]
 macro_rules! __ctor_entry {
-    (meta=[$($meta:meta)?], features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], item=fn $ident:ident() $block:block) => {
-        $crate::__support::ctor_entry!(meta=[$($meta,)?], features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=, item=fn $ident() $block);
+    (features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], item=fn $ident:ident() $block:block) => {
+        $crate::__support::ctor_entry!(features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=, item=fn $ident() $block);
     };
-    (meta=[$($meta:meta)?], features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], item=unsafe fn $ident:ident() $block:block) => {
-        $crate::__support::ctor_entry!(meta=[$($meta,)?], features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=unsafe, item=fn $ident() $block);
+    (features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], item=unsafe fn $ident:ident() $block:block) => {
+        $crate::__support::ctor_entry!(features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=unsafe, item=fn $ident() $block);
     };
-    (meta=[$($meta:meta)?], features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=fn $ident:ident() $block:block) => {
+    (features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=fn $ident:ident() $block:block) => {
         #[cfg(target_family="wasm")]
         $(#[$fnmeta])*
         #[allow(unused)]
@@ -81,6 +107,8 @@ macro_rules! __ctor_entry {
         #[allow(unused)]
         $($vis)* $($unsafe)? fn $ident() {
             #[doc(hidden)]
+            /// Internal module.
+            #[doc = concat!("features=", stringify!($features))]
             #[allow(unsafe_code)]
             mod __ctor_internal {
                 $crate::__support::if_unsafe!($($unsafe)?, {}, {
@@ -97,7 +125,6 @@ macro_rules! __ctor_entry {
 
                 $crate::__support::ctor_link_section!(
                     array,
-                    
                     features=$features,
 
                     #[allow(non_upper_case_globals, non_snake_case)]
@@ -106,7 +133,6 @@ macro_rules! __ctor_entry {
                     {
                         $crate::__support::ctor_link_section!(
                             startup,
-                            
                             features=$features,
 
                             #[allow(non_snake_case)]
@@ -121,7 +147,7 @@ macro_rules! __ctor_entry {
             $block
         }
     };
-    (meta=[$($meta:meta)?], features=$features:tt, imeta=$(#[$imeta:meta])*, vis=[$($vis:tt)*], item=static $ident:ident : $ty:ty = $expr:expr;) => {
+    (features=$features:tt, imeta=$(#[$imeta:meta])*, vis=[$($vis:tt)*], item=static $ident:ident : $ty:ty = $expr:expr;) => {
         $(#[$imeta])*
         $($vis)* static $ident: $ident::Static<$ty> = $ident::Static::<$ty> {
             _storage: ::std::cell::UnsafeCell::new(None)
@@ -131,7 +157,7 @@ macro_rules! __ctor_entry {
             type Target = $ty;
             fn deref(&self) -> &'static $ty {
                 #[allow(unsafe_code)]
-                unsafe {
+               unsafe {
                     let ptr = self._storage.get();
                     let val = (&*ptr).as_ref().unwrap();
                     val
@@ -173,7 +199,6 @@ macro_rules! __ctor_entry {
             #[cfg(not(target_family="wasm"))]
             $crate::__support::ctor_link_section!(
                 array,
-                
                 features=$features,
 
                 #[allow(non_upper_case_globals, non_snake_case)]
@@ -182,7 +207,6 @@ macro_rules! __ctor_entry {
                 {
                     $crate::__support::ctor_link_section!(
                         startup,
-                        
                         features=$features,
 
                         #[allow(non_snake_case)]
@@ -199,13 +223,13 @@ macro_rules! __ctor_entry {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __dtor_entry {
-    (meta=[$($meta:meta)?], features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], item=fn $ident:ident() $block:block) => {
-        $crate::__support::dtor_entry!(meta=[$($meta,)?], features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=, item=fn $ident() $block);
+    (meta=[$($meta:meta,)*], features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], item=fn $ident:ident() $block:block) => {
+        $crate::__support::dtor_entry!(meta=[$($($meta,)*)?], features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=, item=fn $ident() $block);
     };
-    (meta=[$($meta:meta)?], features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], item=unsafe fn $ident:ident() $block:block) => {
-        $crate::__support::dtor_entry!(meta=[$($meta,)?], features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=unsafe, item=fn $ident() $block);
+    (meta=[$($meta:meta,)*], features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], item=unsafe fn $ident:ident() $block:block) => {
+        $crate::__support::dtor_entry!(meta=[$($($meta,)*)?], features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=unsafe, item=fn $ident() $block);
     };
-    (meta=[$($meta:meta)?], features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=fn $ident:ident() $block:block) => {
+    (meta=[$($meta:meta,)*], features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=fn $ident:ident() $block:block) => {
         $(#[$fnmeta])*
         #[allow(unused)]
         $($vis)* $($unsafe)? fn $ident() {
@@ -225,7 +249,6 @@ macro_rules! __dtor_entry {
 
                 $crate::__support::ctor_link_section!(
                     array,
-                    
                     features=$features,
 
                     #[allow(non_upper_case_globals, non_snake_case)]
@@ -234,7 +257,6 @@ macro_rules! __dtor_entry {
                     {
                         $crate::__support::ctor_link_section!(
                             startup,
-                            
                             features=$features,
 
                             #[allow(non_snake_case)]
@@ -247,7 +269,6 @@ macro_rules! __dtor_entry {
 
                 $crate::__support::ctor_link_section!(
                     exit,
-                    
                     features=$features,
 
                     /*unsafe*/ extern "C" fn __dtor(
@@ -289,11 +310,11 @@ macro_rules! __dtor_entry {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __ctor_link_section {
-    ($section:ident,features=$features:tt, $($block:tt)+) => {
+    ($section:ident, features=$features:tt, $($block:tt)+) => {
         $crate::__support::if_has_feature!(used_linker, $features, {
-            $crate::__support::ctor_link_section_attr!($section, used(linker), $($block)+);
+            $crate::__support::ctor_link_section_attr!($section, $features, used(linker), $($block)+);
         }, {
-            $crate::__support::ctor_link_section_attr!($section, used, $($block)+);
+            $crate::__support::ctor_link_section_attr!($section, $features, used, $($block)+);
         });
 
         #[cfg(not(any(
@@ -320,33 +341,39 @@ macro_rules! __ctor_link_section {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __ctor_link_section_attr {
-    (array, $used:meta, $item:item) => {
-        #[allow(unsafe_code)]
-        $crate::__support::ctor_link_section_attr!(
-            [[any(
-                target_os = "linux",
-                target_os = "android",
-                target_os = "freebsd",
-                target_os = "netbsd",
-                target_os = "openbsd",
-                target_os = "dragonfly",
-                target_os = "illumos",
-                target_os = "haiku"
-            ), ".init_array"],
-            [target_vendor = "apple", "__DATA,__mod_init_func"],
-            [windows, ".CRT$XCU"]],
+    (array, $features:tt, $used:meta, $item:item) => {
+        $crate::__support::if_has_feature!((link_section(c)), $features, {
+            #[allow(unsafe_code)]
             #[$used]
             $item
-        );
+        }, {
+            #[allow(unsafe_code)]
+            $crate::__support::ctor_link_section_attr!(
+                [[any(
+                    target_os = "linux",
+                    target_os = "android",
+                    target_os = "freebsd",
+                    target_os = "netbsd",
+                    target_os = "openbsd",
+                    target_os = "dragonfly",
+                    target_os = "illumos",
+                    target_os = "haiku"
+                ), ".init_array"],
+                [target_vendor = "apple", "__DATA,__mod_init_func"],
+                [windows, ".CRT$XCU"]],
+                #[$used]
+                $item
+            );
+        });
     };
-    (startup, $used:meta, $item:item) => {
+    (startup, $features:tt, $used:meta, $item:item) => {
         #[cfg(not(clippy))]
         $crate::__support::ctor_link_section_attr!([[any(target_os = "linux", target_os = "android"), ".text.startup"]], $item);
         
         #[cfg(clippy)]
         $item
     };
-    (exit, $used:meta, $item:item) => {
+    (exit, $features:tt, $used:meta, $item:item) => {
         #[cfg(not(clippy))]
         $crate::__support::ctor_link_section_attr!([[any(target_os = "linux", target_os = "android"), ".text.exit"]], $item);
 

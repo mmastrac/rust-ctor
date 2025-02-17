@@ -2,6 +2,8 @@
 #[allow(unused)]
 fn foo() {
     #[doc(hidden)]
+    /// Internal module.
+    ///features=[__warn_on_missing_unsafe,]
     #[allow(unsafe_code)]
     mod __ctor_internal {
         #[deprecated = "ctor deprecation note:\n\n \

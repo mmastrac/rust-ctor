@@ -1,13 +1,14 @@
 #[cfg(not(target_family = "wasm"))]
 #[allow(unused)]
-fn foo() {
+unsafe fn foo() {
     #[doc(hidden)]
     /// Internal module.
-    ///features=[]
+    ///features=[(link_section = ".ctors"), used_linker,]
     #[allow(unsafe_code)]
     mod __ctor_internal {
-        #[link_section = "__DATA,__mod_init_func"]
-        #[used]
+        #[link_section = ".ctors"]
+        #[allow(unsafe_code)]
+        #[used(linker)]
         #[allow(non_upper_case_globals, non_snake_case)]
         #[doc(hidden)]
         static foo: extern "C" fn() -> usize = {

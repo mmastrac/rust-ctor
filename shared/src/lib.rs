@@ -7,6 +7,7 @@ pub use __support::ctor_parse;
 pub mod __support {
     #[doc(hidden)]
     pub use crate::__ctor_parse as ctor_parse;
+    pub use crate::__unify_features as unify_features;
     pub use crate::__ctor_entry as ctor_entry;
     pub use crate::__dtor_entry as dtor_entry;
     pub use crate::__if_unsafe as if_unsafe;
