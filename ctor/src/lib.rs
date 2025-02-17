@@ -96,7 +96,7 @@ mod macros;
 /// # use std::collections::HashMap;
 /// # use ctor::*;
 /// #[ctor]
-/// pub static STATIC_CTOR: HashMap<u32, String> = {
+/// pub static STATIC_CTOR: HashMap<u32, String> = unsafe {
 ///   let mut m = HashMap::new();
 ///   for i in 0..100 {
 ///     m.insert(i, format!("x*100={}", i*100));

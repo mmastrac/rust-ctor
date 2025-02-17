@@ -88,11 +88,20 @@ macro_rules! __if_unsafe {
 #[macro_export]
 #[allow(unknown_lints, edition_2024_expr_fragment_specifier)]
 macro_rules! __ctor_entry {
-    (features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], item=fn $ident:ident() $block:block) => {
-        $crate::__support::ctor_entry!(features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=, item=fn $ident() $block);
+    (features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], item=unsafe fn $($item:tt)*) => {
+        $crate::__support::ctor_entry!(features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=unsafe, item=fn $($item)*);
     };
-    (features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], item=unsafe fn $ident:ident() $block:block) => {
-        $crate::__support::ctor_entry!(features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=unsafe, item=fn $ident() $block);
+    (features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], item=fn $($item:tt)*) => {
+        $crate::__support::ctor_entry!(features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=, item=fn $($item)*);
+    };
+    (features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], item=static $ident:ident : $ty:ty = $(unsafe)? $({ $lit:literal })? $($lit2:literal)? ;) => {
+        compile_error!(concat!("Use `const ", stringify!($ident), " = ", stringify!($($lit)?$($lit2)?), ";` or `static ", stringify!($ident), ": ", stringify!($ty), " = ", stringify!($($lit)?$($lit2)?), ";` instead"));
+    };
+    (features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], item=static $ident:ident : $ty:ty = unsafe $($item:tt)*) => {
+        $crate::__support::ctor_entry!(features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=unsafe, item=static $ident: $ty = $($item)*);
+    };
+    (features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], item=static $ident:ident : $ty:ty = $($item:tt)*) => {
+        $crate::__support::ctor_entry!(features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=, item=static $ident: $ty = $($item)*);
     };
     (features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=fn $ident:ident() $block:block) => {
         #[cfg(target_family="wasm")]
@@ -148,34 +157,20 @@ macro_rules! __ctor_entry {
             $block
         }
     };
-    (features=$features:tt, imeta=$(#[$imeta:meta])*, vis=[$($vis:tt)*], item=static $ident:ident : $ty:ty = $expr:expr;) => {
+    (features=$features:tt, imeta=$(#[$imeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=static $ident:ident : $ty:ty = $block:block;) => {
         $(#[$imeta])*
         $($vis)* static $ident: $ident::Static<$ty> = $ident::Static::<$ty> {
-            _storage: ::std::cell::UnsafeCell::new(None)
+            _storage: ::std::sync::OnceLock::new()
         };
 
         impl ::core::ops::Deref for $ident::Static<$ty> {
             type Target = $ty;
-            fn deref(&self) -> &'static $ty {
-                #[allow(unsafe_code)]
-               unsafe {
-                    let ptr = self._storage.get();
-                    let val = (&*ptr).as_ref().unwrap();
-                    val
-                }
-            }
-        }
+            fn deref(&self) -> &$ty {
+                fn init() -> $ty $block
 
-        impl $ident::Static<$ty> {
-            #[allow(dead_code)]
-            fn init_once(&self) {
-                let val = Some($expr);
-                // Only write the value to `storage_ident` on startup
-                #[allow(unsafe_code)]
-                unsafe {
-                    let ptr = self._storage.get();
-                    ::std::ptr::write(ptr, val);
-                }
+                self._storage.get_or_init(move || {
+                    init()
+                })
             }
         }
 
@@ -183,18 +178,27 @@ macro_rules! __ctor_entry {
         #[allow(non_upper_case_globals, non_snake_case)]
         #[allow(unsafe_code)]
         mod $ident {
+            $crate::__support::if_unsafe!($($unsafe)?, {}, {
+                $crate::__support::if_has_feature!( __warn_on_missing_unsafe, $features, {
+                    #[deprecated="ctor deprecation note:\n\n \
+                    Use of #[ctor] without `unsafe { ... }` is deprecated. As code execution before main\n\
+                    is unsupported by most Rust runtime functions, these functions must be marked\n\
+                    `unsafe`."]
+                        const fn ctor_without_unsafe_is_deprecated() {}
+                        #[allow(unused)]
+                        static UNSAFE_WARNING: () = ctor_without_unsafe_is_deprecated();
+                }, {});
+            });
+
             #[allow(non_camel_case_types, unreachable_pub)]
             pub struct Static<T> {
-                pub _storage: ::std::cell::UnsafeCell<::std::option::Option<T>>
+                pub _storage: ::std::sync::OnceLock<T>
             }
-
-            #[allow(unsafe_code)]
-            unsafe impl <T> std::marker::Sync for Static<T> {}
 
             #[cfg(target_family="wasm")]
             #[::wasm_bindgen::prelude::wasm_bindgen(start)]
             fn init() {
-                super::$ident.init_once();
+                _ = &*super::$ident;
             }
 
             #[cfg(not(target_family="wasm"))]
@@ -211,7 +215,7 @@ macro_rules! __ctor_entry {
                         features=$features,
 
                         #[allow(non_snake_case)]
-                        /*unsafe*/ extern "C" fn $ident() -> usize { super::$ident.init_once(); 0 }
+                        /*unsafe*/ extern "C" fn $ident() -> usize { _ = &*super::$ident; 0 }
                     );
 
                     $ident

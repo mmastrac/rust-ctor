@@ -10,3 +10,4 @@ __warn_on_missing_unsafe = []
 
 [dependencies]
 macrotest = "1"
+trybuild = "1"

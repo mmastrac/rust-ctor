@@ -1,0 +1,32 @@
+error: Use `const U8 = 42;` or `static U8: u8 = 42;` instead
+ --> tests/errors/ctor_bad_static.rs:1:1
+  |
+1 | / shared::ctor_parse!(
+2 | |     #[ctor]
+3 | |     static U8: u8 = 42;
+4 | | );
+  | |_^
+  |
+  = note: this error originates in the macro `$crate::__support::ctor_entry` which comes from the expansion of the macro `shared::ctor_parse` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: Use `const U8 = 42;` or `static U8: u8 = 42;` instead
+ --> tests/errors/ctor_bad_static.rs:6:1
+  |
+6 | / shared::ctor_parse!(
+7 | |     #[ctor]
+8 | |     static U8: u8 = unsafe { 42 };
+9 | | );
+  | |_^
+  |
+  = note: this error originates in the macro `$crate::__support::ctor_entry` which comes from the expansion of the macro `shared::ctor_parse` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error: Use `const U8 = 42;` or `static U8: u8 = 42;` instead
+  --> tests/errors/ctor_bad_static.rs:11:1
+   |
+11 | / shared::ctor_parse!(
+12 | |     #[ctor]
+13 | |     static U8: u8 = { 42 };
+14 | | );
+   | |_^
+   |
+   = note: this error originates in the macro `$crate::__support::ctor_entry` which comes from the expansion of the macro `shared::ctor_parse` (in Nightly builds, run with -Z macro-backtrace for more info)
