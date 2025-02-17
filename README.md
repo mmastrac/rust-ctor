@@ -73,7 +73,7 @@ library is loaded or an executable is started:
 Creates a `HashMap` populated with strings when a static
 library is loaded or an executable is started (new in `0.1.7`):
 
-`static` items are equivalent to `std::cell::OnceCell`, but with
+`static` items are equivalent to `std::sync::OnceLock`, but with
 an automatic deref implementation and eager initialization at
 startup time.
 
