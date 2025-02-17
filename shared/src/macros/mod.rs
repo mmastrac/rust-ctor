@@ -37,7 +37,7 @@ macro_rules! __ctor_parse {
 }
 
 /// Extract #[ctor/dtor] attribute parameters and turn them into features.
-/// 
+///
 /// Supported attributes:
 /// - `used(linker)` -> feature: `used_linker`
 /// - `link_section = ...` -> feature: `(link_section = ...)`
@@ -61,7 +61,7 @@ macro_rules! __unify_features {
 /// If the features array contains the requested feature, generates `if_true`, else `if_false`.
 ///
 /// This macro matches the features recursively.
-/// 
+///
 /// Example: `[(link_section = ".ctors") , used_linker , __warn_on_missing_unsafe ,]`
 #[doc(hidden)]
 #[macro_export]
@@ -370,7 +370,7 @@ macro_rules! __ctor_link_section_attr {
     (startup, $features:tt, $used:meta, $item:item) => {
         #[cfg(not(clippy))]
         $crate::__support::ctor_link_section_attr!([[any(target_os = "linux", target_os = "android"), ".text.startup"]], $item);
-        
+
         #[cfg(clippy)]
         $item
     };

@@ -3,9 +3,9 @@
 
 #![cfg_attr(feature = "used_linker", feature(used_with_arg))]
 
+use ctor::{ctor, dtor};
 use libc_print::*;
 use std::collections::HashMap;
-use ctor::{ctor, dtor};
 
 #[ctor]
 /// This is an immutable static, evaluated at init time
