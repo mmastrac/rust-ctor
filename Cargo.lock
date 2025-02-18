@@ -27,19 +27,19 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 name = "ctor"
 version = "0.3.4"
 dependencies = [
- "ctor-proc-macro 0.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ctor-proc-macro 0.0.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc-print",
 ]
 
 [[package]]
 name = "ctor-proc-macro"
-version = "0.0.2"
+version = "0.0.4"
 
 [[package]]
 name = "ctor-proc-macro"
-version = "0.0.2"
+version = "0.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "107adb396b2d8e7766e79151083ce1cc624b51dfd1c23e0429c50226bba693eb"
+checksum = "c426d2ba3e525b39c1f0a9ba41b9fe61878dee11fa4e4a76b6ab440f46c5db5d"
 
 [[package]]
 name = "diff"

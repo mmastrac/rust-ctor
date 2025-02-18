@@ -20,9 +20,9 @@ pub mod __support {
     pub use crate::__ctor_entry as ctor_entry;
     pub use crate::__ctor_link_section as ctor_link_section;
     pub use crate::__ctor_link_section_attr as ctor_link_section_attr;
-    #[doc(hidden)]
     pub use crate::__ctor_parse as ctor_parse;
     pub use crate::__dtor_entry as dtor_entry;
+    pub use crate::__dtor_parse as dtor_parse;
     pub use crate::__if_has_feature as if_has_feature;
     pub use crate::__if_unsafe as if_unsafe;
     pub use crate::__unify_features as unify_features;
@@ -30,25 +30,66 @@ pub mod __support {
 
 mod macros;
 
-// Code note:
-
-// You might wonder why we don't use `__attribute__((destructor))`/etc for
-// dtor. Unfortunately mingw doesn't appear to properly support section-based
-// hooks for shutdown, ie:
-
-// https://github.com/Alexpux/mingw-w64/blob/d0d7f784833bbb0b2d279310ddc6afb52fe47a46/mingw-w64-crt/crt/crtdll.c
-
-// In addition, OSX has removed support for section-based shutdown hooks after
-// warning about it for a number of years:
-
-// https://reviews.llvm.org/D45578
+/// Declarative forms of the `#[ctor]` and `#[dtor]` macros.
+///
+/// The declarative forms wrap and parse a proc_macro-like syntax like so, and
+/// are identical in expansion to the undecorated procedural macros. The
+/// declarative forms support the same attribute parameters as the procedural
+/// macros.
+///
+/// ```rust
+/// # mod test { use ctor::*; use libc_print::*;
+/// ctor::declarative::ctor! {
+///   #[ctor]
+///   fn foo() {
+///     libc_println!("Hello, world!");
+///   }
+/// }
+/// # }
+///
+/// // ... the above is identical to:
+///
+/// # mod test_2 { use ctor::*; use libc_print::*;
+/// #[ctor]
+/// fn foo() {
+///   libc_println!("Hello, world!");
+/// }
+/// # }
+/// ```
+pub mod declarative {
+    #[doc(inline)]
+    pub use crate::__support::ctor_parse as ctor;
+    #[doc(inline)]
+    pub use crate::__support::dtor_parse as dtor;
+}
 
 /// Marks a function or static variable as a library/executable constructor.
-/// This uses OS-specific linker sections to call a specific function at
-/// load time.
+/// This uses OS-specific linker sections to call a specific function at load
+/// time.
 ///
-/// Multiple startup functions/statics are supported, but the invocation order is not
-/// guaranteed.
+/// # Important notes
+///
+/// Rust does not make any guarantees about stdlib support for life-before or
+/// life-after main. This means that the `ctor` crate may not work as expected
+/// in some cases, such as when used in an `async` runtime or making use of
+/// stdlib services.
+///
+/// Multiple startup functions/statics are supported, but the invocation order
+/// is not guaranteed.
+///
+/// The `ctor` crate assumes it is available as a direct dependency, with
+/// `extern crate ctor`. If you re-export `ctor` items as part of your crate,
+/// you can use the `crate_path` parameter to redirect the macro's output to the
+/// correct crate.
+///
+/// # Attribute parameters
+///
+///  - `crate_path = ::path::to::ctor::crate`: The path to the `ctor` crate
+///    containing the support macros. If you re-export `ctor` items as part of
+///    your crate, you can use this to redirect the macro's output to the
+///    correct crate.
+///  - `used(linker)`: Use the linker to load the constructor.
+///  - `link_section = "section"`: The section to place the constructor in.
 ///
 /// # Examples
 ///
@@ -61,7 +102,8 @@ mod macros;
 /// use libc_print::std_name::println;
 ///
 /// #[ctor]
-/// fn foo() {
+/// unsafe fn foo() {
+///   // Using libc_print which is safe in `#[ctor]`
 ///   println!("Hello, world!");
 /// }
 ///
@@ -81,7 +123,7 @@ mod macros;
 /// static INITED: AtomicBool = AtomicBool::new(false);
 ///
 /// #[ctor]
-/// fn foo() {
+/// unsafe fn set_inited() {
 ///   INITED.store(true, Ordering::SeqCst);
 /// }
 /// # }
@@ -112,25 +154,87 @@ mod macros;
 ///
 /// # Details
 ///
-/// The `#[ctor]` macro makes use of linker sections to ensure that a
-/// function is run at startup time.
+/// The `#[ctor]` macro makes use of linker sections to ensure that a function
+/// is run at startup time.
+///
+/// ```rust
+/// # #![cfg_attr(feature="used_linker", feature(used_with_arg))]
+/// # extern crate ctor;
+/// # mod test {
+/// # use ctor::*;
+/// #[ctor]
+///
+/// unsafe fn my_init_fn() {
+///   /* ... */
+/// }
+/// # }
+/// ```
 ///
 /// The above example translates into the following Rust code (approximately):
 ///
-///```rust
+/// ```rust
+/// # fn my_init_fn() {}
 /// #[used]
-/// #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".init_array")]
-/// #[cfg_attr(target_os = "freebsd", link_section = ".init_array")]
-/// #[cfg_attr(target_os = "netbsd", link_section = ".init_array")]
-/// #[cfg_attr(target_os = "openbsd", link_section = ".init_array")]
-/// #[cfg_attr(target_os = "illumos", link_section = ".init_array")]
+/// #[cfg_attr(target_os = "linux", link_section = ".init_array")]
 /// #[cfg_attr(target_vendor = "apple", link_section = "__DATA,__mod_init_func")]
 /// #[cfg_attr(target_os = "windows", link_section = ".CRT$XCU")]
-/// static FOO: extern fn() = {
-///   #[cfg_attr(any(target_os = "linux", target_os = "android"), link_section = ".text.startup")]
-///   extern fn foo() { /* ... */ };
-///   foo
+/// /* ... other platforms elided ... */
+/// static INIT_FN: extern fn() = {
+///     extern fn init_fn() { my_init_fn(); };
+///     init_fn
 /// };
+/// ```
+///
+/// For `static` items, the macro generates a `std::sync::OnceLock` that is
+/// initialized at startup time.
+///
+/// ```rust
+/// # extern crate ctor;
+/// # mod test {
+/// # use ctor::*;
+/// # use std::collections::HashMap;
+/// #[ctor]
+/// static FOO: HashMap<u32, String> = unsafe {
+///   let mut m = HashMap::new();
+///   for i in 0..100 {
+///     m.insert(i, format!("x*100={}", i*100));
+///   }
+///   m
+/// };
+/// # }
+/// ```
+///
+/// The above example translates into the following Rust code (approximately),
+/// which eagerly initializes the `HashMap` inside a `OnceLock` at startup time:
+///
+/// ```rust
+/// # extern crate ctor;
+/// # mod test {
+/// # use ctor::ctor;
+/// # use std::collections::HashMap;
+/// static FOO: FooStatic = FooStatic { value: ::std::sync::OnceLock::new() };
+/// struct FooStatic {
+///   value: ::std::sync::OnceLock<HashMap<u32, String>>,
+/// }
+///
+/// impl ::std::ops::Deref for FooStatic {
+///   type Target = HashMap<u32, String>;
+///   fn deref(&self) -> &Self::Target {
+///     self.value.get_or_init(|| unsafe {
+///       let mut m = HashMap::new();
+///       for i in 0..100 {
+///         m.insert(i, format!("x*100={}", i*100));
+///       }
+///       m
+///     })
+///   }
+/// }
+///
+/// #[ctor]
+/// unsafe fn init_foo_ctor() {
+///   _ = &*FOO;
+/// }
+/// # }
 /// ```
 pub use ctor_proc_macro::ctor;
 
@@ -139,9 +243,6 @@ pub use ctor_proc_macro::ctor;
 ///
 /// Multiple shutdown functions are supported, but the invocation order is not
 /// guaranteed.
-///
-/// `sys_common::at_exit` is usually a better solution for shutdown handling, as
-/// it allows you to use `stdout` in your handlers.
 ///
 /// ```rust
 /// # #![cfg_attr(feature="used_linker", feature(used_with_arg))]
