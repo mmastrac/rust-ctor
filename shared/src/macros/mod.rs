@@ -1,8 +1,25 @@
-/// Macro entry point. At this point it's either:
+/// Parse a `#[ctor]`-annotated item as if it were a proc-macro.
 ///
-/// `#[ctor] (pub) (unsafe) fn IDENT`
-/// `#[dtor] (pub) (unsafe) fn IDENT`
-/// `#[ctor] (pub) static IDENT`
+/// This macro supports both the `fn` and `static` forms of the `#[ctor]`
+/// attribute, including attribute parameters.
+///
+/// ```rust
+/// # #[cfg(any())] mod test {
+/// ctor! {
+///   #[ctor(link_section = "...")]
+///   unsafe fn foo() { /* ... */ }
+/// }
+///
+/// ctor! {
+///   #[ctor(link_section = "...")]
+///   static FOO: std::collections::HashMap<u32, String> = unsafe {
+///     let mut m = std::collections::HashMap::new();
+///     m.insert(1, "foo".to_string());
+///     m
+///   };
+/// }
+/// # }
+/// ```
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __ctor_parse {
@@ -21,7 +38,20 @@ macro_rules! __ctor_parse {
     ($( #[feature($fname:ident)] )* #[ctor $(($($meta:tt)*))?] $(#[$imeta:meta])* static $($item:tt)*) => {
         $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[], item=static $($item)*);
     };
+}
 
+/// Parse a `#[dtor]`-annotated item as if it were a proc-macro.
+///
+/// ```rust
+/// # #[cfg(any())] mod test {
+/// dtor! {
+///   #[dtor]
+///   unsafe fn foo() { /* ... */ }
+/// }
+/// # }
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __dtor_parse {
     ($( #[feature($fname:ident)] )* #[dtor $(($($meta:tt)*))?] $(#[$imeta:meta])* pub ( $($extra:tt)* ) $($item:tt)*) => {
         $crate::__support::dtor_entry!(meta=[$($($meta)*)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[pub($($extra)*)], item=$($item)*);
     };
@@ -39,6 +69,7 @@ macro_rules! __ctor_parse {
 /// Extract #[ctor/dtor] attribute parameters and turn them into features.
 ///
 /// Supported attributes:
+///
 /// - `used(linker)` -> feature: `used_linker`
 /// - `link_section = ...` -> feature: `(link_section = ...)`
 #[doc(hidden)]
@@ -49,6 +80,9 @@ macro_rules! __unify_features {
     };
     (next=$next_macro:path, meta=[link_section = $section:tt $(, $($meta:tt)* )?], features=[$($features:tt,)*], $($rest:tt)*) => {
         $crate::__support::unify_features!(next=$next_macro, meta=[$($($meta)*)?], features=[(link_section=$section),$($features,)*], $($rest)*);
+    };
+    (next=$next_macro:path, meta=[crate_path = $path:path $(, $($meta:tt)* )?], features=[$($features:tt,)*], $($rest:tt)*) => {
+        $crate::__support::unify_features!(next=$next_macro, meta=[$($($meta)*)?], features=[(crate_path=$path),$($features,)*], $($rest)*);
     };
     (next=$next_macro:path, meta=[$unknown_meta:meta $($meta:tt)*], features=[$($features:tt,)*], $($rest:tt)*) => {
         compile_error!(concat!("Unknown attribute parameter: ", stringify!($unknown_meta)));
@@ -224,6 +258,19 @@ macro_rules! __ctor_entry {
         }
     };
 }
+
+// Code note:
+
+// You might wonder why we don't use `__attribute__((destructor))`/etc for
+// dtor. Unfortunately mingw doesn't appear to properly support section-based
+// hooks for shutdown, ie:
+
+// https://github.com/Alexpux/mingw-w64/blob/d0d7f784833bbb0b2d279310ddc6afb52fe47a46/mingw-w64-crt/crt/crtdll.c
+
+// In addition, OSX has removed support for section-based shutdown hooks after
+// warning about it for a number of years:
+
+// https://reviews.llvm.org/D45578
 
 #[doc(hidden)]
 #[macro_export]

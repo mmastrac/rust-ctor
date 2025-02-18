@@ -4,9 +4,8 @@ pub mod __support {
     pub use crate::__ctor_entry as ctor_entry;
     pub use crate::__ctor_link_section as ctor_link_section;
     pub use crate::__ctor_link_section_attr as ctor_link_section_attr;
-    #[doc(hidden)]
-    pub use crate::__ctor_parse as dtor_parse;
     pub use crate::__dtor_entry as dtor_entry;
+    pub use crate::__dtor_parse as dtor_parse;
     pub use crate::__if_has_feature as if_has_feature;
     pub use crate::__if_unsafe as if_unsafe;
 }
@@ -34,3 +33,34 @@ mod macros;
 /// }
 /// ```
 pub use dtor_proc_macro::dtor;
+
+/// Declarative forms of the `#[dtor]` macro.
+///
+/// The declarative forms wrap and parse a proc_macro-like syntax like so, and
+/// are identical in expansion to the undecorated procedural macros. The
+/// declarative forms support the same attribute parameters as the procedural
+/// macros.
+///
+/// ```rust
+/// # mod test { use dtor::*; use libc_print::*;
+/// dtor::declarative::dtor! {
+///   #[dtor]
+///   fn foo() {
+///     libc_println!("Goodbye, world!");
+///   }
+/// }
+/// # }
+///
+/// // ... the above is identical to:
+///
+/// # mod test_2 { use dtor::*; use libc_print::*;
+/// #[dtor]
+/// fn foo() {
+///   libc_println!("Goodbye, world!");
+/// }
+/// # }
+/// ```
+pub mod declarative {
+    #[doc(inline)]
+    pub use crate::__support::dtor_parse as dtor;
+}
