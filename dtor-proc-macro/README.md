@@ -2,4 +2,4 @@
 
 This crate is not intended to be used directly and does not have any public exports.
 
-See https://crates.io/crates/ctor and https://crates.io/crates/dtor for the main crates.
+See [ctor](https://crates.io/crates/ctor) and [dtor](https://crates.io/crates/dtor) on [crates.io](https://crates.io) for the main crates.

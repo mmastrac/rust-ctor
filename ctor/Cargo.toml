@@ -8,19 +8,24 @@ license = "Apache-2.0 OR MIT"
 repository = "https://github.com/mmastrac/rust-ctor"
 readme = "../README.md"
 
-[badges]
-travis-ci = { repository = "mmastrac/rust-ctor", branch = "master" }
-
 [features]
-default = []
+default = ["dtor", "proc_macro", "__no_warn_on_missing_unsafe"]
+
+# Enable the dtor re-export
+dtor = ["dep:dtor"]
+
+# Enable the proc_macro
+proc_macro = ["dep:ctor-proc-macro", "dtor?/proc_macro"]
 
 # For nightly users, used(linker) may be a better choice
-used_linker = ["ctor-proc-macro/used_linker"]
-# This will eventually become the default
-__warn_on_missing_unsafe = ["ctor-proc-macro/__warn_on_missing_unsafe"]
+used_linker = ["dtor?/used_linker"]
+
+# As we are warning on missing unsafe, allow users to temporarily opt out
+__no_warn_on_missing_unsafe = ["dtor?/__no_warn_on_missing_unsafe"]
 
 [dependencies]
-ctor-proc-macro = "=0.0.4"
+ctor-proc-macro = { version = "0.0.5", optional = true }
+dtor = { version = "0.0.3", default-features = false, optional = true }
 
 [dev-dependencies]
 libc-print = "0.1.20"

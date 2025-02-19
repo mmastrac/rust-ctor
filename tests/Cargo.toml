@@ -8,7 +8,7 @@ publish = false
 used_linker = ["ctor/used_linker"]
 
 [dependencies]
-ctor = { path = "../ctor" }
+ctor = "*"
 dlopen = "0.1.8"
 libc-print = "0.1.15"
 libc = { version = "0.2.96", default-features = false }

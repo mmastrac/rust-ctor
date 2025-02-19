@@ -13,4 +13,5 @@ pub fn pass() {
 pub fn trybuild() {
     let t = trybuild::TestCases::new();
     t.compile_fail("tests/errors/*.rs");
+    t.pass("tests/expand/*.rs");
 }

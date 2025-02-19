@@ -1,6 +1,6 @@
 [package]
 name = "dtor"
-version = "0.0.2"
+version = "0.0.3"
 authors = ["Matt Mastracci <matthew@mastracci.com>"]
 edition = "2021"
 description = "__attribute__((destructor)) for Rust"
@@ -9,12 +9,15 @@ repository = "https://github.com/mmastrac/rust-ctor"
 readme = "README.md"
 
 [features]
-default = []
-used_linker = ["dtor-proc-macro/used_linker"]
-__warn_on_missing_unsafe = ["dtor-proc-macro/__warn_on_missing_unsafe"]
+default = ["proc_macro", "__no_warn_on_missing_unsafe"]
+proc_macro = ["dep:dtor-proc-macro"]
+used_linker = []
+__no_warn_on_missing_unsafe = []
 
 [dependencies]
-dtor-proc-macro = "=0.0.2"
+dtor-proc-macro = { version = "=0.0.5", optional = true }
+
+[dev-dependencies]
 libc-print = "0.1.20"
 
 [lib]

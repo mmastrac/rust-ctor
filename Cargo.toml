@@ -12,3 +12,9 @@ members = [
 #    "tests-edition-2024" 
 ]
 resolver = "2"
+
+[patch.crates-io]
+ctor = { path = "ctor" }
+dtor = { path = "dtor" }
+dtor-proc-macro = { path = "dtor-proc-macro" }
+ctor-proc-macro = { path = "ctor-proc-macro" }

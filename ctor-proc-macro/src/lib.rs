@@ -1,17 +1,13 @@
+#![doc = include_str!("../README.md")]
+
 use std::iter::FromIterator;
 
 use proc_macro::{Delimiter, Group, Ident, Punct, Spacing, Span, TokenStream, TokenTree};
 
+#[allow(missing_docs)]
 #[proc_macro_attribute]
 pub fn ctor(attribute: TokenStream, item: TokenStream) -> TokenStream {
     generate("ctor", "ctor", attribute, item)
-}
-
-// Legacy dtor macro.
-
-#[proc_macro_attribute]
-pub fn dtor(attribute: TokenStream, item: TokenStream) -> TokenStream {
-    generate("dtor", "ctor", attribute, item)
 }
 
 /// Generates the equivalent of this Rust code as a TokenStream:
@@ -20,6 +16,7 @@ pub fn dtor(attribute: TokenStream, item: TokenStream) -> TokenStream {
 /// ::ctor::__support::ctor_parse!(#[ctor] fn foo() { ... });
 /// ::dtor::__support::dtor_parse!(#[dtor] fn foo() { ... });
 /// ```
+#[allow(unknown_lints, tail_expr_drop_order)]
 fn generate(
     macro_type: &str,
     macro_crate: &str,
@@ -31,10 +28,12 @@ fn generate(
     // Search for crate_path in attributes
     let mut crate_path = None;
     let mut tokens = attribute.clone().into_iter().peekable();
+
     while let Some(token) = tokens.next() {
         if let TokenTree::Ident(ident) = &token {
             if ident.to_string() == "crate_path" {
                 // Look for =
+                #[allow(unknown_lints, tail_expr_drop_order)]
                 if let Some(TokenTree::Punct(punct)) = tokens.next() {
                     if punct.as_char() == '=' {
                         // Collect tokens until comma or end
@@ -57,42 +56,6 @@ fn generate(
             }
         }
     }
-
-    #[cfg(feature = "used_linker")]
-    inner.extend([
-        TokenTree::Punct(Punct::new('#', Spacing::Alone)),
-        TokenTree::Group(Group::new(
-            Delimiter::Bracket,
-            TokenStream::from_iter([
-                TokenTree::Ident(Ident::new("feature", Span::call_site())),
-                TokenTree::Group(Group::new(
-                    Delimiter::Parenthesis,
-                    TokenStream::from_iter([TokenTree::Ident(Ident::new(
-                        "used_linker",
-                        Span::call_site(),
-                    ))]),
-                )),
-            ]),
-        )),
-    ]);
-
-    #[cfg(feature = "__warn_on_missing_unsafe")]
-    inner.extend([
-        TokenTree::Punct(Punct::new('#', Spacing::Alone)),
-        TokenTree::Group(Group::new(
-            Delimiter::Bracket,
-            TokenStream::from_iter([
-                TokenTree::Ident(Ident::new("feature", Span::call_site())),
-                TokenTree::Group(Group::new(
-                    Delimiter::Parenthesis,
-                    TokenStream::from_iter([TokenTree::Ident(Ident::new(
-                        "__warn_on_missing_unsafe",
-                        Span::call_site(),
-                    ))]),
-                )),
-            ]),
-        )),
-    ]);
 
     if attribute.is_empty() {
         // #[ctor]
