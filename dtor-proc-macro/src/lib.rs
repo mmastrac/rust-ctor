@@ -1,12 +1,16 @@
+#![doc = include_str!("../README.md")]
+
 use std::iter::FromIterator;
 
 use proc_macro::{Delimiter, Group, Ident, Punct, Spacing, Span, TokenStream, TokenTree};
 
+#[allow(missing_docs)]
 #[proc_macro_attribute]
 pub fn dtor(attribute: TokenStream, item: TokenStream) -> TokenStream {
     generate("dtor", "dtor", attribute, item)
 }
 
+#[allow(missing_docs)]
 #[proc_macro_attribute]
 pub fn __dtor_from_ctor(attribute: TokenStream, item: TokenStream) -> TokenStream {
     generate("ctor", "dtor", attribute, item)
@@ -29,6 +33,7 @@ fn generate(
     // Search for crate_path in attributes
     let mut crate_path = None;
     let mut tokens = attribute.clone().into_iter().peekable();
+    #[allow(tail_expr_drop_order)]
     while let Some(token) = tokens.next() {
         if let TokenTree::Ident(ident) = &token {
             if ident.to_string() == "crate_path" {
