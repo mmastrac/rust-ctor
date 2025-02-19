@@ -2,7 +2,7 @@ mod macros;
 
 #[doc(hidden)]
 #[allow(unused)]
-pub use macros::__support as __support;
+pub use macros::__support;
 
 /// Marks a function as a library/executable destructor. This uses OS-specific
 /// linker sections to call a specific function at termination time.

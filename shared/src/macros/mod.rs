@@ -1,4 +1,3 @@
-
 #[doc(hidden)]
 #[allow(unused)]
 pub mod __support {
@@ -10,9 +9,9 @@ pub mod __support {
     pub use crate::__dtor_parse as dtor_parse;
     pub use crate::__if_has_feature as if_has_feature;
     pub use crate::__if_unsafe as if_unsafe;
-    pub use crate::__unify_features as unify_features;
-    pub use crate::__include_used_linker_feature as include_used_linker_feature;
     pub use crate::__include_no_warn_on_missing_unsafe_feature as include_no_warn_on_missing_unsafe_feature;
+    pub use crate::__include_used_linker_feature as include_used_linker_feature;
+    pub use crate::__unify_features as unify_features;
 }
 
 /// Parse a `#[ctor]`-annotated item as if it were a proc-macro.
@@ -137,28 +136,36 @@ macro_rules! __unify_features {
 #[macro_export]
 #[cfg(feature = "used_linker")]
 macro_rules! __include_used_linker_feature {
-    ($true:item $false:item) => { $true };
+    ($true:item $false:item) => {
+        $true
+    };
 }
 
 #[doc(hidden)]
 #[macro_export]
 #[cfg(not(feature = "used_linker"))]
 macro_rules! __include_used_linker_feature {
-    ($true:item $false:item) => { $false };
+    ($true:item $false:item) => {
+        $false
+    };
 }
 
 #[doc(hidden)]
 #[macro_export]
 #[cfg(feature = "__no_warn_on_missing_unsafe")]
 macro_rules! __include_no_warn_on_missing_unsafe_feature {
-    ($true:item $false:item) => { $true };
+    ($true:item $false:item) => {
+        $true
+    };
 }
 
 #[doc(hidden)]
 #[macro_export]
 #[cfg(not(feature = "__no_warn_on_missing_unsafe"))]
 macro_rules! __include_no_warn_on_missing_unsafe_feature {
-    ($true:item $false:item) => { $false };
+    ($true:item $false:item) => {
+        $false
+    };
 }
 
 /// If the features array contains the requested feature, generates `if_true`, else `if_false`.

@@ -9,7 +9,7 @@ repository = "https://github.com/mmastrac/rust-ctor"
 readme = "../README.md"
 
 [features]
-default = ["dtor", "proc_macro"]
+default = ["dtor", "proc_macro", "__no_warn_on_missing_unsafe"]
 
 # Enable the dtor re-export
 dtor = ["dep:dtor"]

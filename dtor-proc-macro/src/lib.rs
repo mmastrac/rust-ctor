@@ -18,7 +18,12 @@ pub fn __dtor_from_ctor(attribute: TokenStream, item: TokenStream) -> TokenStrea
 /// ::ctor::__support::ctor_parse!(#[ctor] fn foo() { ... });
 /// ::dtor::__support::dtor_parse!(#[dtor] fn foo() { ... });
 /// ```
-fn generate(macro_crate: &str, macro_type: &str, attribute: TokenStream, item: TokenStream) -> TokenStream {
+fn generate(
+    macro_crate: &str,
+    macro_type: &str,
+    attribute: TokenStream,
+    item: TokenStream,
+) -> TokenStream {
     let mut inner = TokenStream::new();
 
     // Search for crate_path in attributes

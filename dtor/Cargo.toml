@@ -9,7 +9,7 @@ repository = "https://github.com/mmastrac/rust-ctor"
 readme = "README.md"
 
 [features]
-default = ["proc_macro"]
+default = ["proc_macro", "__no_warn_on_missing_unsafe"]
 proc_macro = ["dep:dtor-proc-macro"]
 used_linker = []
 __no_warn_on_missing_unsafe = []

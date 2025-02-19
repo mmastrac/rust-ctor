@@ -16,7 +16,7 @@
 
 #[doc(hidden)]
 #[allow(unused)]
-pub use macros::__support as __support;
+pub use macros::__support;
 
 mod macros;
 
@@ -231,7 +231,7 @@ pub mod declarative {
 pub use ctor_proc_macro::ctor;
 
 /// Re-exported `#[dtor]` proc-macro from `dtor` crate.
-/// 
+///
 /// See [`::dtor`] for more details.
 #[cfg(feature = "dtor")]
 #[doc(inline)]
