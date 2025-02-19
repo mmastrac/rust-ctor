@@ -336,6 +336,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "tests-edition-2024"
+version = "0.1.0"
+dependencies = [
+ "ctor",
+]
+
+[[package]]
 name = "tests-wasm"
 version = "0.1.0"
 dependencies = [
