@@ -1,3 +1,20 @@
+
+#[doc(hidden)]
+#[allow(unused)]
+pub mod __support {
+    pub use crate::__ctor_entry as ctor_entry;
+    pub use crate::__ctor_link_section as ctor_link_section;
+    pub use crate::__ctor_link_section_attr as ctor_link_section_attr;
+    pub use crate::__ctor_parse as ctor_parse;
+    pub use crate::__dtor_entry as dtor_entry;
+    pub use crate::__dtor_parse as dtor_parse;
+    pub use crate::__if_has_feature as if_has_feature;
+    pub use crate::__if_unsafe as if_unsafe;
+    pub use crate::__unify_features as unify_features;
+    pub use crate::__include_used_linker_feature as include_used_linker_feature;
+    pub use crate::__include_no_warn_on_missing_unsafe_feature as include_no_warn_on_missing_unsafe_feature;
+}
+
 /// Parse a `#[ctor]`-annotated item as if it were a proc-macro.
 ///
 /// This macro supports both the `fn` and `static` forms of the `#[ctor]`
@@ -23,20 +40,20 @@
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __ctor_parse {
-    ($( #[feature($fname:ident)] )* #[ctor $(($($meta:tt)*))?] $(#[$imeta:meta])* pub ( $($extra:tt)* ) $($item:tt)*) => {
-        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[pub($($extra)*)], item=$($item)*);
+    (#[ctor $(($($meta:tt)*))?] $(#[$imeta:meta])* pub ( $($extra:tt)* ) $($item:tt)*) => {
+        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], features=[], imeta=$(#[$imeta])*, vis=[pub($($extra)*)], item=$($item)*);
     };
-    ($( #[feature($fname:ident)] )* #[ctor $(($($meta:tt)*))?] $(#[$imeta:meta])* pub $($item:tt)*) => {
-        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[pub], item=$($item)*);
+    (#[ctor $(($($meta:tt)*))?] $(#[$imeta:meta])* pub $($item:tt)*) => {
+        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], features=[], imeta=$(#[$imeta])*, vis=[pub], item=$($item)*);
     };
-    ($( #[feature($fname:ident)] )* #[ctor $(($($meta:tt)*))?] $(#[$imeta:meta])* fn $($item:tt)*) => {
-        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[], item=fn $($item)*);
+    (#[ctor $(($($meta:tt)*))?] $(#[$imeta:meta])* fn $($item:tt)*) => {
+        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], features=[], imeta=$(#[$imeta])*, vis=[], item=fn $($item)*);
     };
-    ($( #[feature($fname:ident)] )* #[ctor $(($($meta:tt)*))?] $(#[$imeta:meta])* unsafe $($item:tt)*) => {
-        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[], item=unsafe $($item)*);
+    (#[ctor $(($($meta:tt)*))?] $(#[$imeta:meta])* unsafe $($item:tt)*) => {
+        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], features=[], imeta=$(#[$imeta])*, vis=[], item=unsafe $($item)*);
     };
-    ($( #[feature($fname:ident)] )* #[ctor $(($($meta:tt)*))?] $(#[$imeta:meta])* static $($item:tt)*) => {
-        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[], item=static $($item)*);
+    (#[ctor $(($($meta:tt)*))?] $(#[$imeta:meta])* static $($item:tt)*) => {
+        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], features=[], imeta=$(#[$imeta])*, vis=[], item=static $($item)*);
     };
 }
 
@@ -52,44 +69,96 @@ macro_rules! __ctor_parse {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __dtor_parse {
-    ($( #[feature($fname:ident)] )* #[dtor $(($($meta:tt)*))?] $(#[$imeta:meta])* pub ( $($extra:tt)* ) $($item:tt)*) => {
-        $crate::__support::dtor_entry!(meta=[$($($meta)*)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[pub($($extra)*)], item=$($item)*);
+    (#[dtor $(($($meta:tt)*))?] $(#[$imeta:meta])* pub ( $($extra:tt)* ) $($item:tt)*) => {
+        $crate::__support::unify_features!(next=$crate::__support::dtor_entry, meta=[$($($meta)*)?], features=[], imeta=$(#[$imeta])*, vis=[pub($($extra)*)], item=$($item)*);
     };
-    ($( #[feature($fname:ident)] )* #[dtor $(($($meta:tt)*))?] $(#[$imeta:meta])* pub $($item:tt)*) => {
-        $crate::__support::dtor_entry!(meta=[$($($meta)*)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[pub], item=$($item)*);
+    (#[dtor $(($($meta:tt)*))?] $(#[$imeta:meta])* pub $($item:tt)*) => {
+        $crate::__support::unify_features!(next=$crate::__support::dtor_entry, meta=[$($($meta)*)?], features=[], imeta=$(#[$imeta])*, vis=[pub], item=$($item)*);
     };
-    ($( #[feature($fname:ident)] )* #[dtor $(($($meta:tt)*))?] $(#[$imeta:meta])* fn $($item:tt)*) => {
-        $crate::__support::dtor_entry!(meta=[$($($meta)*)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[], item=fn $($item)*);
+    (#[dtor $(($($meta:tt)*))?] $(#[$imeta:meta])* fn $($item:tt)*) => {
+        $crate::__support::unify_features!(next=$crate::__support::dtor_entry, meta=[$($($meta)*)?], features=[], imeta=$(#[$imeta])*, vis=[], item=fn $($item)*);
     };
-    ($( #[feature($fname:ident)] )* #[dtor $(($($meta:tt)*))?] $(#[$imeta:meta])* unsafe $($item:tt)*) => {
-        $crate::__support::dtor_entry!(meta=[$($($meta)*)?], features=[$($fname,)*], imeta=$(#[$imeta])*, vis=[], item=unsafe $($item)*);
+    (#[dtor $(($($meta:tt)*))?] $(#[$imeta:meta])* unsafe $($item:tt)*) => {
+        $crate::__support::unify_features!(next=$crate::__support::dtor_entry, meta=[$($($meta)*)?], features=[], imeta=$(#[$imeta])*, vis=[], item=unsafe $($item)*);
     };
 }
 
-/// Extract #[ctor/dtor] attribute parameters and turn them into features.
+/// Extract #[ctor/dtor] attribute parameters and crate features and turn them
+/// into a unified feature array.
 ///
 /// Supported attributes:
 ///
 /// - `used(linker)` -> feature: `used_linker`
 /// - `link_section = ...` -> feature: `(link_section = ...)`
+/// - `crate_path = ...` -> feature: `(crate_path = ...)`
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __unify_features {
-    (next=$next_macro:path, meta=[used(linker) $(, $($meta:tt)* )?], features=[$($features:tt,)*], $($rest:tt)*) => {
-        $crate::__support::unify_features!(next=$next_macro, meta=[$($($meta)*)?], features=[used_linker,$($features,)*], $($rest)*);
+    // Entry
+    (next=$next_macro:path, meta=[$($meta:tt)*], features=[$($features:tt)*], $($rest:tt)*) => {
+        $crate::__support::unify_features!(used_linker, next=$next_macro, meta=[$($meta)*], features=[$($features)*], $($rest)*);
     };
-    (next=$next_macro:path, meta=[link_section = $section:tt $(, $($meta:tt)* )?], features=[$($features:tt,)*], $($rest:tt)*) => {
-        $crate::__support::unify_features!(next=$next_macro, meta=[$($($meta)*)?], features=[(link_section=$section),$($features,)*], $($rest)*);
+
+    // Add used_linker feature if cfg(feature="used_linker")
+    (used_linker, next=$next_macro:path, meta=[$($meta:tt)*], features=[$($features:tt)*], $($rest:tt)*) => {
+        $crate::__support::include_used_linker_feature!(
+            $crate::__support::unify_features!(__no_warn_on_missing_unsafe, next=$next_macro, meta=[$($meta)*], features=[used_linker,$($features)*], $($rest)*);
+            $crate::__support::unify_features!(__no_warn_on_missing_unsafe, next=$next_macro, meta=[$($meta)*], features=[$($features)*], $($rest)*);
+        );
     };
-    (next=$next_macro:path, meta=[crate_path = $path:path $(, $($meta:tt)* )?], features=[$($features:tt,)*], $($rest:tt)*) => {
-        $crate::__support::unify_features!(next=$next_macro, meta=[$($($meta)*)?], features=[(crate_path=$path),$($features,)*], $($rest)*);
+    // Add __no_warn_on_missing_unsafe feature if cfg(feature="__no_warn_on_missing_unsafe")
+    (__no_warn_on_missing_unsafe, next=$next_macro:path, meta=[$($meta:tt)*], features=[$($features:tt)*], $($rest:tt)*) => {
+        $crate::__support::include_used_linker_feature!(
+            $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($meta)*], features=[__no_warn_on_missing_unsafe,$($features)*], $($rest)*);
+            $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($meta)*], features=[$($features)*], $($rest)*);
+        );
     };
-    (next=$next_macro:path, meta=[$unknown_meta:meta $($meta:tt)*], features=[$($features:tt,)*], $($rest:tt)*) => {
+
+    // Parse meta into features
+    (continue, next=$next_macro:path, meta=[used(linker) $(, $($meta:tt)* )?], features=[$($features:tt)*], $($rest:tt)*) => {
+        $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($($meta)*)?], features=[used_linker,$($features)*], $($rest)*);
+    };
+    (continue, next=$next_macro:path, meta=[link_section = $section:tt $(, $($meta:tt)* )?], features=[$($features:tt)*], $($rest:tt)*) => {
+        $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($($meta)*)?], features=[(link_section=$section),$($features)*], $($rest)*);
+    };
+    (continue, next=$next_macro:path, meta=[crate_path = $path:path $(, $($meta:tt)* )?], features=[$($features:tt)*], $($rest:tt)*) => {
+        $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($($meta)*)?], features=[(crate_path=$path),$($features)*], $($rest)*);
+    };
+    (continue, next=$next_macro:path, meta=[$unknown_meta:meta $($meta:tt)*], features=[$($features:tt)*], $($rest:tt)*) => {
         compile_error!(concat!("Unknown attribute parameter: ", stringify!($unknown_meta)));
     };
-    (next=$next_macro:path, meta=[], features=$features:tt, $($rest:tt)*) => {
-        $next_macro!(features=$features, $($rest)*);
+
+    (continue, next=$next_macro:path, meta=[], features=[$($features:tt)*], $($rest:tt)*) => {
+        $next_macro!(features=[$($features)*], $($rest)*);
     };
+}
+
+#[doc(hidden)]
+#[macro_export]
+#[cfg(feature = "used_linker")]
+macro_rules! __include_used_linker_feature {
+    ($true:item $false:item) => { $true };
+}
+
+#[doc(hidden)]
+#[macro_export]
+#[cfg(not(feature = "used_linker"))]
+macro_rules! __include_used_linker_feature {
+    ($true:item $false:item) => { $false };
+}
+
+#[doc(hidden)]
+#[macro_export]
+#[cfg(feature = "__no_warn_on_missing_unsafe")]
+macro_rules! __include_no_warn_on_missing_unsafe_feature {
+    ($true:item $false:item) => { $true };
+}
+
+#[doc(hidden)]
+#[macro_export]
+#[cfg(not(feature = "__no_warn_on_missing_unsafe"))]
+macro_rules! __include_no_warn_on_missing_unsafe_feature {
+    ($true:item $false:item) => { $false };
 }
 
 /// If the features array contains the requested feature, generates `if_true`, else `if_false`.
@@ -101,9 +170,9 @@ macro_rules! __unify_features {
 #[macro_export]
 #[allow(unknown_lints, edition_2024_expr_fragment_specifier)]
 macro_rules! __if_has_feature {
-    (used_linker,              [used_linker,                     $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
-    (__warn_on_missing_unsafe, [__warn_on_missing_unsafe,        $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
-    ((link_section(c)),        [(link_section=$section:literal), $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { #[link_section = $section] $($if_true)* };
+    (used_linker,                 [used_linker,                     $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
+    (__no_warn_on_missing_unsafe, [__no_warn_on_missing_unsafe,     $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
+    ((link_section(c)),           [(link_section=$section:literal), $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { #[link_section = $section] $($if_true)* };
 
     // Fallback rules
     ($anything:tt, [$x:ident, $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $crate::__support::if_has_feature!($anything, [$($rest)*], {$($if_true)*}, {$($if_false)*}); };
@@ -275,13 +344,13 @@ macro_rules! __ctor_entry {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __dtor_entry {
-    (meta=[$($meta:meta,)*], features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], item=fn $ident:ident() $block:block) => {
-        $crate::__support::dtor_entry!(meta=[$($($meta,)*)?], features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=, item=fn $ident() $block);
+    (features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], item=fn $ident:ident() $block:block) => {
+        $crate::__support::dtor_entry!(features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=, item=fn $ident() $block);
     };
-    (meta=[$($meta:meta,)*], features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], item=unsafe fn $ident:ident() $block:block) => {
-        $crate::__support::dtor_entry!(meta=[$($($meta,)*)?], features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=unsafe, item=fn $ident() $block);
+    (features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], item=unsafe fn $ident:ident() $block:block) => {
+        $crate::__support::dtor_entry!(features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=unsafe, item=fn $ident() $block);
     };
-    (meta=[$($meta:meta,)*], features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=fn $ident:ident() $block:block) => {
+    (features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=fn $ident:ident() $block:block) => {
         $(#[$fnmeta])*
         #[allow(unused)]
         $($vis)* $($unsafe)? fn $ident() {
@@ -385,11 +454,8 @@ macro_rules! __ctor_link_section {
     }
 }
 
-/// Depending on the edition, we use either the top or bottom path because
-/// of the change in how `const {1}` is parsed in edition 2021/2024 macros.
-///
-/// Because of some strangeness around clippy validation of unsafe(...)
-/// attributes, we just skip them entirely when clippy-ing.
+/// Apply either the default cfg-based link section attributes, or
+/// the overridden link_section attribute.
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __ctor_link_section_attr {

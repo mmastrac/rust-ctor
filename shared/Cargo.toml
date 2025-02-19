@@ -6,8 +6,11 @@ publish = false
 
 [features]
 used_linker = []
-__warn_on_missing_unsafe = []
+__no_warn_on_missing_unsafe = []
 
 [dependencies]
 macrotest = "1"
 trybuild = "1"
+
+# Prevents warning about unused patch version
+ctor = "*"

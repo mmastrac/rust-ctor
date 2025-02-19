@@ -58,42 +58,6 @@ fn generate(
         }
     }
 
-    #[cfg(feature = "used_linker")]
-    inner.extend([
-        TokenTree::Punct(Punct::new('#', Spacing::Alone)),
-        TokenTree::Group(Group::new(
-            Delimiter::Bracket,
-            TokenStream::from_iter([
-                TokenTree::Ident(Ident::new("feature", Span::call_site())),
-                TokenTree::Group(Group::new(
-                    Delimiter::Parenthesis,
-                    TokenStream::from_iter([TokenTree::Ident(Ident::new(
-                        "used_linker",
-                        Span::call_site(),
-                    ))]),
-                )),
-            ]),
-        )),
-    ]);
-
-    #[cfg(feature = "__warn_on_missing_unsafe")]
-    inner.extend([
-        TokenTree::Punct(Punct::new('#', Spacing::Alone)),
-        TokenTree::Group(Group::new(
-            Delimiter::Bracket,
-            TokenStream::from_iter([
-                TokenTree::Ident(Ident::new("feature", Span::call_site())),
-                TokenTree::Group(Group::new(
-                    Delimiter::Parenthesis,
-                    TokenStream::from_iter([TokenTree::Ident(Ident::new(
-                        "__warn_on_missing_unsafe",
-                        Span::call_site(),
-                    ))]),
-                )),
-            ]),
-        )),
-    ]);
-
     if attribute.is_empty() {
         // #[ctor]
         inner.extend([

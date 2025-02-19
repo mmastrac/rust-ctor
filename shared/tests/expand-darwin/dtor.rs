@@ -1,5 +1,5 @@
-shared::ctor_parse!(
-    #[ctor]
+shared::dtor_parse!(
+    #[dtor]
     unsafe fn foo() {
         println!("foo");
     }

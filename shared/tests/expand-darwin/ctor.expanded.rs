@@ -1,6 +1,6 @@
 #[cfg(not(target_family = "wasm"))]
 #[allow(unused)]
-fn foo() {
+unsafe fn foo() {
     #[doc(hidden)]
     /// Internal module.
     ///features=[]
