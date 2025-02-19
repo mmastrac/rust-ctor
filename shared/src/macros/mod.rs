@@ -106,8 +106,8 @@ macro_rules! __if_has_feature {
     ((link_section(c)),        [(link_section=$section:literal), $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { #[link_section = $section] $($if_true)* };
 
     // Fallback rules
-    ($anything:tt, [$x:ident, $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $crate::__support::if_has_feature!($anything, [$($rest)*], {$($if_true)*}, {#[doc = "no"] $($if_false)*}); };
-    ($anything:tt, [($x:ident=$y:expr), $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $crate::__support::if_has_feature!($anything, [$($rest)*], {$($if_true)*}, {#[doc = "no"] $($if_false)*}); };
+    ($anything:tt, [$x:ident, $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $crate::__support::if_has_feature!($anything, [$($rest)*], {$($if_true)*}, {$($if_false)*}); };
+    ($anything:tt, [($x:ident=$y:expr), $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $crate::__support::if_has_feature!($anything, [$($rest)*], {$($if_true)*}, {$($if_false)*}); };
     ($anything:tt, [], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_false)* };
 }
 
