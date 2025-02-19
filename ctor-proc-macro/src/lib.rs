@@ -31,7 +31,7 @@ fn generate(
         if let TokenTree::Ident(ident) = &token {
             if ident.to_string() == "crate_path" {
                 // Look for =
-                #[allow(tail_expr_drop_order)]
+                #[allow(unknown_lints, tail_expr_drop_order)]
                 if let Some(TokenTree::Punct(punct)) = tokens.next() {
                     if punct.as_char() == '=' {
                         // Collect tokens until comma or end
