@@ -16,7 +16,7 @@ pub use macros::__support;
 /// ```rust
 /// # #![cfg_attr(feature="used_linker", feature(used_with_arg))]
 /// # extern crate dtor;
-/// # use dtor::*;
+/// # use dtor::dtor;
 /// # fn main() {}
 ///
 /// #[dtor]
@@ -38,7 +38,7 @@ pub use dtor_proc_macro::__dtor_from_ctor;
 /// macros.
 ///
 /// ```rust
-/// # mod test { use dtor::*; use libc_print::*;
+/// # #[cfg(any())] mod test { use dtor::*; use libc_print::*;
 /// dtor::declarative::dtor! {
 ///   #[dtor]
 ///   fn foo() {
@@ -49,7 +49,7 @@ pub use dtor_proc_macro::__dtor_from_ctor;
 ///
 /// // ... the above is identical to:
 ///
-/// # mod test_2 { use dtor::*; use libc_print::*;
+/// # #[cfg(any())] mod test_2 { use dtor::*; use libc_print::*;
 /// #[dtor]
 /// fn foo() {
 ///   libc_println!("Goodbye, world!");

@@ -17,7 +17,7 @@ WASM, and Windows.
 Print a message at shutdown time. Note that Rust may have shut down
 some stdlib services at this time.
 
-```rust
+```rust,ignore
     #[dtor]
     unsafe fn shutdown() {
         // Using println or eprintln here will panic as Rust has shut down
@@ -30,7 +30,7 @@ some stdlib services at this time.
 The `#[dtor]` macro effectively creates a constructor that calls `libc::atexit`
 with the provided function, ie roughly equivalent to:
 
-```rust
+```rust,ignore
     #[ctor]
     fn dtor_atexit() {
         libc::atexit(dtor);
