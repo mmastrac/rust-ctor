@@ -8,7 +8,7 @@ extern crate ctor;
 #[cfg(test)]
 mod test {
     use libc_print::*;
-    use std::path::Path;
+    use std::path::PathBuf;
     use std::process::Command;
     use std::sync::atomic::{AtomicBool, Ordering};
 
@@ -76,16 +76,19 @@ mod test {
 
     #[test]
     fn test_dylib() {
-        let mut path = Path::new("..").canonicalize().unwrap();
+        let root: PathBuf = std::env::var("CARGO_MANIFEST_DIR").unwrap().into();
+        let root = root.parent().unwrap().parent().unwrap();
+
         let exe = format!("dylib_load{}", exe_extension());
+        let mut path = root.to_path_buf();
         for x in &["target", "debug", "examples", exe.as_str()] {
             path.push(x);
         }
-        let mut cmd = Command::new(path.to_str().unwrap());
+        let mut cmd = Command::new(&path);
 
         // Move from tests -> root dir so we match the behaviour of running
         // --example
-        let out = cmd.current_dir("..").output().unwrap();
+        let out = cmd.current_dir(&root).output().expect(&format!("failed to run {path:?}"));
         assert_eq!("", std::str::from_utf8(out.stdout.as_slice()).unwrap());
 
         // Welcome to permutation hell...
