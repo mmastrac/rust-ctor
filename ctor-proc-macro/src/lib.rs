@@ -16,6 +16,7 @@ pub fn ctor(attribute: TokenStream, item: TokenStream) -> TokenStream {
 /// ::ctor::__support::ctor_parse!(#[ctor] fn foo() { ... });
 /// ::dtor::__support::dtor_parse!(#[dtor] fn foo() { ... });
 /// ```
+#[allow(unknown_lints, tail_expr_drop_order)]
 fn generate(
     macro_type: &str,
     macro_crate: &str,
@@ -27,7 +28,7 @@ fn generate(
     // Search for crate_path in attributes
     let mut crate_path = None;
     let mut tokens = attribute.clone().into_iter().peekable();
-    #[allow(unknown_lints, tail_expr_drop_order)]
+
     while let Some(token) = tokens.next() {
         if let TokenTree::Ident(ident) = &token {
             if ident.to_string() == "crate_path" {
