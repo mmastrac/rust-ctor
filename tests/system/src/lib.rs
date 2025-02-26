@@ -89,9 +89,9 @@ mod test {
         // Move from tests -> root dir so we match the behaviour of running
         // --example
         let out = cmd
-            .current_dir(&root)
+            .current_dir(root)
             .output()
-            .expect(&format!("failed to run {path:?}"));
+            .unwrap_or_else(|_| panic!("failed to run {path:?}"));
         assert_eq!("", std::str::from_utf8(out.stdout.as_slice()).unwrap());
 
         // Welcome to permutation hell...
