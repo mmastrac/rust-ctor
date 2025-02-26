@@ -20,14 +20,19 @@ pub mod __support {
 /// attribute, including attribute parameters.
 ///
 /// ```rust
-/// # #[cfg(any())] mod test {
+/// # #[cfg(any())] // disabled due to code sharing between ctor/dtor
+/// # mod test {
+/// # use ctor::declarative::ctor;
 /// ctor! {
-///   #[ctor(link_section = "...")]
+///   /// Create a ctor with a link section
+/// # #[cfg(any())]
+///   #[ctor(link_section = ".ctors")]
 ///   unsafe fn foo() { /* ... */ }
 /// }
 ///
 /// ctor! {
-///   #[ctor(link_section = "...")]
+///   #[ctor]
+/// # #[cfg(any())]
 ///   static FOO: std::collections::HashMap<u32, String> = unsafe {
 ///     let mut m = std::collections::HashMap::new();
 ///     m.insert(1, "foo".to_string());
@@ -54,6 +59,16 @@ macro_rules! __ctor_parse {
     (#[ctor $(($($meta:tt)*))?] $(#[$imeta:meta])* static $($item:tt)*) => {
         $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], features=[], imeta=$(#[$imeta])*, vis=[], item=static $($item)*);
     };
+    // Reorder attributes that aren't `#[ctor]`
+    (#[$imeta:meta] $($rest:tt)*) => {
+        $crate::__support::ctor_parse!(__reorder__(#[$imeta],), $($rest)*);
+    };
+    (__reorder__($(#[$imeta:meta],)*), #[ctor $(($($meta:tt)*))?] $($rest:tt)*) => {
+        $crate::__support::ctor_parse!(#[ctor $(($($meta)*))?] $(#[$imeta])* $($rest)*);
+    };
+    (__reorder__($(#[$imeta:meta],)*), #[$imeta2:meta] $($rest:tt)*) => {
+        $crate::__support::ctor_parse!(__reorder__($(#[$imeta],)*#[$imeta2],), $($rest)*);
+    };
 }
 
 /// Parse a `#[dtor]`-annotated item as if it were a proc-macro.
@@ -79,6 +94,16 @@ macro_rules! __dtor_parse {
     };
     (#[dtor $(($($meta:tt)*))?] $(#[$imeta:meta])* unsafe $($item:tt)*) => {
         $crate::__support::unify_features!(next=$crate::__support::dtor_entry, meta=[$($($meta)*)?], features=[], imeta=$(#[$imeta])*, vis=[], item=unsafe $($item)*);
+    };
+    // Reorder attributes that aren't `#[dtor]`
+    (#[$imeta:meta] $($rest:tt)*) => {
+        $crate::__support::dtor_parse!(__reorder__(#[$imeta],), $($rest)*);
+    };
+    (__reorder__($(#[$imeta:meta],)*), #[dtor $(($($meta:tt)*))?] $($rest:tt)*) => {
+        $crate::__support::dtor_parse!(#[dtor $(($($meta)*))?] $(#[$imeta])* $($rest)*);
+    };
+    (__reorder__($(#[$imeta:meta],)*), #[$imeta2:meta] $($rest:tt)*) => {
+        $crate::__support::dtor_parse!(__reorder__($(#[$imeta],)*#[$imeta2],), $($rest)*);
     };
 }
 
@@ -270,7 +295,36 @@ macro_rules! __ctor_entry {
     (features=$features:tt, imeta=$(#[$imeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=static $ident:ident : $ty:ty = $block:block;) => {
         $(#[$imeta])*
         $($vis)* static $ident: $ident::Static<$ty> = $ident::Static::<$ty> {
-            _storage: ::std::sync::OnceLock::new()
+            _storage: {
+                #[cfg(target_family="wasm")]
+                #[::wasm_bindgen::prelude::wasm_bindgen(start)]
+                fn init() {
+                    _ = &*super::$ident;
+                }
+    
+                #[cfg(not(target_family="wasm"))]
+                $crate::__support::ctor_link_section!(
+                    array,
+                    features=$features,
+    
+                    #[allow(non_upper_case_globals, non_snake_case)]
+                    #[doc(hidden)]
+                    static f: /*unsafe*/ extern "C" fn() -> usize =
+                    {
+                        $crate::__support::ctor_link_section!(
+                            startup,
+                            features=$features,
+    
+                            #[allow(non_snake_case)]
+                            /*unsafe*/ extern "C" fn f() -> usize { _ = &*$ident; 0 }
+                        );
+    
+                        f
+                    };
+                );
+
+                ::std::sync::OnceLock::new()
+            }
         };
 
         impl ::core::ops::Deref for $ident::Static<$ty> {
@@ -304,33 +358,6 @@ macro_rules! __ctor_entry {
             pub struct Static<T> {
                 pub _storage: ::std::sync::OnceLock<T>
             }
-
-            #[cfg(target_family="wasm")]
-            #[::wasm_bindgen::prelude::wasm_bindgen(start)]
-            fn init() {
-                _ = &*super::$ident;
-            }
-
-            #[cfg(not(target_family="wasm"))]
-            $crate::__support::ctor_link_section!(
-                array,
-                features=$features,
-
-                #[allow(non_upper_case_globals, non_snake_case)]
-                #[doc(hidden)]
-                static $ident: /*unsafe*/ extern "C" fn() -> usize =
-                {
-                    $crate::__support::ctor_link_section!(
-                        startup,
-                        features=$features,
-
-                        #[allow(non_snake_case)]
-                        /*unsafe*/ extern "C" fn $ident() -> usize { _ = &*super::$ident; 0 }
-                    );
-
-                    $ident
-                };
-            );
         }
     };
 }

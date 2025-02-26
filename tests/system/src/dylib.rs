@@ -5,6 +5,25 @@
 use ctor::*;
 use libc_print::*;
 
+#[cfg(never)]
+#[ctor]
+unsafe fn never() {
+    libc_ewriteln!("+++ ctor never run");
+}
+
+#[cfg(never)]
+#[ctor]
+static NEVER_STATIC: u8 = unsafe {
+    libc_ewriteln!("+++ ctor static never run");
+    42
+};
+
+#[cfg(never)]
+#[dtor]
+unsafe fn never() {
+    libc_ewriteln!("+++ dtor never run");
+}
+
 #[cfg(windows)]
 #[allow(unsafe_code)]
 unsafe extern "C" {
