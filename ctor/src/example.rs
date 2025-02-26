@@ -18,6 +18,11 @@ static STATIC_CTOR: HashMap<u32, &'static str> = unsafe {
     m
 };
 
+#[ctor(anonymous)]
+unsafe fn anonymous_ctor() {
+    libc_eprintln!("ctor_anonymous");
+}
+
 #[ctor]
 #[allow(unsafe_code)]
 unsafe fn ctor() {
