@@ -55,4 +55,4 @@ jobs:
       run: cargo install wasm-pack
     - name: Build Wasm tests
       if: matrix.os == 'ubuntu-latest'
-      run: wasm-pack build --target web tests-wasm/
+      run: wasm-pack build --target web tests/wasm/

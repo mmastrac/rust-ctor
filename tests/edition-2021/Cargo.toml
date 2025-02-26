@@ -1,11 +1,12 @@
 [package]
-name = "tests-edition-2018"
+name = "tests-edition-2021"
 version = "0.1.0"
-edition = "2018"
+edition = "2021"
 publish = false
 
 [features]
 used_linker = ["ctor/used_linker"]
 
 [dependencies]
-ctor = { path = "../ctor" }
+ctor = "*"
+
