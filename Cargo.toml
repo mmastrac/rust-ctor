@@ -11,6 +11,17 @@ members = [
     "tests/edition-2021", 
     "tests/edition-2024" 
 ]
+default-members = [
+    "ctor",
+    "dtor",
+    "ctor-proc-macro",
+    "dtor-proc-macro",
+    "shared",
+    "tests/system",
+    "tests/wasm",
+    "tests/edition-2018",
+    "tests/edition-2021",
+]
 resolver = "2"
 
 [patch.crates-io]

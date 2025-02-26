@@ -79,8 +79,11 @@ pub mod declarative {
 ///    containing the support macros. If you re-export `ctor` items as part of
 ///    your crate, you can use this to redirect the macro's output to the
 ///    correct crate.
-///  - `used(linker)`: Use the linker to load the constructor.
+///  - `used(linker)`: (Advanced) Mark the function as being used in the link
+///    phase.
 ///  - `link_section = "section"`: The section to place the constructor in.
+///  - `anonymous`: Do not give the constructor a name in the generated code
+///    (allows for multiple constructors with the same name).
 ///
 /// # Examples
 ///

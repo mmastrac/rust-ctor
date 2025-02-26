@@ -148,6 +148,9 @@ macro_rules! __unify_features {
     (continue, next=$next_macro:path, meta=[crate_path = $path:path $(, $($meta:tt)* )?], features=[$($features:tt)*], $($rest:tt)*) => {
         $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($($meta)*)?], features=[(crate_path=$path),$($features)*], $($rest)*);
     };
+    (continue, next=$next_macro:path, meta=[anonymous $(, $($meta:tt)* )?], features=[$($features:tt)*], $($rest:tt)*) => {
+        $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($($meta)*)?], features=[anonymous,$($features)*], $($rest)*);
+    };
     (continue, next=$next_macro:path, meta=[$unknown_meta:meta $($meta:tt)*], features=[$($features:tt)*], $($rest:tt)*) => {
         compile_error!(concat!("Unknown attribute parameter: ", stringify!($unknown_meta)));
     };
@@ -204,6 +207,7 @@ macro_rules! __include_no_warn_on_missing_unsafe_feature {
 macro_rules! __if_has_feature {
     (used_linker,                 [used_linker,                     $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
     (__no_warn_on_missing_unsafe, [__no_warn_on_missing_unsafe,     $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
+    (anonymous,                   [anonymous,                       $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
     ((link_section(c)),           [(link_section=$section:literal), $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { #[link_section = $section] $($if_true)* };
 
     // Fallback rules
@@ -239,6 +243,18 @@ macro_rules! __ctor_entry {
         $crate::__support::ctor_entry!(features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=, item=static $ident: $ty = $($item)*);
     };
     (features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=fn $ident:ident() $block:block) => {
+        $crate::__support::if_has_feature!(anonymous, $features, {
+            $crate::__support::ctor_entry!(unnamed, features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=$($unsafe)?, item=fn $ident() $block);
+        }, {
+            $crate::__support::ctor_entry!(named, features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=$($unsafe)?, item=fn $ident() $block);
+        });
+    };
+    (unnamed,features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=fn $ident:ident() $block:block) => {
+        const _: () = {
+            $crate::__support::ctor_entry!(named, features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=$($unsafe)?, item=fn $ident() $block);
+        };
+    };
+    (named, features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=fn $ident:ident() $block:block) => {
         #[cfg(target_family="wasm")]
         $(#[$fnmeta])*
         #[allow(unused)]
@@ -251,11 +267,8 @@ macro_rules! __ctor_entry {
         $(#[$fnmeta])*
         #[allow(unused)]
         $($vis)* $($unsafe)? fn $ident() {
-            #[doc(hidden)]
-            /// Internal module.
-            #[doc = concat!("features=", stringify!($features))]
             #[allow(unsafe_code)]
-            mod __ctor_internal {
+            {
                 $crate::__support::if_unsafe!($($unsafe)?, {}, {
                     $crate::__support::if_has_feature!( __warn_on_missing_unsafe, $features, {
                         #[deprecated="ctor deprecation note:\n\n \
@@ -274,17 +287,17 @@ macro_rules! __ctor_entry {
 
                     #[allow(non_upper_case_globals, non_snake_case)]
                     #[doc(hidden)]
-                    static $ident: /*unsafe*/ extern "C" fn() -> usize =
+                    static f: /*unsafe*/ extern "C" fn() -> usize =
                     {
                         $crate::__support::ctor_link_section!(
                             startup,
                             features=$features,
 
                             #[allow(non_snake_case)]
-                            /*unsafe*/ extern "C" fn $ident() -> usize { unsafe { super::$ident(); 0 } }
+                            /*unsafe*/ extern "C" fn f() -> usize { unsafe { $ident(); 0 } }
                         );
 
-                        $ident
+                        f
                     };
                 );
             }
@@ -299,14 +312,14 @@ macro_rules! __ctor_entry {
                 #[cfg(target_family="wasm")]
                 #[::wasm_bindgen::prelude::wasm_bindgen(start)]
                 fn init() {
-                    _ = &*super::$ident;
+                    _ = &*$ident;
                 }
-    
+
                 #[cfg(not(target_family="wasm"))]
                 $crate::__support::ctor_link_section!(
                     array,
                     features=$features,
-    
+
                     #[allow(non_upper_case_globals, non_snake_case)]
                     #[doc(hidden)]
                     static f: /*unsafe*/ extern "C" fn() -> usize =
@@ -314,11 +327,11 @@ macro_rules! __ctor_entry {
                         $crate::__support::ctor_link_section!(
                             startup,
                             features=$features,
-    
+
                             #[allow(non_snake_case)]
                             /*unsafe*/ extern "C" fn f() -> usize { _ = &*$ident; 0 }
                         );
-    
+
                         f
                     };
                 );
@@ -385,11 +398,23 @@ macro_rules! __dtor_entry {
         $crate::__support::dtor_entry!(features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=unsafe, item=fn $ident() $block);
     };
     (features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=fn $ident:ident() $block:block) => {
+        $crate::__support::if_has_feature!(anonymous, $features, {
+            $crate::__support::dtor_entry!(unnamed, features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=$($unsafe)?, item=fn $ident() $block);
+        }, {
+            $crate::__support::dtor_entry!(named, features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=$($unsafe)?, item=fn $ident() $block);
+        });
+    };
+    (unnamed, features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=fn $ident:ident() $block:block) => {
+        const _: () = {
+            $crate::__support::dtor_entry!(named, features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=$($unsafe)?, item=fn $ident() $block);
+        };
+    };
+    (named, features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=fn $ident:ident() $block:block) => {
         $(#[$fnmeta])*
         #[allow(unused)]
         $($vis)* $($unsafe)? fn $ident() {
             #[allow(unsafe_code)]
-            mod __dtor_internal {
+            {
                 $crate::__support::if_unsafe!($($unsafe)?, {}, {
                     $crate::__support::if_has_feature!( __warn_on_missing_unsafe, $features, {
                         #[deprecated="dtor deprecation note:\n\n \
@@ -408,17 +433,17 @@ macro_rules! __dtor_entry {
 
                     #[allow(non_upper_case_globals, non_snake_case)]
                     #[doc(hidden)]
-                    static $ident: /*unsafe*/ extern "C" fn() -> usize =
+                    static f: /*unsafe*/ extern "C" fn() -> usize =
                     {
                         $crate::__support::ctor_link_section!(
                             startup,
                             features=$features,
 
                             #[allow(non_snake_case)]
-                            /*unsafe*/ extern "C" fn $ident() -> usize { unsafe { do_atexit(__dtor); 0 } }
+                            /*unsafe*/ extern "C" fn f() -> usize { unsafe { do_atexit(__dtor); 0 } }
                         );
 
-                        $ident
+                        f
                     };
                 );
 
@@ -428,12 +453,12 @@ macro_rules! __dtor_entry {
 
                     /*unsafe*/ extern "C" fn __dtor(
                         #[cfg(target_vendor = "apple")] _: *const u8
-                    ) { unsafe { super::$ident() } }
+                    ) { unsafe { $ident() } }
                 );
 
                 #[cfg(not(target_vendor = "apple"))]
                 #[inline(always)]
-                pub(super) unsafe fn do_atexit(cb: unsafe extern fn()) {
+                unsafe fn do_atexit(cb: unsafe extern fn()) {
                     /*unsafe*/ extern "C" {
                         fn atexit(cb: unsafe extern fn());
                     }
@@ -445,7 +470,7 @@ macro_rules! __dtor_entry {
                 // For platforms that have __cxa_atexit, we register the dtor as scoped to dso_handle
                 #[cfg(target_vendor = "apple")]
                 #[inline(always)]
-                pub(super) unsafe fn do_atexit(cb: /*unsafe*/ extern "C" fn(_: *const u8)) {
+                unsafe fn do_atexit(cb: /*unsafe*/ extern "C" fn(_: *const u8)) {
                     /*unsafe*/ extern "C" {
                         static __dso_handle: *const u8;
                         fn __cxa_atexit(cb: /*unsafe*/ extern "C" fn(_: *const u8), arg: *const u8, dso_handle: *const u8);

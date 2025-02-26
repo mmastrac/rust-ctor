@@ -1,27 +1,27 @@
 #[allow(unused)]
 unsafe fn foo() {
     #[allow(unsafe_code)]
-    mod __dtor_internal {
+    {
         #[link_section = "__DATA,__mod_init_func"]
         #[used]
         #[allow(non_upper_case_globals, non_snake_case)]
         #[doc(hidden)]
-        static foo: extern "C" fn() -> usize = {
+        static f: extern "C" fn() -> usize = {
             #[allow(non_snake_case)]
-            extern "C" fn foo() -> usize {
+            extern "C" fn f() -> usize {
                 unsafe {
                     do_atexit(__dtor);
                     0
                 }
             }
-            foo
+            f
         };
         extern "C" fn __dtor(#[cfg(target_vendor = "apple")] _: *const u8) {
-            unsafe { super::foo() }
+            unsafe { foo() }
         }
         #[cfg(target_vendor = "apple")]
         #[inline(always)]
-        pub(super) unsafe fn do_atexit(cb: extern "C" fn(_: *const u8)) {
+        unsafe fn do_atexit(cb: extern "C" fn(_: *const u8)) {
             extern "C" {
                 static __dso_handle: *const u8;
                 fn __cxa_atexit(
