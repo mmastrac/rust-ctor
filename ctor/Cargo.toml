@@ -1,6 +1,6 @@
 [package]
 name = "ctor"
-version = "0.3.6"
+version = "0.4.0"
 authors = ["Matt Mastracci <matthew@mastracci.com>"]
 edition = "2021"
 description = "__attribute__((constructor)) for Rust"
