@@ -21,3 +21,6 @@ crate-type = ["cdylib"]
 [[example]]
 name = "dylib_load"
 path = "src/dylib_load.rs"
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(never)'] }
