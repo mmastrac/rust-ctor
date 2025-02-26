@@ -1,4 +1,3 @@
-
 #![doc = include_str!("../README.md")]
 
 mod macros;
@@ -12,6 +11,18 @@ pub use macros::__support;
 ///
 /// Multiple shutdown functions are supported, but the invocation order is not
 /// guaranteed.
+///
+/// # Attribute parameters
+///
+///  - `crate_path = ::path::to::dtor::crate`: The path to the `dtor` crate
+///    containing the support macros. If you re-export `dtor` items as part of
+///    your crate, you can use this to redirect the macro's output to the
+///    correct crate.
+///  - `used(linker)`: (Advanced) Mark the function as being used in the link
+///    phase.
+///  - `link_section = "section"`: The section to place the dtor's code in.
+///  - `anonymous`: Do not give the destructor a name in the generated code
+///    (allows for multiple destructors with the same name).
 ///
 /// ```rust
 /// # #![cfg_attr(feature="used_linker", feature(used_with_arg))]
