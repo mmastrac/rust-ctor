@@ -231,11 +231,12 @@ pub mod declarative {
 /// # }
 /// ```
 #[doc(inline)]
+#[cfg(feature = "proc_macro")]
 pub use ctor_proc_macro::ctor;
 
 /// Re-exported `#[dtor]` proc-macro from `dtor` crate.
 ///
 /// See [`::dtor`] for more details.
-#[cfg(feature = "dtor")]
 #[doc(inline)]
+#[cfg(feature = "dtor")]
 pub use dtor::__dtor_from_ctor as dtor;
