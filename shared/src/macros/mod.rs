@@ -255,15 +255,6 @@ macro_rules! __ctor_entry {
         };
     };
     (named, features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=fn $ident:ident() $block:block) => {
-        #[cfg(target_family="wasm")]
-        $(#[$fnmeta])*
-        #[allow(unused)]
-        #[::wasm_bindgen::prelude::wasm_bindgen(start)]
-        $($vis)* fn $ident() {
-            $block
-        }
-
-        #[cfg(not(target_family="wasm"))]
         $(#[$fnmeta])*
         #[allow(unused)]
         $($vis)* $($unsafe)? fn $ident() {
@@ -302,6 +293,14 @@ macro_rules! __ctor_entry {
                 );
             }
 
+            #[cfg(target_family = "wasm")]
+            {
+                static __CTOR__INITILIZED: core::sync::atomic::AtomicBool = core::sync::atomic::AtomicBool::new(false);
+                if __CTOR__INITILIZED.swap(true, core::sync::atomic::Ordering::Relaxed) {
+                    return;
+                }
+            }
+
             $block
         }
     };
@@ -309,13 +308,6 @@ macro_rules! __ctor_entry {
         $(#[$imeta])*
         $($vis)* static $ident: $ident::Static<$ty> = $ident::Static::<$ty> {
             _storage: {
-                #[cfg(target_family="wasm")]
-                #[::wasm_bindgen::prelude::wasm_bindgen(start)]
-                fn init() {
-                    _ = &*$ident;
-                }
-
-                #[cfg(not(target_family="wasm"))]
                 $crate::__support::ctor_link_section!(
                     array,
                     features=$features,
@@ -507,6 +499,7 @@ macro_rules! __ctor_link_section {
             target_os = "illumos",
             target_os = "haiku",
             target_vendor = "apple",
+            target_family = "wasm",
             windows
         )))]
         compile_error!("#[ctor]/#[dtor] is not supported on the current target");
@@ -534,7 +527,8 @@ macro_rules! __ctor_link_section_attr {
                     target_os = "openbsd",
                     target_os = "dragonfly",
                     target_os = "illumos",
-                    target_os = "haiku"
+                    target_os = "haiku",
+                    target_family = "wasm"
                 ), ".init_array"],
                 [target_vendor = "apple", "__DATA,__mod_init_func"],
                 [windows, ".CRT$XCU"]],
