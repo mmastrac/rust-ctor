@@ -50,9 +50,5 @@ jobs:
     - name: Build with static CRT
       if: matrix.os == 'ubuntu-latest'
       run: RUSTFLAGS="-C target-feature=+crt-static" cargo run --example example --target x86_64-unknown-linux-gnu --verbose
-    - name: Install wasm-pack
-      if: matrix.os == 'ubuntu-latest'
-      run: cargo install wasm-pack
-    - name: Build Wasm tests
-      if: matrix.os == 'ubuntu-latest'
-      run: wasm-pack build --target web tests/wasm/
+    - name: Run Wasm tests
+      run: cargo install wasmtime-cli && rustup target add wasm32-unknown-unknown && cargo build --target wasm32-unknown-unknown -p tests-wasm && wasmtime run target/wasm32-unknown-unknown/debug/tests_wasm.wasm
