@@ -30,8 +30,7 @@ supported but not tested as part of the automatic builds. This library will also
 work as expected in both `bin` and `cdylib` outputs, ie: the `ctor` and `dtor`
 will run at executable or library startup/shutdown respectively.
 
-This library supports WASM targets, but note that only a single `#[ctor]` function is
-supported due to platform limitations.
+This library supports WASM targets, but the MSRV for this target is 1.85.
 
 ## Warnings
 
