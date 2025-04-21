@@ -1,4 +1,3 @@
-#[cfg(not(target_family = "wasm"))]
 /// Doc 1
 /// Doc 2
 #[allow(unused)]

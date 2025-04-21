@@ -1,4 +1,3 @@
-#[cfg(not(target_family = "wasm"))]
 #[allow(unused)]
 fn foo() {
     #[allow(unsafe_code)]

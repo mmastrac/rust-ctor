@@ -1,5 +1,4 @@
 const _: () = {
-    #[cfg(not(target_family = "wasm"))]
     #[allow(unused)]
     unsafe fn foo() {
         #[allow(unsafe_code)]
@@ -27,7 +26,6 @@ const _: () = {
     }
 };
 const _: () = {
-    #[cfg(not(target_family = "wasm"))]
     #[allow(unused)]
     unsafe fn foo() {
         #[allow(unsafe_code)]
