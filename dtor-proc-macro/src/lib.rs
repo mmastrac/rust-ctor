@@ -104,7 +104,7 @@ fn generate(
         TokenTree::Punct(Punct::new(':', Spacing::Joint)),
         TokenTree::Punct(Punct::new(':', Spacing::Alone)),
         TokenTree::Ident(Ident::new(
-            &format!("{}_parse", macro_type),
+            &format!("{macro_type}_parse"),
             Span::call_site(),
         )),
         TokenTree::Punct(Punct::new('!', Spacing::Alone)),

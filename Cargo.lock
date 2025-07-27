@@ -22,7 +22,7 @@ dependencies = [
 
 [[package]]
 name = "ctor-proc-macro"
-version = "0.0.5"
+version = "0.0.6"
 
 [[package]]
 name = "diff"
@@ -63,7 +63,7 @@ dependencies = [
 
 [[package]]
 name = "dtor-proc-macro"
-version = "0.0.5"
+version = "0.0.6"
 
 [[package]]
 name = "equivalent"
