@@ -17,10 +17,9 @@ const _: () = {
                 }
                 f
             };
-            extern "C" fn __dtor(#[cfg(target_vendor = "apple")] _: *const u8) {
+            extern "C" fn __dtor(_: *const u8) {
                 unsafe { foo() }
             }
-            #[cfg(target_vendor = "apple")]
             #[inline(always)]
             unsafe fn do_atexit(cb: extern "C" fn(_: *const u8)) {
                 extern "C" {
