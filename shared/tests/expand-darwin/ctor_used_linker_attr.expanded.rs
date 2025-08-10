@@ -2,7 +2,7 @@
 fn foo() {
     #[allow(unsafe_code)]
     {
-        #[link_section = "__DATA,__mod_init_func"]
+        #[link_section = "__DATA,__mod_init_func,mod_init_funcs"]
         #[used(linker)]
         #[allow(non_upper_case_globals, non_snake_case)]
         #[doc(hidden)]

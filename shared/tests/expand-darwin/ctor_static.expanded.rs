@@ -2,7 +2,7 @@ static STATIC_CTOR: STATIC_CTOR::Static<HashMap<u32, &'static str>> = STATIC_CTO
     HashMap<u32, &'static str>,
 > {
     _storage: {
-        #[link_section = "__DATA,__mod_init_func"]
+        #[link_section = "__DATA,__mod_init_func,mod_init_funcs"]
         #[used]
         #[allow(non_upper_case_globals, non_snake_case)]
         #[doc(hidden)]

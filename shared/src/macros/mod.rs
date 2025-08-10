@@ -530,7 +530,7 @@ macro_rules! __ctor_link_section_attr {
                     target_os = "haiku",
                     target_family = "wasm"
                 ), ".init_array"],
-                [target_vendor = "apple", "__DATA,__mod_init_func"],
+                [target_vendor = "apple", "__DATA,__mod_init_func,mod_init_funcs"],
                 [windows, ".CRT$XCU"]],
                 #[$used]
                 $item
