@@ -2,22 +2,22 @@
 #[allow(unused)]
 pub mod __support {
     /// Return type for the constructor. Why is this needed?
-    /// 
+    ///
     /// On Windows, `.CRT$XIA` … `.CRT$XIZ` constructors are required to return a `usize` value. We don't know
     /// if the user is putting this function into a retval-requiring section or a non-retval section, so we
     /// just return a `usize` value which is always valid and just ignored if not needed.
-    /// 
+    ///
     /// Miri is pedantic about this, so we just return `()` if we're running under miri.
-    /// 
+    ///
     /// See <https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/initterm-initterm-e?view=msvc-170>
     #[cfg(all(windows, not(miri)))]
     pub type CtorRetType = usize;
     #[cfg(any(not(windows), miri))]
     pub type CtorRetType = ();
 
+    pub use crate::__ctor_call as ctor_call;
     pub use crate::__ctor_entry as ctor_entry;
     pub use crate::__ctor_link_section as ctor_link_section;
-    pub use crate::__ctor_call as ctor_call;
     pub use crate::__ctor_link_section_attr as ctor_link_section_attr;
     pub use crate::__ctor_parse as ctor_parse;
     pub use crate::__dtor_entry as dtor_entry;
@@ -466,9 +466,9 @@ macro_rules! __ctor_call {
                     features=$features,
 
                     #[allow(non_snake_case)]
-                    /*unsafe*/ extern "C" fn f() -> $crate::__support::CtorRetType { 
+                    /*unsafe*/ extern "C" fn f() -> $crate::__support::CtorRetType {
                         $($block)+;
-                        core::default::Default::default() 
+                        core::default::Default::default()
                     }
                 );
 
