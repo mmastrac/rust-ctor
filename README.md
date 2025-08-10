@@ -109,7 +109,7 @@ The above example translates into the following Rust code (approximately):
 ```rust
     #[used]
     #[cfg_attr(target_os = "linux", link_section = ".init_array")]
-    #[cfg_attr(target_vendor = "apple", link_section = "__DATA,__mod_init_func")]
+    #[cfg_attr(target_vendor = "apple", link_section = "__DATA,__mod_init_func,mod_init_funcs")]
     #[cfg_attr(target_os = "windows", link_section = ".CRT$XCU")]
     /* ... other platforms elided ... */
     static FOO: extern fn() = {

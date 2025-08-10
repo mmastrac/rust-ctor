@@ -170,7 +170,7 @@ pub mod declarative {
 /// # fn my_init_fn() {}
 /// #[used]
 /// #[cfg_attr(target_os = "linux", link_section = ".init_array")]
-/// #[cfg_attr(target_vendor = "apple", link_section = "__DATA,__mod_init_func")]
+/// #[cfg_attr(target_vendor = "apple", link_section = "__DATA,__mod_init_func,mod_init_funcs")]
 /// #[cfg_attr(target_os = "windows", link_section = ".CRT$XCU")]
 /// /* ... other platforms elided ... */
 /// static INIT_FN: extern fn() = {
