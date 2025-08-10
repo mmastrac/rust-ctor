@@ -4,6 +4,12 @@ pub fn pass_darwin() {
     macrotest::expand("tests/expand-darwin/*.rs");
 }
 
+#[cfg(target_os = "linux")]
+#[test]
+pub fn pass_linux() {
+    macrotest::expand("tests/expand-linux/*.rs");
+}
+
 #[test]
 pub fn pass() {
     macrotest::expand("tests/expand/*.rs");
