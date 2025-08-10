@@ -7,12 +7,11 @@ const _: () = {
             #[used]
             #[allow(non_upper_case_globals, non_snake_case)]
             #[doc(hidden)]
-            static f: extern "C" fn() -> usize = {
+            static f: extern "C" fn() = {
                 #[allow(non_snake_case)]
-                extern "C" fn f() -> usize {
+                extern "C" fn f() {
                     unsafe {
                         foo();
-                        0
                     }
                 }
                 f
@@ -34,12 +33,11 @@ const _: () = {
             #[used]
             #[allow(non_upper_case_globals, non_snake_case)]
             #[doc(hidden)]
-            static f: extern "C" fn() -> usize = {
+            static f: extern "C" fn() = {
                 #[allow(non_snake_case)]
-                extern "C" fn f() -> usize {
+                extern "C" fn f() {
                     unsafe {
                         foo();
-                        0
                     }
                 }
                 f

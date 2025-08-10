@@ -3,6 +3,7 @@
 pub mod __support {
     pub use crate::__ctor_entry as ctor_entry;
     pub use crate::__ctor_link_section as ctor_link_section;
+    pub use crate::__ctor_call as ctor_call;
     pub use crate::__ctor_link_section_attr as ctor_link_section_attr;
     pub use crate::__ctor_parse as ctor_parse;
     pub use crate::__dtor_entry as dtor_entry;
@@ -272,24 +273,9 @@ macro_rules! __ctor_entry {
                     }, {});
                 });
 
-                $crate::__support::ctor_link_section!(
-                    array,
+                $crate::__support::ctor_call!(
                     features=$features,
-
-                    #[allow(non_upper_case_globals, non_snake_case)]
-                    #[doc(hidden)]
-                    static f: /*unsafe*/ extern "C" fn() -> usize =
-                    {
-                        $crate::__support::ctor_link_section!(
-                            startup,
-                            features=$features,
-
-                            #[allow(non_snake_case)]
-                            /*unsafe*/ extern "C" fn f() -> usize { unsafe { $ident(); 0 } }
-                        );
-
-                        f
-                    };
+                    { unsafe { $ident(); } }
                 );
             }
 
@@ -308,24 +294,9 @@ macro_rules! __ctor_entry {
         $(#[$imeta])*
         $($vis)* static $ident: $ident::Static<$ty> = $ident::Static::<$ty> {
             _storage: {
-                $crate::__support::ctor_link_section!(
-                    array,
+                $crate::__support::ctor_call!(
                     features=$features,
-
-                    #[allow(non_upper_case_globals, non_snake_case)]
-                    #[doc(hidden)]
-                    static f: /*unsafe*/ extern "C" fn() -> usize =
-                    {
-                        $crate::__support::ctor_link_section!(
-                            startup,
-                            features=$features,
-
-                            #[allow(non_snake_case)]
-                            /*unsafe*/ extern "C" fn f() -> usize { _ = &*$ident; 0 }
-                        );
-
-                        f
-                    };
+                    { _ = &*$ident; }
                 );
 
                 ::std::sync::OnceLock::new()
@@ -419,24 +390,9 @@ macro_rules! __dtor_entry {
                     }, {});
                 });
 
-                $crate::__support::ctor_link_section!(
-                    array,
+                $crate::__support::ctor_call!(
                     features=$features,
-
-                    #[allow(non_upper_case_globals, non_snake_case)]
-                    #[doc(hidden)]
-                    static f: /*unsafe*/ extern "C" fn() -> usize =
-                    {
-                        $crate::__support::ctor_link_section!(
-                            startup,
-                            features=$features,
-
-                            #[allow(non_snake_case)]
-                            /*unsafe*/ extern "C" fn f() -> usize { unsafe { do_atexit(__dtor); 0 } }
-                        );
-
-                        f
-                    };
+                    { unsafe { do_atexit(__dtor); } }
                 );
 
                 $crate::__support::ctor_link_section!(
@@ -476,6 +432,33 @@ macro_rules! __dtor_entry {
             $block
         }
     };
+}
+
+/// Annotate a block with its appropriate link section.
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __ctor_call {
+    (features=$features:tt, $block:block) => {
+        $crate::__support::ctor_link_section!(
+            array,
+            features=$features,
+
+            #[allow(non_upper_case_globals, non_snake_case)]
+            #[doc(hidden)]
+            static f: /*unsafe*/ extern "C" fn() =
+            {
+                $crate::__support::ctor_link_section!(
+                    startup,
+                    features=$features,
+
+                    #[allow(non_snake_case)]
+                    /*unsafe*/ extern "C" fn f() $block
+                );
+
+                f
+            };
+        );
+    }
 }
 
 /// Annotate a block with its appropriate link section.

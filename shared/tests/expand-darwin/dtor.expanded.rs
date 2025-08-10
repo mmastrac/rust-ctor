@@ -6,12 +6,11 @@ unsafe fn foo() {
         #[used]
         #[allow(non_upper_case_globals, non_snake_case)]
         #[doc(hidden)]
-        static f: extern "C" fn() -> usize = {
+        static f: extern "C" fn() = {
             #[allow(non_snake_case)]
-            extern "C" fn f() -> usize {
+            extern "C" fn f() {
                 unsafe {
                     do_atexit(__dtor);
-                    0
                 }
             }
             f

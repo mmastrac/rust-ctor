@@ -6,11 +6,10 @@ static STATIC_CTOR: STATIC_CTOR::Static<HashMap<u32, &'static str>> = STATIC_CTO
         #[used]
         #[allow(non_upper_case_globals, non_snake_case)]
         #[doc(hidden)]
-        static f: extern "C" fn() -> usize = {
+        static f: extern "C" fn() = {
             #[allow(non_snake_case)]
-            extern "C" fn f() -> usize {
+            extern "C" fn f() {
                 _ = &*STATIC_CTOR;
-                0
             }
             f
         };
