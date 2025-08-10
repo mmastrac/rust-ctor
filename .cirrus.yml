@@ -17,5 +17,6 @@ task:
     - cargo build
   test_script:
     - . $HOME/.cargo/env || true
+    - cargo install cargo-expand
     - cargo test
   before_cache_script: rm -rf $HOME/.cargo/registry/index
