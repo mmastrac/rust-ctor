@@ -18,6 +18,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macOS-latest, windows-latest]
     env:
+      CACHE_KEY: 1
       CLIPPY_LINTS: >-
         -D clippy::all
         -D deprecated-safe
@@ -37,18 +38,53 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
+    - name: Install cargo-expand
+      uses: baptiste0928/cargo-install@v3
+      with:
+        crate: cargo-expand
+    - name: Install wasmtime-cli
+      uses: baptiste0928/cargo-install@v3
+      with:
+        crate: wasmtime-cli
+  
+    - name: Cache Rust files
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/wasm32-unknown-unknown
+        key: ${{ runner.os }}-cargo-${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-${{ env.CACHE_KEY }}-
+
     - name: Build
       run: cargo build --verbose
-    - name: Install cargo-expand
-      run: cargo install cargo-expand
     - name: Run tests
       run: cargo test --verbose
+
     - name: Clippy
       run: cargo clippy --examples --bins --all -- ${{ env.CLIPPY_LINTS }}
     - name: Clippy (all features)
-      run: rustup toolchain add nightly && rustup component add clippy --toolchain nightly && cargo +nightly clippy --all-features --examples --bins --all -- ${{ env.CLIPPY_LINTS }}
+      run: |
+        rustup toolchain add nightly
+        rustup component add clippy --toolchain nightly
+        cargo +nightly clippy --all-features --examples --bins --all -- ${{ env.CLIPPY_LINTS }}
+
     - name: Build with static CRT
       if: matrix.os == 'ubuntu-latest'
       run: RUSTFLAGS="-C target-feature=+crt-static" cargo run --example example --target x86_64-unknown-linux-gnu --verbose
+
     - name: Run Wasm tests
-      run: cargo install wasmtime-cli && rustup target add wasm32-unknown-unknown && cargo build --target wasm32-unknown-unknown -p tests-wasm && wasmtime run target/wasm32-unknown-unknown/debug/tests_wasm.wasm
+      run: |
+        rustup target add wasm32-unknown-unknown
+        cargo build --target wasm32-unknown-unknown -p tests-wasm
+        wasmtime run target/wasm32-unknown-unknown/debug/tests_wasm.wasm
+
+    - name: Run miri test
+      run: |
+        rustup component add miri --toolchain nightly
+        cd tests/edition-2018
+        cargo +nightly miri run

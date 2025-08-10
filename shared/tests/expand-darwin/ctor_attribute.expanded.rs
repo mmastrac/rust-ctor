@@ -7,13 +7,13 @@ fn foo() {
         #[used]
         #[allow(non_upper_case_globals, non_snake_case)]
         #[doc(hidden)]
-        static f: extern "C" fn() -> usize = {
+        static f: extern "C" fn() -> ::shared::__support::CtorRetType = {
             #[allow(non_snake_case)]
-            extern "C" fn f() -> usize {
+            extern "C" fn f() -> ::shared::__support::CtorRetType {
                 unsafe {
                     foo();
-                    0
-                }
+                };
+                core::default::Default::default()
             }
             f
         };
