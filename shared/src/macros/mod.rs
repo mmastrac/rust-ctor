@@ -500,6 +500,7 @@ macro_rules! __ctor_link_section {
             target_os = "haiku",
             target_vendor = "apple",
             target_family = "wasm",
+            target_arch = "xtensa",
             windows
         )))]
         compile_error!("#[ctor]/#[dtor] is not supported on the current target");
@@ -530,6 +531,7 @@ macro_rules! __ctor_link_section_attr {
                     target_os = "haiku",
                     target_family = "wasm"
                 ), ".init_array"],
+                [target_arch = "xtensa", ".ctors"],
                 [target_vendor = "apple", "__DATA,__mod_init_func,mod_init_funcs"],
                 [windows, ".CRT$XCU"]],
                 #[$used]
