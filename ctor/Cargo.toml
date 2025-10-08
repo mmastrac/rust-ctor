@@ -1,6 +1,6 @@
 [package]
 name = "ctor"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Matt Mastracci <matthew@mastracci.com>"]
 edition = "2021"
 description = "__attribute__((constructor)) for Rust"
@@ -24,7 +24,7 @@ used_linker = ["dtor?/used_linker"]
 __no_warn_on_missing_unsafe = ["dtor?/__no_warn_on_missing_unsafe"]
 
 [dependencies]
-ctor-proc-macro = { version = "=0.0.6", optional = true }
+ctor-proc-macro = { version = "=0.0.7", optional = true }
 dtor = { version = "0.1.0", default-features = false, optional = true }
 
 [dev-dependencies]
