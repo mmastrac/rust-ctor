@@ -14,7 +14,7 @@ const _: () = {
                     unsafe {
                         do_atexit(__dtor);
                     };
-                    core::default::Default::default()
+                    ::core::default::Default::default()
                 }
                 f
             };

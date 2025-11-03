@@ -13,7 +13,7 @@ unsafe fn foo() {
                 unsafe {
                     foo();
                 };
-                core::default::Default::default()
+                ::core::default::Default::default()
             }
             f
         };

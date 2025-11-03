@@ -295,8 +295,8 @@ macro_rules! __ctor_entry {
 
             #[cfg(target_family = "wasm")]
             {
-                static __CTOR__INITILIZED: core::sync::atomic::AtomicBool = core::sync::atomic::AtomicBool::new(false);
-                if __CTOR__INITILIZED.swap(true, core::sync::atomic::Ordering::Relaxed) {
+                static __CTOR__INITILIZED: ::core::sync::atomic::AtomicBool = ::core::sync::atomic::AtomicBool::new(false);
+                if __CTOR__INITILIZED.swap(true, ::core::sync::atomic::Ordering::Relaxed) {
                     return;
                 }
             }
@@ -438,7 +438,7 @@ macro_rules! __dtor_entry {
                         fn __cxa_atexit(cb: /*unsafe*/ extern "C" fn(_: *const u8), arg: *const u8, dso_handle: *const u8);
                     }
                     unsafe {
-                        __cxa_atexit(cb, core::ptr::null(), __dso_handle);
+                        __cxa_atexit(cb, ::core::ptr::null(), __dso_handle);
                     }
                 }
             }
@@ -468,7 +468,7 @@ macro_rules! __ctor_call {
                     #[allow(non_snake_case)]
                     /*unsafe*/ extern "C" fn f() -> $crate::__support::CtorRetType {
                         $($block)+;
-                        core::default::Default::default()
+                        ::core::default::Default::default()
                     }
                 );
 

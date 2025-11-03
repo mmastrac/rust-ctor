@@ -13,7 +13,7 @@ const _: () = {
                     unsafe {
                         foo();
                     };
-                    core::default::Default::default()
+                    ::core::default::Default::default()
                 }
                 f
             };
@@ -40,7 +40,7 @@ const _: () = {
                     unsafe {
                         foo();
                     };
-                    core::default::Default::default()
+                    ::core::default::Default::default()
                 }
                 f
             };

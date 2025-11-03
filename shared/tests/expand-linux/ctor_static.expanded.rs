@@ -11,7 +11,7 @@ static STATIC_CTOR: STATIC_CTOR::Static<HashMap<u32, &'static str>> = STATIC_CTO
             #[allow(non_snake_case)]
             extern "C" fn f() -> ::shared::__support::CtorRetType {
                 _ = &*STATIC_CTOR;
-                core::default::Default::default()
+                ::core::default::Default::default()
             }
             f
         };
