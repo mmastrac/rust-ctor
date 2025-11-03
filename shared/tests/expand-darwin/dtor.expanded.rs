@@ -12,7 +12,7 @@ unsafe fn foo() {
                 unsafe {
                     do_atexit(__dtor);
                 };
-                core::default::Default::default()
+                ::core::default::Default::default()
             }
             f
         };
@@ -30,7 +30,7 @@ unsafe fn foo() {
                 );
             }
             unsafe {
-                __cxa_atexit(cb, core::ptr::null(), __dso_handle);
+                __cxa_atexit(cb, ::core::ptr::null(), __dso_handle);
             }
         }
     }
