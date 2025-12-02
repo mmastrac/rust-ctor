@@ -498,6 +498,7 @@ macro_rules! __ctor_link_section {
             target_os = "dragonfly",
             target_os = "illumos",
             target_os = "haiku",
+            target_os = "cygwin",
             target_vendor = "apple",
             target_family = "wasm",
             target_arch = "xtensa",
@@ -531,7 +532,7 @@ macro_rules! __ctor_link_section_attr {
                     target_os = "haiku",
                     target_family = "wasm"
                 ), ".init_array"],
-                [target_arch = "xtensa", ".ctors"],
+                [any(target_arch = "xtensa", target_os = "cygwin"), ".ctors"],
                 [target_vendor = "apple", "__DATA,__mod_init_func,mod_init_funcs"],
                 [windows, ".CRT$XCU"]],
                 #[$used]
