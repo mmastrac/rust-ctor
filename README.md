@@ -10,7 +10,7 @@
 
 Module initialization/teardown functions for Rust (like
 `__attribute__((constructor))` in C/C++) for Linux, OSX, FreeBSD, NetBSD,
-Illumos, OpenBSD, DragonFlyBSD, Android, iOS, WASM, and Windows.
+Illumos, OpenBSD, DragonFlyBSD, AIX, Android, iOS, WASM, and Windows.
 
 ## MSRV
 
