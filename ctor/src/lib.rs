@@ -12,7 +12,11 @@
 //! This library currently requires Rust > `1.31.0` at a minimum for the
 //! procedural macro support.
 
+#![no_std]
 #![recursion_limit = "256"]
+
+#[cfg(feature = "stdlib")]
+extern crate std;
 
 #[doc(hidden)]
 #[allow(unused)]
@@ -179,8 +183,10 @@ pub mod declarative {
 /// };
 /// ```
 ///
-/// For `static` items, the macro generates a `std::sync::OnceLock` that is
-/// initialized at startup time.
+/// For `static` items, the macro generates a `OnceLock`-style cell that is
+/// initialized at startup time. With the default `stdlib` feature this is
+/// backed by `std::sync::OnceLock`; without it, `ctor` falls back to
+/// `spin::Once`.
 ///
 /// ```rust
 /// # extern crate ctor;
@@ -199,19 +205,20 @@ pub mod declarative {
 /// ```
 ///
 /// The above example translates into the following Rust code (approximately),
-/// which eagerly initializes the `HashMap` inside a `OnceLock` at startup time:
+/// which eagerly initializes the `HashMap` inside a support cell at startup
+/// time:
 ///
 /// ```rust
 /// # extern crate ctor;
 /// # mod test {
 /// # use ctor::ctor;
 /// # use std::collections::HashMap;
-/// static FOO: FooStatic = FooStatic { value: ::std::sync::OnceLock::new() };
+/// static FOO: FooStatic = FooStatic { value: ::ctor::__support::StaticCell::new() };
 /// struct FooStatic {
-///   value: ::std::sync::OnceLock<HashMap<u32, String>>,
+///   value: ::ctor::__support::StaticCell<HashMap<u32, String>>,
 /// }
 ///
-/// impl ::std::ops::Deref for FooStatic {
+/// impl ::core::ops::Deref for FooStatic {
 ///   type Target = HashMap<u32, String>;
 ///   fn deref(&self) -> &Self::Target {
 ///     self.value.get_or_init(|| unsafe {

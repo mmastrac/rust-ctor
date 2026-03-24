@@ -1,4 +1,8 @@
 #![doc = include_str!("../README.md")]
+#![no_std]
+
+#[cfg(feature = "stdlib")]
+extern crate std;
 
 mod macros;
 

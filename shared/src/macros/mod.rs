@@ -1,6 +1,48 @@
 #[doc(hidden)]
 #[allow(unused)]
 pub mod __support {
+    #[cfg(feature = "stdlib")]
+    pub struct StaticCell<T>(::std::sync::OnceLock<T>);
+
+    #[cfg(feature = "stdlib")]
+    impl<T> Default for StaticCell<T> {
+        fn default() -> Self {
+            Self::new()
+        }
+    }
+
+    #[cfg(feature = "stdlib")]
+    impl<T> StaticCell<T> {
+        pub const fn new() -> Self {
+            Self(::std::sync::OnceLock::new())
+        }
+
+        pub fn get_or_init(&self, init: impl FnOnce() -> T) -> &T {
+            self.0.get_or_init(init)
+        }
+    }
+
+    #[cfg(not(feature = "stdlib"))]
+    pub struct StaticCell<T>(::spin::Once<T>);
+
+    #[cfg(not(feature = "stdlib"))]
+    impl<T> Default for StaticCell<T> {
+        fn default() -> Self {
+            Self::new()
+        }
+    }
+
+    #[cfg(not(feature = "stdlib"))]
+    impl<T> StaticCell<T> {
+        pub const fn new() -> Self {
+            Self(::spin::Once::new())
+        }
+
+        pub fn get_or_init(&self, init: impl FnOnce() -> T) -> &T {
+            self.0.call_once(init)
+        }
+    }
+
     /// Return type for the constructor. Why is this needed?
     ///
     /// On Windows, `.CRT$XIA` … `.CRT$XIZ` constructors are required to return a `usize` value. We don't know
@@ -313,7 +355,7 @@ macro_rules! __ctor_entry {
                     { _ = &*$ident; }
                 );
 
-                ::std::sync::OnceLock::new()
+                $crate::__support::StaticCell::new()
             }
         };
 
@@ -346,7 +388,7 @@ macro_rules! __ctor_entry {
 
             #[allow(non_camel_case_types, unreachable_pub)]
             pub struct Static<T> {
-                pub _storage: ::std::sync::OnceLock<T>
+                pub _storage: $crate::__support::StaticCell<T>
             }
         }
     };
