@@ -1,48 +1,6 @@
 #[doc(hidden)]
 #[allow(unused)]
 pub mod __support {
-    #[cfg(feature = "stdlib")]
-    pub struct StaticCell<T>(::std::sync::OnceLock<T>);
-
-    #[cfg(feature = "stdlib")]
-    impl<T> Default for StaticCell<T> {
-        fn default() -> Self {
-            Self::new()
-        }
-    }
-
-    #[cfg(feature = "stdlib")]
-    impl<T> StaticCell<T> {
-        pub const fn new() -> Self {
-            Self(::std::sync::OnceLock::new())
-        }
-
-        pub fn get_or_init(&self, init: impl FnOnce() -> T) -> &T {
-            self.0.get_or_init(init)
-        }
-    }
-
-    #[cfg(not(feature = "stdlib"))]
-    pub struct StaticCell<T>(::spin::Once<T>);
-
-    #[cfg(not(feature = "stdlib"))]
-    impl<T> Default for StaticCell<T> {
-        fn default() -> Self {
-            Self::new()
-        }
-    }
-
-    #[cfg(not(feature = "stdlib"))]
-    impl<T> StaticCell<T> {
-        pub const fn new() -> Self {
-            Self(::spin::Once::new())
-        }
-
-        pub fn get_or_init(&self, init: impl FnOnce() -> T) -> &T {
-            self.0.call_once(init)
-        }
-    }
-
     /// Return type for the constructor. Why is this needed?
     ///
     /// On Windows, `.CRT$XIA` … `.CRT$XIZ` constructors are required to return a `usize` value. We don't know
@@ -67,6 +25,7 @@ pub mod __support {
     pub use crate::__if_has_feature as if_has_feature;
     pub use crate::__if_unsafe as if_unsafe;
     pub use crate::__include_no_warn_on_missing_unsafe_feature as include_no_warn_on_missing_unsafe_feature;
+    pub use crate::__include_stdlib_feature as include_stdlib_feature;
     pub use crate::__include_used_linker_feature as include_used_linker_feature;
     pub use crate::__unify_features as unify_features;
 }
@@ -177,7 +136,15 @@ macro_rules! __dtor_parse {
 macro_rules! __unify_features {
     // Entry
     (next=$next_macro:path, meta=[$($meta:tt)*], features=[$($features:tt)*], $($rest:tt)*) => {
-        $crate::__support::unify_features!(used_linker, next=$next_macro, meta=[$($meta)*], features=[$($features)*], $($rest)*);
+        $crate::__support::unify_features!(stdlib, next=$next_macro, meta=[$($meta)*], features=[$($features)*], $($rest)*);
+    };
+
+    // Add stdlib feature if cfg(feature="stdlib")
+    (stdlib, next=$next_macro:path, meta=[$($meta:tt)*], features=[$($features:tt)*], $($rest:tt)*) => {
+        $crate::__support::include_stdlib_feature!(
+            $crate::__support::unify_features!(used_linker, next=$next_macro, meta=[$($meta)*], features=[stdlib,$($features)*], $($rest)*);
+            $crate::__support::unify_features!(used_linker, next=$next_macro, meta=[$($meta)*], features=[$($features)*], $($rest)*);
+        );
     };
 
     // Add used_linker feature if cfg(feature="used_linker")
@@ -214,6 +181,24 @@ macro_rules! __unify_features {
 
     (continue, next=$next_macro:path, meta=[], features=[$($features:tt)*], $($rest:tt)*) => {
         $next_macro!(features=[$($features)*], $($rest)*);
+    };
+}
+
+#[doc(hidden)]
+#[macro_export]
+#[cfg(feature = "stdlib")]
+macro_rules! __include_stdlib_feature {
+    ($true:item $false:item) => {
+        $true
+    };
+}
+
+#[doc(hidden)]
+#[macro_export]
+#[cfg(not(feature = "stdlib"))]
+macro_rules! __include_stdlib_feature {
+    ($true:item $false:item) => {
+        $false
     };
 }
 
@@ -262,6 +247,7 @@ macro_rules! __include_no_warn_on_missing_unsafe_feature {
 #[macro_export]
 #[allow(unknown_lints, edition_2024_expr_fragment_specifier)]
 macro_rules! __if_has_feature {
+    (stdlib,                     [stdlib,                         $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
     (used_linker,                 [used_linker,                     $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
     (__no_warn_on_missing_unsafe, [__no_warn_on_missing_unsafe,     $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
     (anonymous,                   [anonymous,                       $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
@@ -347,50 +333,54 @@ macro_rules! __ctor_entry {
         }
     };
     (features=$features:tt, imeta=$(#[$imeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=static $ident:ident : $ty:ty = $block:block;) => {
-        $(#[$imeta])*
-        $($vis)* static $ident: $ident::Static<$ty> = $ident::Static::<$ty> {
-            _storage: {
-                $crate::__support::ctor_call!(
-                    features=$features,
-                    { _ = &*$ident; }
-                );
+        $crate::__support::if_has_feature!(stdlib, $features, {
+            $(#[$imeta])*
+            $($vis)* static $ident: $ident::Static<$ty> = $ident::Static::<$ty> {
+                _storage: {
+                    $crate::__support::ctor_call!(
+                        features=$features,
+                        { _ = &*$ident; }
+                    );
 
-                $crate::__support::StaticCell::new()
+                    ::std::sync::OnceLock::new()
+                }
+            };
+
+            impl ::core::ops::Deref for $ident::Static<$ty> {
+                type Target = $ty;
+                fn deref(&self) -> &$ty {
+                    fn init() -> $ty $block
+
+                    self._storage.get_or_init(move || {
+                        init()
+                    })
+                }
             }
-        };
 
-        impl ::core::ops::Deref for $ident::Static<$ty> {
-            type Target = $ty;
-            fn deref(&self) -> &$ty {
-                fn init() -> $ty $block
+            #[doc(hidden)]
+            #[allow(non_upper_case_globals, non_snake_case)]
+            #[allow(unsafe_code)]
+            mod $ident {
+                $crate::__support::if_unsafe!($($unsafe)?, {}, {
+                    $crate::__support::if_has_feature!( __no_warn_on_missing_unsafe, $features, {
+                        #[deprecated="ctor deprecation note:\n\n \
+                        Use of #[ctor] without `unsafe { ... }` is deprecated. As code execution before main\n\
+                        is unsupported by most Rust runtime functions, these functions must be marked\n\
+                        `unsafe`."]
+                            const fn ctor_without_unsafe_is_deprecated() {}
+                            #[allow(unused)]
+                            static UNSAFE_WARNING: () = ctor_without_unsafe_is_deprecated();
+                    }, {});
+                });
 
-                self._storage.get_or_init(move || {
-                    init()
-                })
+                #[allow(non_camel_case_types, unreachable_pub)]
+                pub struct Static<T> {
+                    pub _storage: ::std::sync::OnceLock<T>
+                }
             }
-        }
-
-        #[doc(hidden)]
-        #[allow(non_upper_case_globals, non_snake_case)]
-        #[allow(unsafe_code)]
-        mod $ident {
-            $crate::__support::if_unsafe!($($unsafe)?, {}, {
-                $crate::__support::if_has_feature!( __warn_on_missing_unsafe, $features, {
-                    #[deprecated="ctor deprecation note:\n\n \
-                    Use of #[ctor] without `unsafe { ... }` is deprecated. As code execution before main\n\
-                    is unsupported by most Rust runtime functions, these functions must be marked\n\
-                    `unsafe`."]
-                        const fn ctor_without_unsafe_is_deprecated() {}
-                        #[allow(unused)]
-                        static UNSAFE_WARNING: () = ctor_without_unsafe_is_deprecated();
-                }, {});
-            });
-
-            #[allow(non_camel_case_types, unreachable_pub)]
-            pub struct Static<T> {
-                pub _storage: $crate::__support::StaticCell<T>
-            }
-        }
+        }, {
+            compile_error!("`#[ctor]` on `static` items requires the `stdlib` feature");
+        });
     };
 }
 

@@ -183,10 +183,9 @@ pub mod declarative {
 /// };
 /// ```
 ///
-/// For `static` items, the macro generates a `OnceLock`-style cell that is
-/// initialized at startup time. With the default `stdlib` feature this is
-/// backed by `std::sync::OnceLock`; without it, `ctor` falls back to
-/// `spin::Once`.
+/// For `static` items, the macro generates a `std::sync::OnceLock` that is
+/// initialized at startup time. `#[ctor]` on `static` items requires the
+/// default `stdlib` feature.
 ///
 /// ```rust
 /// # extern crate ctor;
@@ -205,7 +204,7 @@ pub mod declarative {
 /// ```
 ///
 /// The above example translates into the following Rust code (approximately),
-/// which eagerly initializes the `HashMap` inside a support cell at startup
+/// which eagerly initializes the `HashMap` inside a `OnceLock` at startup
 /// time:
 ///
 /// ```rust
@@ -213,9 +212,9 @@ pub mod declarative {
 /// # mod test {
 /// # use ctor::ctor;
 /// # use std::collections::HashMap;
-/// static FOO: FooStatic = FooStatic { value: ::ctor::__support::StaticCell::new() };
+/// static FOO: FooStatic = FooStatic { value: ::std::sync::OnceLock::new() };
 /// struct FooStatic {
-///   value: ::ctor::__support::StaticCell<HashMap<u32, String>>,
+///   value: ::std::sync::OnceLock<HashMap<u32, String>>,
 /// }
 ///
 /// impl ::core::ops::Deref for FooStatic {

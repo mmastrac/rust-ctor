@@ -18,7 +18,6 @@ __no_warn_on_missing_unsafe = []
 
 [dependencies]
 dtor-proc-macro = { version = "=0.0.6", optional = true }
-spin = { version = "0.9.8", default-features = false, features = ["once"] }
 
 [dev-dependencies]
 libc-print = "0.1.20"

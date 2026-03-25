@@ -14,7 +14,7 @@ static STATIC_CTOR: STATIC_CTOR::Static<HashMap<u32, &'static str>> = STATIC_CTO
             }
             f
         };
-        ::shared::__support::StaticCell::new()
+        ::std::sync::OnceLock::new()
     },
 };
 impl ::core::ops::Deref for STATIC_CTOR::Static<HashMap<u32, &'static str>> {
@@ -33,6 +33,6 @@ impl ::core::ops::Deref for STATIC_CTOR::Static<HashMap<u32, &'static str>> {
 mod STATIC_CTOR {
     #[allow(non_camel_case_types, unreachable_pub)]
     pub struct Static<T> {
-        pub _storage: ::shared::__support::StaticCell<T>,
+        pub _storage: ::std::sync::OnceLock<T>,
     }
 }

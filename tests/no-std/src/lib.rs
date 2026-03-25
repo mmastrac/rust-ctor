@@ -3,12 +3,8 @@
 use ctor::ctor;
 
 #[ctor]
-static VALUE: u32 = {
-    let value = 42;
-    value
-};
+unsafe fn init() {}
 
-#[allow(dead_code)]
-pub fn value() -> &'static u32 {
-    &VALUE
+pub fn initialized() -> bool {
+    true
 }
