@@ -24,6 +24,8 @@ pub use macros::__support;
 
 mod macros;
 
+pub use macros::features;
+
 /// Declarative forms of the `#[ctor]` and `#[dtor]` macros.
 ///
 /// The declarative forms wrap and parse a proc_macro-like syntax like so, and
@@ -88,6 +90,8 @@ pub mod declarative {
 ///  - `link_section = "section"`: The section to place the constructor in.
 ///  - `anonymous`: Do not give the constructor a name in the generated code
 ///    (allows for multiple constructors with the same name).
+///  - `priority = N`: The priority of the constructor. Higher-N-priority
+///    constructors are run last. This is not supported on all platforms.
 ///
 /// # Examples
 ///
@@ -204,8 +208,7 @@ pub mod declarative {
 /// ```
 ///
 /// The above example translates into the following Rust code (approximately),
-/// which eagerly initializes the `HashMap` inside a `OnceLock` at startup
-/// time:
+/// which eagerly initializes the `HashMap` inside a `OnceLock` at startup time:
 ///
 /// ```rust
 /// # extern crate ctor;

@@ -30,6 +30,30 @@ mod test {
         INITED_2.store(true, Ordering::SeqCst);
     }
 
+    #[cfg(not(target_vendor = "apple"))]
+    #[ctor(priority = 2)]
+    unsafe fn foo_priority_two() {
+        libc_eprintln!("Initialized static with priority 2");
+    }
+
+    #[cfg(not(target_vendor = "apple"))]
+    #[ctor(priority = 4)]
+    unsafe fn foo_priority_four() {
+        libc_eprintln!("Initialized static with priority 4");
+    }
+
+    #[cfg(not(target_vendor = "apple"))]
+    #[ctor(priority = 1)]
+    unsafe fn foo_priority_one() {
+        libc_eprintln!("Initialized static with priority 1");
+    }
+
+    #[cfg(not(target_vendor = "apple"))]
+    #[ctor(priority = 3)]
+    unsafe fn foo_priority_three() {
+        libc_eprintln!("Initialized static with priority 3");
+    }
+
     #[ctor]
     static INITED_3: u8 = unsafe {
         libc_eprintln!("Initialized static");
