@@ -30,6 +30,11 @@ mod test {
         INITED_2.store(true, Ordering::SeqCst);
     }
 
+    #[ctor(priority = 1)]
+    unsafe fn foo_3() {
+        libc_eprintln!("Initialized static 3");
+    }
+
     #[ctor]
     static INITED_3: u8 = unsafe {
         libc_eprintln!("Initialized static");

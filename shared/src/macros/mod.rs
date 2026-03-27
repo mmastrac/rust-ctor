@@ -24,9 +24,6 @@ pub mod __support {
     pub use crate::__dtor_parse as dtor_parse;
     pub use crate::__if_has_feature as if_has_feature;
     pub use crate::__if_unsafe as if_unsafe;
-    pub use crate::__include_no_warn_on_missing_unsafe_feature as include_no_warn_on_missing_unsafe_feature;
-    pub use crate::__include_std_feature as include_std_feature;
-    pub use crate::__include_used_linker_feature as include_used_linker_feature;
     pub use crate::__unify_features as unify_features;
 }
 
@@ -123,6 +120,83 @@ macro_rules! __dtor_parse {
     };
 }
 
+/// A macro that generates the appropriate feature extraction macros.
+macro_rules! declare_features {
+    ( $(#[doc = $doc1:literal])* crate = $crate_features:tt; $(#[doc = $doc2:literal])* attr = $attrs:tt; ) => {
+        declare_features!( __ crate $crate_features );
+    };
+
+    ( __ crate [$( 
+        $( #[doc = $doc:literal] )*
+        $feature_name:ident $feature_name_str:literal = $feature_include_macro:ident ; 
+    )*] ) => {
+        /// # Crate features
+        ///
+        $(
+            #[doc = concat!("<code>", stringify!($feature_name), "</code>: ")]
+            $( #[doc = $doc] )*
+            #[doc = "\n"]
+        )*
+        pub mod features {
+        }
+
+        $(
+        #[doc(hidden)]
+        #[macro_export]
+        #[cfg(feature = $feature_name_str)]
+        macro_rules! $feature_include_macro {
+            ($true:item $false:item) => {
+                $true
+            };
+        }
+        
+        #[doc(hidden)]
+        #[macro_export]
+        #[cfg(not(feature = $feature_name_str))]
+        macro_rules! $feature_include_macro {
+            ($true:item $false:item) => {
+                $false
+            };
+        }
+        )*
+    };
+    (__ crate $feature:ident) => {
+    };
+    (__ attr $feature_name:ident = [ $( $feature_args:tt )* ] ) => {
+    };
+}
+
+declare_features!(
+    /// Crate features: name/name as string/include macro.
+    crate = [
+        /// Enable support for the standard library. This is required for static ctor variables, but not for functions.
+        std "std" = __include_std_feature;
+        /// Mark all ctor functions with `used(linker)`.
+        used_linker "used_linker" = __include_used_linker_feature;
+        /// Enable support for the proc-macro `#[ctor]` and `#[dtor]` attributes.
+        proc_macro "proc_macro" = __include_proc_macro_feature;
+        /// Do not warn when a ctor or dtor is missing the `unsafe` keyword.
+        __no_warn_on_missing_unsafe "__no_warn_on_missing_unsafe" = __include_no_warn_on_missing_unsafe_feature;
+    ];
+
+    /// Attributes.
+    attr = [
+        /// Marks a ctor/dtor as unsafe. This will become a warning in 1.0.
+        unsafe = [unsafe];
+        /// Place the initialization function pointer in a custom link section. This may cause the initialization function
+        /// to fail to run or run earlier or later than other `ctor` functions.
+        link_section = [link_section($section:literal)];
+        /// Specify a custom crate path for the `ctor` crate. Used when re-exporting the ctor macro.
+        crate_path = [crate_path = $path:path];
+        /// Make the ctor function anonymous.
+        anonymous = [anonymous];
+        /// Mark this function with `used(linker)`.
+        used_linker = [used(linker)];
+        /// Set the ctor priority to a given value.
+        priority = [priority = $priority:literal];
+    ];
+);
+
 /// Extract #[ctor/dtor] attribute parameters and crate features and turn them
 /// into a unified feature array.
 ///
@@ -142,7 +216,7 @@ macro_rules! __unify_features {
 
     // Add std feature if cfg(feature="std")
     (std, next=$next_macro:path, meta=[$($meta:tt)*], features=[$($features:tt)*], $($rest:tt)*) => {
-        $crate::__support::include_std_feature!(
+        $crate::__include_std_feature!(
             $crate::__support::unify_features!(used_linker, next=$next_macro, meta=[$($meta)*], features=[std,$($features)*], $($rest)*);
             $crate::__support::unify_features!(used_linker, next=$next_macro, meta=[$($meta)*], features=[$($features)*], $($rest)*);
         );
@@ -150,14 +224,14 @@ macro_rules! __unify_features {
 
     // Add used_linker feature if cfg(feature="used_linker")
     (used_linker, next=$next_macro:path, meta=[$($meta:tt)*], features=[$($features:tt)*], $($rest:tt)*) => {
-        $crate::__support::include_used_linker_feature!(
+        $crate::__include_used_linker_feature!(
             $crate::__support::unify_features!(__no_warn_on_missing_unsafe, next=$next_macro, meta=[$($meta)*], features=[used_linker,$($features)*], $($rest)*);
             $crate::__support::unify_features!(__no_warn_on_missing_unsafe, next=$next_macro, meta=[$($meta)*], features=[$($features)*], $($rest)*);
         );
     };
     // Add __no_warn_on_missing_unsafe feature if cfg(feature="__no_warn_on_missing_unsafe")
     (__no_warn_on_missing_unsafe, next=$next_macro:path, meta=[$($meta:tt)*], features=[$($features:tt)*], $($rest:tt)*) => {
-        $crate::__support::include_used_linker_feature!(
+        $crate::__include_no_warn_on_missing_unsafe_feature!(
             $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($meta)*], features=[__no_warn_on_missing_unsafe,$($features)*], $($rest)*);
             $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($meta)*], features=[$($features)*], $($rest)*);
         );
@@ -176,66 +250,15 @@ macro_rules! __unify_features {
     (continue, next=$next_macro:path, meta=[anonymous $(, $($meta:tt)* )?], features=[$($features:tt)*], $($rest:tt)*) => {
         $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($($meta)*)?], features=[anonymous,$($features)*], $($rest)*);
     };
+    (continue, next=$next_macro:path, meta=[priority = $priority:literal $(, $($meta:tt)* )?], features=[$($features:tt)*], $($rest:tt)*) => {
+        $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($($meta)*)?], features=[(priority=$priority),$($features)*], $($rest)*);
+    };
     (continue, next=$next_macro:path, meta=[$unknown_meta:meta $($meta:tt)*], features=[$($features:tt)*], $($rest:tt)*) => {
         compile_error!(concat!("Unknown attribute parameter: ", stringify!($unknown_meta)));
     };
 
     (continue, next=$next_macro:path, meta=[], features=[$($features:tt)*], $($rest:tt)*) => {
         $next_macro!(features=[$($features)*], $($rest)*);
-    };
-}
-
-#[doc(hidden)]
-#[macro_export]
-#[cfg(feature = "std")]
-macro_rules! __include_std_feature {
-    ($true:item $false:item) => {
-        $true
-    };
-}
-
-#[doc(hidden)]
-#[macro_export]
-#[cfg(not(feature = "std"))]
-macro_rules! __include_std_feature {
-    ($true:item $false:item) => {
-        $false
-    };
-}
-
-#[doc(hidden)]
-#[macro_export]
-#[cfg(feature = "used_linker")]
-macro_rules! __include_used_linker_feature {
-    ($true:item $false:item) => {
-        $true
-    };
-}
-
-#[doc(hidden)]
-#[macro_export]
-#[cfg(not(feature = "used_linker"))]
-macro_rules! __include_used_linker_feature {
-    ($true:item $false:item) => {
-        $false
-    };
-}
-
-#[doc(hidden)]
-#[macro_export]
-#[cfg(feature = "__no_warn_on_missing_unsafe")]
-macro_rules! __include_no_warn_on_missing_unsafe_feature {
-    ($true:item $false:item) => {
-        $true
-    };
-}
-
-#[doc(hidden)]
-#[macro_export]
-#[cfg(not(feature = "__no_warn_on_missing_unsafe"))]
-macro_rules! __include_no_warn_on_missing_unsafe_feature {
-    ($true:item $false:item) => {
-        $false
     };
 }
 
@@ -248,11 +271,12 @@ macro_rules! __include_no_warn_on_missing_unsafe_feature {
 #[macro_export]
 #[allow(unknown_lints, edition_2024_expr_fragment_specifier)]
 macro_rules! __if_has_feature {
-    (std,                     [std,                         $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
+    (std,                         [std,                             $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
     (used_linker,                 [used_linker,                     $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
     (__no_warn_on_missing_unsafe, [__no_warn_on_missing_unsafe,     $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
     (anonymous,                   [anonymous,                       $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
     ((link_section(c)),           [(link_section=$section:literal), $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { #[link_section = $section] $($if_true)* };
+    ((priority(p)),               [(priority=p),                    $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { #[priority = p] $($if_true)* };
 
     // Fallback rules
     ($anything:tt, [$x:ident, $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $crate::__support::if_has_feature!($anything, [$($rest)*], {$($if_true)*}, {$($if_false)*}); };
@@ -445,6 +469,7 @@ macro_rules! __dtor_entry {
                 $crate::__support::ctor_link_section!(
                     exit,
                     features=$features,
+                    "",
 
                     /*unsafe*/ extern "C" fn __dtor(
                         #[cfg(target_vendor = "apple")] _: *const u8
@@ -489,6 +514,7 @@ macro_rules! __ctor_call {
         $crate::__support::ctor_link_section!(
             array,
             features=$features,
+            "",
 
             #[allow(non_upper_case_globals, non_snake_case)]
             #[doc(hidden)]
@@ -497,6 +523,7 @@ macro_rules! __ctor_call {
                 $crate::__support::ctor_link_section!(
                     startup,
                     features=$features,
+                    "",
 
                     #[allow(non_snake_case)]
                     /*unsafe*/ extern "C" fn f() -> $crate::__support::CtorRetType {
@@ -515,11 +542,11 @@ macro_rules! __ctor_call {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __ctor_link_section {
-    ($section:ident, features=$features:tt, $($block:tt)+) => {
+    ($section:ident, features=$features:tt, $priority:tt, $($block:tt)+) => {
         $crate::__support::if_has_feature!(used_linker, $features, {
-            $crate::__support::ctor_link_section_attr!($section, $features, used(linker), $($block)+);
+            $crate::__support::ctor_link_section_attr!($section, $features, used(linker), $priority, $($block)+);
         }, {
-            $crate::__support::ctor_link_section_attr!($section, $features, used, $($block)+);
+            $crate::__support::ctor_link_section_attr!($section, $features, used, $priority, $($block)+);
         });
 
         #[cfg(not(any(
@@ -545,7 +572,7 @@ macro_rules! __ctor_link_section {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __ctor_link_section_attr {
-    (array, $features:tt, $used:meta, $item:item) => {
+    (array, $features:tt, $used:meta, $priority:tt, $item:item) => {
         $crate::__support::if_has_feature!((link_section(c)), $features, {
             #[allow(unsafe_code)]
             #[$used]
@@ -563,34 +590,34 @@ macro_rules! __ctor_link_section_attr {
                     target_os = "illumos",
                     target_os = "haiku",
                     target_family = "wasm"
-                ), ".init_array"],
-                [target_arch = "xtensa", ".ctors"],
-                [target_vendor = "apple", "__DATA,__mod_init_func,mod_init_funcs"],
-                [all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc")), ".CRT$XCU"],
+                ), concat!(".init_array", $priority)],
+                [target_arch = "xtensa", concat!(".ctors", $priority)],
+                [target_vendor = "apple", concat!("__DATA,__mod_init_func", $priority,",mod_init_funcs")],
+                [all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc")), concat!(".CRT$XCU", $priority)],
                 // cygwin support: rustc 1.85 does not like the explicit target_os = "cygwin" condition (https://github.com/mmastrac/rust-ctor/issues/356)
                 // We can work around this by excluding gnu and msvc target envs
-                [all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc"))), ".ctors"]
+                [all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc"))), concat!(".ctors", $priority)]
                 ],
                 #[$used]
                 $item
             );
         });
     };
-    (startup, $features:tt, $used:meta, $item:item) => {
+    (startup, $features:tt, $used:meta, $priority:literal, $item:item) => {
         #[cfg(not(clippy))]
         $crate::__support::ctor_link_section_attr!([[any(target_os = "linux", target_os = "android"), ".text.startup"]], $item);
 
         #[cfg(clippy)]
         $item
     };
-    (exit, $features:tt, $used:meta, $item:item) => {
+    (exit, $features:tt, $used:meta, $priority:literal, $item:item) => {
         #[cfg(not(clippy))]
         $crate::__support::ctor_link_section_attr!([[any(target_os = "linux", target_os = "android"), ".text.exit"]], $item);
 
         #[cfg(clippy)]
         $item
     };
-    ([$( [$cond:meta, $literal:literal ] ),+], $item:item) => {
+    ([$( [$cond:meta, $literal:expr ] ),+], $item:item) => {
         $( #[cfg_attr($cond, link_section = $literal)] )+
         $item
     };

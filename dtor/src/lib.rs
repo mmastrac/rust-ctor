@@ -6,6 +6,8 @@ extern crate std;
 
 mod macros;
 
+pub use macros::features;
+
 #[doc(hidden)]
 #[allow(unused)]
 pub use macros::__support;

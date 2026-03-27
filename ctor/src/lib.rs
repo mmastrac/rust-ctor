@@ -24,6 +24,8 @@ pub use macros::__support;
 
 mod macros;
 
+pub use macros::features;
+
 /// Declarative forms of the `#[ctor]` and `#[dtor]` macros.
 ///
 /// The declarative forms wrap and parse a proc_macro-like syntax like so, and
