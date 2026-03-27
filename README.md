@@ -32,6 +32,15 @@ will run at executable or library startup/shutdown respectively.
 
 This library supports WASM targets, but the MSRV for this target is 1.85.
 
+## Features
+
+| Feature | Description | Default |
+|---------|-------------|---------|
+| `std` | Enable support for the standard library. This is required for static ctor variables, but not for functions. | Yes |
+| `proc_macro` | Enable support for the proc macro. Required for `#[ctor]` and `#[dtor]` macros, but not for `ctor!` and `dtor!` forms.  | Yes |
+| `dtor` | Include `#[dtor]` support in the `ctor` crate. | Yes |
+| `used_linker` | Enable support for `#[used(linker)]` (nightly only). | No |
+
 ## Warnings
 
 Rust's philosophy is that nothing happens before or after main and
@@ -72,9 +81,10 @@ library is loaded or an executable is started:
 Creates a `HashMap` populated with strings when a static
 library is loaded or an executable is started (new in `0.1.7`):
 
-`static` items are equivalent to `std::sync::OnceLock`, but with
+`static` items are equivalent to `std::sync::OnceLock`, with
 an automatic deref implementation and eager initialization at
-startup time.
+startup time. `#[ctor]` on `static` items requires the default
+`std` feature.
 
 ```rust
     #[ctor]

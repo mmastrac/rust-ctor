@@ -5,6 +5,8 @@ edition = "2018"
 publish = false
 
 [features]
+default = ["std"]
+std = []
 used_linker = []
 __no_warn_on_missing_unsafe = []
 

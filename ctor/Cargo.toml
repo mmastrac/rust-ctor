@@ -7,9 +7,12 @@ description = "__attribute__((constructor)) for Rust"
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/mmastrac/rust-ctor"
 readme = "../README.md"
+categories = ["no-std"]
 
 [features]
-default = ["dtor", "proc_macro", "__no_warn_on_missing_unsafe"]
+default = ["std", "dtor", "proc_macro", "__no_warn_on_missing_unsafe"]
+
+std = []
 
 # Enable the dtor re-export
 dtor = ["dep:dtor"]
