@@ -128,7 +128,8 @@ macro_rules! __dtor_parse {
 ///
 /// Supported attributes:
 ///
-/// - `used(linker)` -> feature: `used_linker`
+/// - `used(linker)` -> crate feature: `used_linker`
+/// - `std` -> crate feature: `std`
 /// - `link_section = ...` -> feature: `(link_section = ...)`
 /// - `crate_path = ...` -> feature: `(crate_path = ...)`
 #[doc(hidden)]
@@ -136,13 +137,13 @@ macro_rules! __dtor_parse {
 macro_rules! __unify_features {
     // Entry
     (next=$next_macro:path, meta=[$($meta:tt)*], features=[$($features:tt)*], $($rest:tt)*) => {
-        $crate::__support::unify_features!(stdlib, next=$next_macro, meta=[$($meta)*], features=[$($features)*], $($rest)*);
+        $crate::__support::unify_features!(std, next=$next_macro, meta=[$($meta)*], features=[$($features)*], $($rest)*);
     };
 
     // Add std feature if cfg(feature="std")
-    (stdlib, next=$next_macro:path, meta=[$($meta:tt)*], features=[$($features:tt)*], $($rest:tt)*) => {
+    (std, next=$next_macro:path, meta=[$($meta:tt)*], features=[$($features:tt)*], $($rest:tt)*) => {
         $crate::__support::include_std_feature!(
-            $crate::__support::unify_features!(used_linker, next=$next_macro, meta=[$($meta)*], features=[stdlib,$($features)*], $($rest)*);
+            $crate::__support::unify_features!(used_linker, next=$next_macro, meta=[$($meta)*], features=[std,$($features)*], $($rest)*);
             $crate::__support::unify_features!(used_linker, next=$next_macro, meta=[$($meta)*], features=[$($features)*], $($rest)*);
         );
     };
@@ -247,7 +248,7 @@ macro_rules! __include_no_warn_on_missing_unsafe_feature {
 #[macro_export]
 #[allow(unknown_lints, edition_2024_expr_fragment_specifier)]
 macro_rules! __if_has_feature {
-    (stdlib,                     [stdlib,                         $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
+    (std,                     [std,                         $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
     (used_linker,                 [used_linker,                     $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
     (__no_warn_on_missing_unsafe, [__no_warn_on_missing_unsafe,     $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
     (anonymous,                   [anonymous,                       $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
@@ -333,7 +334,7 @@ macro_rules! __ctor_entry {
         }
     };
     (features=$features:tt, imeta=$(#[$imeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=static $ident:ident : $ty:ty = $block:block;) => {
-        $crate::__support::if_has_feature!(stdlib, $features, {
+        $crate::__support::if_has_feature!(std, $features, {
             $(#[$imeta])*
             $($vis)* static $ident: $ident::Static<$ty> = $ident::Static::<$ty> {
                 _storage: {
@@ -379,7 +380,7 @@ macro_rules! __ctor_entry {
                 }
             }
         }, {
-            compile_error!("`#[ctor]` on `static` items requires the `stdlib` feature");
+            compile_error!("`#[ctor]` on `static` items requires the `std` feature");
         });
     };
 }
