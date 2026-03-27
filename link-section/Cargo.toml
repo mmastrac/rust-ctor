@@ -1,0 +1,17 @@
+[package]
+name = "link-section"
+version = "0.0.1"
+authors = ["Matt Mastracci <matthew@mastracci.com>"]
+edition = "2021"
+description = "Low-level link-section macro support for Rust"
+license = "Apache-2.0 OR MIT"
+repository = "https://github.com/mmastrac/rust-ctor"
+readme = "README.md"
+categories = []
+
+[features]
+default = []
+
+[dependencies]
+
+[dev-dependencies]

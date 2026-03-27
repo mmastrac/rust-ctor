@@ -4,6 +4,7 @@ members = [
     "dtor", 
     "ctor-proc-macro",
     "dtor-proc-macro",
+    "link-section",
     "shared",
     "tests"
 ]

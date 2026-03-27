@@ -456,6 +456,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "link-section"
+version = "0.0.1"
+
+[[package]]
 name = "linux-raw-sys"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
