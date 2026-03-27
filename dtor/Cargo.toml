@@ -1,6 +1,6 @@
 [package]
 name = "dtor"
-version = "0.1.1"
+version = "0.2.0"
 authors = ["Matt Mastracci <matthew@mastracci.com>"]
 edition = "2021"
 description = "__attribute__((destructor)) for Rust"
