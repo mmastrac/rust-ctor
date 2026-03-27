@@ -239,7 +239,7 @@ macro_rules! __unify_features {
         $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($($meta)*)?], features=[used_linker,$($features)*], $($rest)*);
     };
     (continue, next=$next_macro:path, meta=[link_section = $section:tt $(, $($meta:tt)* )?], features=[$($features:tt)*], $($rest:tt)*) => {
-        $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($($meta)*)?], features=[(link_section=$section),$($features)*], $($rest)*);
+        $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($($meta)*)?], features=[(link_section=($section)),$($features)*], $($rest)*);
     };
     (continue, next=$next_macro:path, meta=[crate_path = $path:path $(, $($meta:tt)* )?], features=[$($features:tt)*], $($rest:tt)*) => {
         $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($($meta)*)?], features=[(crate_path=$path),$($features)*], $($rest)*);
@@ -248,7 +248,7 @@ macro_rules! __unify_features {
         $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($($meta)*)?], features=[anonymous,$($features)*], $($rest)*);
     };
     (continue, next=$next_macro:path, meta=[priority = $priority:literal $(, $($meta:tt)* )?], features=[$($features:tt)*], $($rest:tt)*) => {
-        $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($($meta)*)?], features=[(priority=$priority),$($features)*], $($rest)*);
+        $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($($meta)*)?], features=[(priority=($priority)),$($features)*], $($rest)*);
     };
     (continue, next=$next_macro:path, meta=[$unknown_meta:meta $($meta:tt)*], features=[$($features:tt)*], $($rest:tt)*) => {
         compile_error!(concat!("Unknown attribute parameter: ", stringify!($unknown_meta)));
@@ -272,12 +272,12 @@ macro_rules! __if_has_feature {
     (used_linker,                 [used_linker,                     $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
     (__no_warn_on_missing_unsafe, [__no_warn_on_missing_unsafe,     $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
     (anonymous,                   [anonymous,                       $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
-    ((link_section(c)),           [(link_section=$section:literal), $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { #[link_section = $section] $($if_true)* };
-    ((priority(p)),               [(priority=$priority:literal),    $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
+    ((link_section(c)),           [(link_section=($section:literal)), $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { #[link_section = $section] $($if_true)* };
+    ((priority(p)),               [(priority=($priority:literal)),    $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
 
     // Fallback rules
     ($anything:tt, [$x:ident, $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $crate::__support::if_has_feature!($anything, [$($rest)*], {$($if_true)*}, {$($if_false)*}); };
-    ($anything:tt, [($x:ident=$y:expr), $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $crate::__support::if_has_feature!($anything, [$($rest)*], {$($if_true)*}, {$($if_false)*}); };
+    ($anything:tt, [($x:ident=$y:tt), $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $crate::__support::if_has_feature!($anything, [$($rest)*], {$($if_true)*}, {$($if_false)*}); };
     ($anything:tt, [], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_false)* };
 }
 
@@ -291,9 +291,9 @@ macro_rules! __if_unsafe {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __get_priority {
-    ($next:path, $args:tt, [(priority=$priority:literal), $($rest:tt)*]) => { $next!($args, (".", $priority)); };
+    ($next:path, $args:tt, [(priority=($priority:literal)), $($rest:tt)*]) => { $next!($args, (".", $priority)); };
     ($next:path, $args:tt, [$x:ident, $($rest:tt)*])                     => { $crate::__support::get_priority!($next, $args, [$($rest)*]); };
-    ($next:path, $args:tt, [($x:ident=$y:expr), $($rest:tt)*])           => { $crate::__support::get_priority!($next, $args, [$($rest)*]); };
+    ($next:path, $args:tt, [($x:ident=$y:tt), $($rest:tt)*])           => { $crate::__support::get_priority!($next, $args, [$($rest)*]); };
     ($next:path, $args:tt, [])                                           => { $next!($args, ("")); };
 }
 

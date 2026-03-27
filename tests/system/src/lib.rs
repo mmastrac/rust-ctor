@@ -35,6 +35,11 @@ mod test {
         libc_eprintln!("Initialized static with priority 2");
     }
 
+    #[ctor(priority = 4)]
+    unsafe fn foo_priority_four() {
+        libc_eprintln!("Initialized static with priority 4");
+    }
+
     #[ctor(priority = 1)]
     unsafe fn foo_priority_one() {
         libc_eprintln!("Initialized static with priority 1");
