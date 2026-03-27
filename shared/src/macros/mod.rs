@@ -25,7 +25,7 @@ pub mod __support {
     pub use crate::__if_has_feature as if_has_feature;
     pub use crate::__if_unsafe as if_unsafe;
     pub use crate::__include_no_warn_on_missing_unsafe_feature as include_no_warn_on_missing_unsafe_feature;
-    pub use crate::__include_stdlib_feature as include_stdlib_feature;
+    pub use crate::__include_std_feature as include_std_feature;
     pub use crate::__include_used_linker_feature as include_used_linker_feature;
     pub use crate::__unify_features as unify_features;
 }
@@ -139,9 +139,9 @@ macro_rules! __unify_features {
         $crate::__support::unify_features!(stdlib, next=$next_macro, meta=[$($meta)*], features=[$($features)*], $($rest)*);
     };
 
-    // Add stdlib feature if cfg(feature="stdlib")
+    // Add std feature if cfg(feature="std")
     (stdlib, next=$next_macro:path, meta=[$($meta:tt)*], features=[$($features:tt)*], $($rest:tt)*) => {
-        $crate::__support::include_stdlib_feature!(
+        $crate::__support::include_std_feature!(
             $crate::__support::unify_features!(used_linker, next=$next_macro, meta=[$($meta)*], features=[stdlib,$($features)*], $($rest)*);
             $crate::__support::unify_features!(used_linker, next=$next_macro, meta=[$($meta)*], features=[$($features)*], $($rest)*);
         );
@@ -186,8 +186,8 @@ macro_rules! __unify_features {
 
 #[doc(hidden)]
 #[macro_export]
-#[cfg(feature = "stdlib")]
-macro_rules! __include_stdlib_feature {
+#[cfg(feature = "std")]
+macro_rules! __include_std_feature {
     ($true:item $false:item) => {
         $true
     };
@@ -195,8 +195,8 @@ macro_rules! __include_stdlib_feature {
 
 #[doc(hidden)]
 #[macro_export]
-#[cfg(not(feature = "stdlib"))]
-macro_rules! __include_stdlib_feature {
+#[cfg(not(feature = "std"))]
+macro_rules! __include_std_feature {
     ($true:item $false:item) => {
         $false
     };

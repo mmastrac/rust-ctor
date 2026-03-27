@@ -75,7 +75,7 @@ library is loaded or an executable is started (new in `0.1.7`):
 `static` items are equivalent to `std::sync::OnceLock`, with
 an automatic deref implementation and eager initialization at
 startup time. `#[ctor]` on `static` items requires the default
-`stdlib` feature.
+`std` feature.
 
 ```rust
     #[ctor]

@@ -15,7 +15,7 @@
 #![no_std]
 #![recursion_limit = "256"]
 
-#[cfg(feature = "stdlib")]
+#[cfg(feature = "std")]
 extern crate std;
 
 #[doc(hidden)]
@@ -185,7 +185,7 @@ pub mod declarative {
 ///
 /// For `static` items, the macro generates a `std::sync::OnceLock` that is
 /// initialized at startup time. `#[ctor]` on `static` items requires the
-/// default `stdlib` feature.
+/// default `std` feature.
 ///
 /// ```rust
 /// # extern crate ctor;
