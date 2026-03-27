@@ -30,9 +30,19 @@ mod test {
         INITED_2.store(true, Ordering::SeqCst);
     }
 
+    #[ctor(priority = 2)]
+    unsafe fn foo_priority_two() {
+        libc_eprintln!("Initialized static with priority 2");
+    }
+
     #[ctor(priority = 1)]
-    unsafe fn foo_3() {
-        libc_eprintln!("Initialized static 3");
+    unsafe fn foo_priority_one() {
+        libc_eprintln!("Initialized static with priority 1");
+    }
+
+    #[ctor(priority = 3)]
+    unsafe fn foo_priority_three() {
+        libc_eprintln!("Initialized static with priority 3");
     }
 
     #[ctor]
