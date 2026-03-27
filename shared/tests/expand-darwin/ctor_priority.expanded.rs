@@ -2,6 +2,13 @@
 fn foo() {
     #[allow(unsafe_code)]
     {
+        const _: () = {
+            #[deprecated(
+                note = "The priority parameter is not supported on target_vendor = \"apple\""
+            )]
+            const fn ctor_priority_unsupported() {}
+            ctor_priority_unsupported();
+        };
         #[link_section = "__DATA,__mod_init_func,mod_init_funcs"]
         #[used]
         #[allow(non_upper_case_globals, non_snake_case)]

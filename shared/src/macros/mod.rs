@@ -292,9 +292,9 @@ macro_rules! __if_unsafe {
 #[macro_export]
 macro_rules! __get_priority {
     ($next:path, $args:tt, [(priority=($priority:literal)), $($rest:tt)*]) => { $next!($args, (".", $priority)); };
-    ($next:path, $args:tt, [$x:ident, $($rest:tt)*])                     => { $crate::__support::get_priority!($next, $args, [$($rest)*]); };
-    ($next:path, $args:tt, [($x:ident=$y:tt), $($rest:tt)*])           => { $crate::__support::get_priority!($next, $args, [$($rest)*]); };
-    ($next:path, $args:tt, [])                                           => { $next!($args, ("")); };
+    ($next:path, $args:tt, [$x:ident, $($rest:tt)*])                       => { $crate::__support::get_priority!($next, $args, [$($rest)*]); };
+    ($next:path, $args:tt, [($x:ident=$y:tt), $($rest:tt)*])               => { $crate::__support::get_priority!($next, $args, [$($rest)*]); };
+    ($next:path, $args:tt, [])                                             => { $next!($args, ("")); };
 }
 
 #[doc(hidden)]
@@ -582,6 +582,14 @@ macro_rules! __ctor_link_section {
 #[macro_export]
 macro_rules! __ctor_link_section_attr {
     (array, $features:tt, $used:meta, ($($priority:tt)*), $item:item) => {
+        $crate::__support::if_has_feature!((priority(p)), $features, {
+            #[cfg(target_vendor="apple")]
+            const _: () = {
+                #[deprecated(note = "The priority parameter is not supported on target_vendor = \"apple\"")]
+                const fn ctor_priority_unsupported() {}
+                ctor_priority_unsupported();
+            };
+        }, {});
         $crate::__support::if_has_feature!((link_section(c)), $features, {
             #[allow(unsafe_code)]
             #[$used]
