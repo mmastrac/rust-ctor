@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "ctor"
-version = "0.7.0"
+version = "0.8.0"
 dependencies = [
  "ctor-proc-macro",
  "dtor",
@@ -46,7 +46,7 @@ dependencies = [
 
 [[package]]
 name = "dtor"
-version = "0.2.0"
+version = "0.3.0"
 dependencies = [
  "dtor-proc-macro",
  "libc-print",
