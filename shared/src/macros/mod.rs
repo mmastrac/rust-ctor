@@ -24,6 +24,7 @@ pub mod __support {
     pub use crate::__dtor_parse as dtor_parse;
     pub use crate::__if_has_feature as if_has_feature;
     pub use crate::__if_unsafe as if_unsafe;
+    pub use crate::__get_priority as get_priority;
     pub use crate::__unify_features as unify_features;
 }
 
@@ -272,7 +273,7 @@ macro_rules! __if_has_feature {
     (__no_warn_on_missing_unsafe, [__no_warn_on_missing_unsafe,     $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
     (anonymous,                   [anonymous,                       $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
     ((link_section(c)),           [(link_section=$section:literal), $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { #[link_section = $section] $($if_true)* };
-    ((priority(p)),               [(priority=p),                    $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { #[priority = p] $($if_true)* };
+    ((priority(p)),               [(priority=$priority:literal),    $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
 
     // Fallback rules
     ($anything:tt, [$x:ident, $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $crate::__support::if_has_feature!($anything, [$($rest)*], {$($if_true)*}, {$($if_false)*}); };
@@ -285,6 +286,15 @@ macro_rules! __if_has_feature {
 macro_rules! __if_unsafe {
     (, {$($if_unsafe:tt)*}, {$($if_safe:tt)*}) => { $($if_safe)* };
     (unsafe, {$($if_unsafe:tt)*}, {$($if_safe:tt)*}) => { $($if_unsafe)* };
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __get_priority {
+    ($next:path, $args:tt, [(priority=$priority:literal), $($rest:tt)*]) => { $next!($args, (".", $priority)); };
+    ($next:path, $args:tt, [$x:ident, $($rest:tt)*])                     => { $crate::__support::get_priority!($next, $args, [$($rest)*]); };
+    ($next:path, $args:tt, [($x:ident=$y:expr), $($rest:tt)*])           => { $crate::__support::get_priority!($next, $args, [$($rest)*]); };
+    ($next:path, $args:tt, [])                                           => { $next!($args, ("")); };
 }
 
 #[doc(hidden)]
@@ -465,7 +475,7 @@ macro_rules! __dtor_entry {
                 $crate::__support::ctor_link_section!(
                     exit,
                     features=$features,
-                    "",
+                    (""),
 
                     /*unsafe*/ extern "C" fn __dtor(
                         #[cfg(target_vendor = "apple")] _: *const u8
@@ -507,10 +517,13 @@ macro_rules! __dtor_entry {
 #[macro_export]
 macro_rules! __ctor_call {
     (features=$features:tt, { $($block:tt)+ } ) => {
+        $crate::__support::get_priority!($crate::__support::ctor_call, [features=$features, { $($block)+ }], $features);
+    };
+    ([features=$features:tt, { $($block:tt)+ }], $priority:tt) => {
         $crate::__support::ctor_link_section!(
             array,
             features=$features,
-            "",
+            $priority,
 
             #[allow(non_upper_case_globals, non_snake_case)]
             #[doc(hidden)]
@@ -519,7 +532,7 @@ macro_rules! __ctor_call {
                 $crate::__support::ctor_link_section!(
                     startup,
                     features=$features,
-                    "",
+                    (""),
 
                     #[allow(non_snake_case)]
                     /*unsafe*/ extern "C" fn f() -> $crate::__support::CtorRetType {
@@ -568,7 +581,7 @@ macro_rules! __ctor_link_section {
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __ctor_link_section_attr {
-    (array, $features:tt, $used:meta, $priority:tt, $item:item) => {
+    (array, $features:tt, $used:meta, ($($priority:tt)*), $item:item) => {
         $crate::__support::if_has_feature!((link_section(c)), $features, {
             #[allow(unsafe_code)]
             #[$used]
@@ -586,27 +599,28 @@ macro_rules! __ctor_link_section_attr {
                     target_os = "illumos",
                     target_os = "haiku",
                     target_family = "wasm"
-                ), (concat!(".init_array", $priority))],
-                [target_arch = "xtensa", (concat!(".ctors", $priority))],
-                [target_vendor = "apple", (concat!("__DATA,__mod_init_func", $priority,",mod_init_funcs"))],
-                [all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc")), (concat!(".CRT$XCU", $priority))],
+                ), (concat!(".init_array", $($priority)*))],
+                [target_arch = "xtensa", (concat!(".ctors", $($priority)*))],
+                // macOS/Darwin do not support the priority parameter in the link section
+                [target_vendor = "apple", (concat!("__DATA,__mod_init_func,mod_init_funcs"))],
+                [all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc")), (concat!(".CRT$XCU", $($priority)*))],
                 // cygwin support: rustc 1.85 does not like the explicit target_os = "cygwin" condition (https://github.com/mmastrac/rust-ctor/issues/356)
                 // We can work around this by excluding gnu and msvc target envs
-                [all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc"))), (concat!(".ctors", $priority))]
+                [all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc"))), (concat!(".ctors", $($priority)*))]
                 ],
                 #[$used]
                 $item
             );
         });
     };
-    (startup, $features:tt, $used:meta, $priority:literal, $item:item) => {
+    (startup, $features:tt, $used:meta, $priority:tt, $item:item) => {
         #[cfg(not(clippy))]
         $crate::__support::ctor_link_section_attr!([[any(target_os = "linux", target_os = "android"), (".text.startup")]], $item);
 
         #[cfg(clippy)]
         $item
     };
-    (exit, $features:tt, $used:meta, $priority:literal, $item:item) => {
+    (exit, $features:tt, $used:meta, $priority:tt, $item:item) => {
         #[cfg(not(clippy))]
         $crate::__support::ctor_link_section_attr!([[any(target_os = "linux", target_os = "android"), (".text.exit")]], $item);
 

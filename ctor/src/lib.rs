@@ -90,6 +90,7 @@ pub mod declarative {
 ///  - `link_section = "section"`: The section to place the constructor in.
 ///  - `anonymous`: Do not give the constructor a name in the generated code
 ///    (allows for multiple constructors with the same name).
+///  - `priority = N`: The priority of the constructor. Higher-N-priority constructors are run last.
 ///
 /// # Examples
 ///
