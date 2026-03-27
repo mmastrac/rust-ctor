@@ -160,10 +160,6 @@ macro_rules! declare_features {
         }
         )*
     };
-    (__ crate $feature:ident) => {
-    };
-    (__ attr $feature_name:ident = [ $( $feature_args:tt )* ] ) => {
-    };
 }
 
 declare_features!(
@@ -590,13 +586,13 @@ macro_rules! __ctor_link_section_attr {
                     target_os = "illumos",
                     target_os = "haiku",
                     target_family = "wasm"
-                ), concat!(".init_array", $priority)],
-                [target_arch = "xtensa", concat!(".ctors", $priority)],
-                [target_vendor = "apple", concat!("__DATA,__mod_init_func", $priority,",mod_init_funcs")],
-                [all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc")), concat!(".CRT$XCU", $priority)],
+                ), (concat!(".init_array", $priority))],
+                [target_arch = "xtensa", (concat!(".ctors", $priority))],
+                [target_vendor = "apple", (concat!("__DATA,__mod_init_func", $priority,",mod_init_funcs"))],
+                [all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc")), (concat!(".CRT$XCU", $priority))],
                 // cygwin support: rustc 1.85 does not like the explicit target_os = "cygwin" condition (https://github.com/mmastrac/rust-ctor/issues/356)
                 // We can work around this by excluding gnu and msvc target envs
-                [all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc"))), concat!(".ctors", $priority)]
+                [all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc"))), (concat!(".ctors", $priority))]
                 ],
                 #[$used]
                 $item
@@ -605,20 +601,20 @@ macro_rules! __ctor_link_section_attr {
     };
     (startup, $features:tt, $used:meta, $priority:literal, $item:item) => {
         #[cfg(not(clippy))]
-        $crate::__support::ctor_link_section_attr!([[any(target_os = "linux", target_os = "android"), ".text.startup"]], $item);
+        $crate::__support::ctor_link_section_attr!([[any(target_os = "linux", target_os = "android"), (".text.startup")]], $item);
 
         #[cfg(clippy)]
         $item
     };
     (exit, $features:tt, $used:meta, $priority:literal, $item:item) => {
         #[cfg(not(clippy))]
-        $crate::__support::ctor_link_section_attr!([[any(target_os = "linux", target_os = "android"), ".text.exit"]], $item);
+        $crate::__support::ctor_link_section_attr!([[any(target_os = "linux", target_os = "android"), (".text.exit")]], $item);
 
         #[cfg(clippy)]
         $item
     };
-    ([$( [$cond:meta, $literal:expr ] ),+], $item:item) => {
-        $( #[cfg_attr($cond, link_section = $literal)] )+
+    ([$( [$cond:meta, ($($literal:tt)*) ] ),+], $item:item) => {
+        $( #[cfg_attr($cond, link_section = $($literal)*)] )+
         $item
     };
 }
