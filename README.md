@@ -32,6 +32,15 @@ will run at executable or library startup/shutdown respectively.
 
 This library supports WASM targets, but the MSRV for this target is 1.85.
 
+## Features
+
+| Feature | Description | Default |
+|---------|-------------|---------|
+| `std` | Enable support for the standard library. This is required for static ctor variables, but not for functions. | Yes |
+| `proc_macro` | Enable support for the proc macro. Required for `#[ctor]` and `#[dtor]` macros, but not for `ctor!` and `dtor!` forms.  | Yes |
+| `dtor` | Include `#[dtor]` support in the `ctor` crate. | Yes |
+| `used_linker` | Enable support for `#[used(linker)]` (nightly only). | No |
+
 ## Warnings
 
 Rust's philosophy is that nothing happens before or after main and
