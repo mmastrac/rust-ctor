@@ -458,6 +458,13 @@ dependencies = [
 [[package]]
 name = "link-section"
 version = "0.0.1"
+dependencies = [
+ "link-section-proc-macro",
+]
+
+[[package]]
+name = "link-section-proc-macro"
+version = "0.0.1"
 
 [[package]]
 name = "linux-raw-sys"

@@ -10,8 +10,14 @@ readme = "README.md"
 categories = []
 
 [features]
-default = []
+default = ["proc_macro"]
+proc_macro = ["dep:link-section-proc-macro"]
 
 [dependencies]
+link-section-proc-macro = { version = "=0.0.1", optional = true }
 
 [dev-dependencies]
+
+[[example]]
+name = "example"
+path = "src/example.rs"

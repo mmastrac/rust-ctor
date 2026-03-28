@@ -1,10 +1,12 @@
 [workspace]
+resolver = "2"
 members = [ 
     "ctor", 
     "dtor", 
     "ctor-proc-macro",
     "dtor-proc-macro",
     "link-section",
+    "link-section-proc-macro",
     "shared",
     "tests"
 ]
@@ -18,10 +20,16 @@ default-members = [
 ]
 exclude = [
 ]
-resolver = "2"
+authors = ["Matt Mastracci <matthew@mastracci.com>"]
+license = "Apache-2.0 OR MIT"
+repository = "https://github.com/mmastrac/rust-ctor"
+readme = "README.md"
+categories = []
 
 [patch.crates-io]
 ctor = { path = "ctor" }
 dtor = { path = "dtor" }
 dtor-proc-macro = { path = "dtor-proc-macro" }
 ctor-proc-macro = { path = "ctor-proc-macro" }
+link-section = { path = "link-section" }
+link-section-proc-macro = { path = "link-section-proc-macro" }
