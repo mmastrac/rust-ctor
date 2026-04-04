@@ -1,3 +1,13 @@
+//! To overwrite the Linux expansion tests on macOS, run:
+//! 
+//! ```bash
+//! docker run --rm \
+//!   -v "$(pwd):/src" \
+//!   -w /src \
+//!   rust:latest \
+//!   bash -lc 'export PATH="/usr/local/cargo/bin:$PATH" && cargo install cargo-expand && export MACROTEST=overwrite && cargo test -p shared --test macrotest'
+//! ```
+
 #[cfg(target_vendor = "apple")]
 #[test]
 pub fn pass_darwin() {
