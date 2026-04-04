@@ -330,12 +330,15 @@ pub struct Section {
 }
 
 impl Section {
+    /// The start address of the section.
     pub const fn start_ptr(&self) -> *const () {
         self.start as *const ()
     }
+    /// The end address of the section.
     pub const fn end_ptr(&self) -> *const () {
         self.end as *const ()
     }
+    /// The byte length of the section.
     pub const fn byte_len(&self) -> usize {
         unsafe { (self.end as *const u8).offset_from(self.start as *const u8) as usize }
     }
@@ -366,7 +369,7 @@ pub struct TypedSection<T> {
 }
 
 impl<T> TypedSection<T> {
-    /// Returns the stride of the typed section.
+    /// The stride of the typed section.
     pub const fn stride() -> usize {
         // Compute the size required for C to store two instances of T side-by-side.
         // TODO: Can we just use align_of/size_of?
@@ -385,22 +388,27 @@ impl<T> TypedSection<T> {
         size
     }
 
+    /// The start address of the section.
     pub const fn start_ptr(&self) -> *const T {
         self.start as *const T
     }
 
+    /// The end address of the section.
     pub const fn end_ptr(&self) -> *const T {
         self.end as *const T
     }
 
+    /// The byte length of the section.
     pub const fn byte_len(&self) -> usize {
         unsafe { (self.end as *const u8).offset_from(self.start as *const u8) as usize }
     }
 
+    /// The number of elements in the section.
     pub const fn len(&self) -> usize {
         Self::byte_len(&self) / Self::stride()
     }
 
+    /// The section as a slice.
     pub const fn as_slice(&self) -> &[T] {
         if self.len() == 0 {
             &[]
