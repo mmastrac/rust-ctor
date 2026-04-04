@@ -37,15 +37,15 @@ supported but not tested as part of the automatic builds. This library will also
 work as expected in both `bin` and `cdylib` outputs, ie: the `ctor` and `dtor`
 will run at executable or library startup/shutdown respectively.
 
-
 ## Features
 
-| Feature       | Description                                                                                                            | Default |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------- | ------- |
-| `std`         | Enable support for the standard library. This is required for static ctor variables, but not for functions.            | Yes     |
-| `proc_macro`  | Enable support for the proc macro. Required for `#[ctor]` and `#[dtor]` macros, but not for `ctor!` and `dtor!` forms. | Yes     |
-| `dtor`        | Include `#[dtor]` support in the `ctor` crate.                                                                         | Yes     |
-| `used_linker` | Enable support for `#[used(linker)]` (nightly only).                                                                   | No      |
+| Feature                     | Description                                                                                                            | Default |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------- |
+| `std`                       | Enable support for the standard library. This is required for static ctor variables, but not for functions.            | Yes     |
+| `proc_macro`                | Enable support for the proc macro. Required for `#[ctor]` and `#[dtor]` macros, but not for `ctor!` and `dtor!` forms. | Yes     |
+| `dtor`                      | Include `#[dtor]` support in the `ctor` crate.                                                                         | Yes     |
+| `no_warn_on_missing_unsafe` | Do not warn when a ctor or dtor is missing the `unsafe` keyword.                                                       | Yes     |
+| `used_linker`               | Enable support for `#[used(linker)]` (nightly only).                                                                   | No      |
 
 ## Warnings
 

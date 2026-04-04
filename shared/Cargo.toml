@@ -9,7 +9,7 @@ default = ["std"]
 std = []
 used_linker = []
 proc_macro = []
-__no_warn_on_missing_unsafe = []
+no_warn_on_missing_unsafe = []
 
 [dependencies]
 macrotest = "1"

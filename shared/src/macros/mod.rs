@@ -173,7 +173,7 @@ declare_features!(
         /// Enable support for the proc-macro `#[ctor]` and `#[dtor]` attributes.
         proc_macro "proc_macro" = __include_proc_macro_feature;
         /// Do not warn when a ctor or dtor is missing the `unsafe` keyword.
-        __no_warn_on_missing_unsafe "__no_warn_on_missing_unsafe" = __include_no_warn_on_missing_unsafe_feature;
+        no_warn_on_missing_unsafe "no_warn_on_missing_unsafe" = __include_no_warn_on_missing_unsafe_feature;
     ];
 
     /// Attributes.
@@ -222,14 +222,14 @@ macro_rules! __unify_features {
     // Add used_linker feature if cfg(feature="used_linker")
     (used_linker, next=$next_macro:path, meta=[$($meta:tt)*], features=[$($features:tt)*], $($rest:tt)*) => {
         $crate::__include_used_linker_feature!(
-            $crate::__support::unify_features!(__no_warn_on_missing_unsafe, next=$next_macro, meta=[$($meta)*], features=[used_linker,$($features)*], $($rest)*);
-            $crate::__support::unify_features!(__no_warn_on_missing_unsafe, next=$next_macro, meta=[$($meta)*], features=[$($features)*], $($rest)*);
+            $crate::__support::unify_features!(no_warn_on_missing_unsafe, next=$next_macro, meta=[$($meta)*], features=[used_linker,$($features)*], $($rest)*);
+            $crate::__support::unify_features!(no_warn_on_missing_unsafe, next=$next_macro, meta=[$($meta)*], features=[$($features)*], $($rest)*);
         );
     };
-    // Add __no_warn_on_missing_unsafe feature if cfg(feature="__no_warn_on_missing_unsafe")
-    (__no_warn_on_missing_unsafe, next=$next_macro:path, meta=[$($meta:tt)*], features=[$($features:tt)*], $($rest:tt)*) => {
+    // Add no_warn_on_missing_unsafe feature if cfg(feature="no_warn_on_missing_unsafe")
+    (no_warn_on_missing_unsafe, next=$next_macro:path, meta=[$($meta:tt)*], features=[$($features:tt)*], $($rest:tt)*) => {
         $crate::__include_no_warn_on_missing_unsafe_feature!(
-            $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($meta)*], features=[__no_warn_on_missing_unsafe,$($features)*], $($rest)*);
+            $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($meta)*], features=[no_warn_on_missing_unsafe,$($features)*], $($rest)*);
             $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($meta)*], features=[$($features)*], $($rest)*);
         );
     };
@@ -263,15 +263,15 @@ macro_rules! __unify_features {
 ///
 /// This macro matches the features recursively.
 ///
-/// Example: `[(link_section = ".ctors") , used_linker , __no_warn_on_missing_unsafe ,]`
+/// Example: `[(link_section = ".ctors") , used_linker , no_warn_on_missing_unsafe ,]`
 #[doc(hidden)]
 #[macro_export]
 #[allow(unknown_lints, edition_2024_expr_fragment_specifier)]
 macro_rules! __if_has_feature {
-    (std,                         [std,                             $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
-    (used_linker,                 [used_linker,                     $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
-    (__no_warn_on_missing_unsafe, [__no_warn_on_missing_unsafe,     $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
-    (anonymous,                   [anonymous,                       $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
+    (std,                         [std,                               $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
+    (used_linker,                 [used_linker,                       $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
+    (no_warn_on_missing_unsafe,   [no_warn_on_missing_unsafe,         $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
+    (anonymous,                   [anonymous,                         $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
     ((link_section(c)),           [(link_section=($section:literal)), $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { #[link_section = $section] $($if_true)* };
     ((priority(p)),               [(priority=($priority:literal)),    $($rest:tt)*], {$($if_true:tt)*}, {$($if_false:tt)*}) => { $($if_true)* };
 
@@ -335,7 +335,7 @@ macro_rules! __ctor_entry {
             #[allow(unsafe_code)]
             {
                 $crate::__support::if_unsafe!($($unsafe)?, {}, {
-                    $crate::__support::if_has_feature!( __no_warn_on_missing_unsafe, $features, {}, {
+                    $crate::__support::if_has_feature!( no_warn_on_missing_unsafe, $features, {}, {
                         #[deprecated="ctor deprecation note:\n\n \
                         Use of #[ctor] without `unsafe fn` is deprecated. As code execution before main\n\
                         is unsupported by most Rust runtime functions, these functions must be marked\n\
@@ -394,7 +394,7 @@ macro_rules! __ctor_entry {
             #[allow(unsafe_code)]
             mod $ident {
                 $crate::__support::if_unsafe!($($unsafe)?, {}, {
-                    $crate::__support::if_has_feature!( __no_warn_on_missing_unsafe, $features, {}, {
+                    $crate::__support::if_has_feature!( no_warn_on_missing_unsafe, $features, {}, {
                         #[deprecated="ctor deprecation note:\n\n \
                         Use of #[ctor] without `unsafe { ... }` is deprecated. As code execution before main\n\
                         is unsupported by most Rust runtime functions, these functions must be marked\n\
@@ -458,7 +458,7 @@ macro_rules! __dtor_entry {
             #[allow(unsafe_code)]
             {
                 $crate::__support::if_unsafe!($($unsafe)?, {}, {
-                    $crate::__support::if_has_feature!( __no_warn_on_missing_unsafe, $features, {}, {
+                    $crate::__support::if_has_feature!( no_warn_on_missing_unsafe, $features, {}, {
                         #[deprecated="dtor deprecation note:\n\n \
                         Use of #[dtor] without `unsafe fn` is deprecated. As code execution after main\n\
                         is unsupported by most Rust runtime functions, these functions must be marked\n\

@@ -11,11 +11,11 @@ categories = ["no-std"]
 rust-version = "1.60"
 
 [features]
-default = ["std", "proc_macro", "__no_warn_on_missing_unsafe"]
+default = ["std", "proc_macro", "no_warn_on_missing_unsafe"]
 std = []
 proc_macro = ["dep:dtor-proc-macro"]
 used_linker = []
-__no_warn_on_missing_unsafe = []
+no_warn_on_missing_unsafe = []
 
 [dependencies]
 dtor-proc-macro = { version = "=0.0.6", optional = true }

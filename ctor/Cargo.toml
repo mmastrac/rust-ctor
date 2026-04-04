@@ -11,7 +11,7 @@ categories = ["no-std"]
 rust-version = "1.60"
 
 [features]
-default = ["std", "dtor", "proc_macro", "__no_warn_on_missing_unsafe"]
+default = ["std", "dtor", "proc_macro", "no_warn_on_missing_unsafe"]
 
 std = ["dtor?/std"]
 
@@ -25,7 +25,7 @@ proc_macro = ["dep:ctor-proc-macro", "dtor?/proc_macro"]
 used_linker = ["dtor?/used_linker"]
 
 # As we are warning on missing unsafe, allow users to temporarily opt out
-__no_warn_on_missing_unsafe = ["dtor?/__no_warn_on_missing_unsafe"]
+no_warn_on_missing_unsafe = ["dtor?/no_warn_on_missing_unsafe"]
 
 [dependencies]
 ctor-proc-macro = { version = "=0.0.7", optional = true }
