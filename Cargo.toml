@@ -14,7 +14,7 @@ default-members = [
     "shared",
 ]
 exclude = [
-    "tests/*",
+    "tests"
 ]
 resolver = "2"
 
