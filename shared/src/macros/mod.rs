@@ -365,6 +365,7 @@ macro_rules! __ctor_entry {
     };
     (features=$features:tt, imeta=$(#[$imeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=static $ident:ident : $ty:ty = $block:block;) => {
         $crate::__support::if_has_feature!(std, $features, {
+            #[allow(clippy::incompatible_msrv)] // MSRV for statics is 1.70
             $(#[$imeta])*
             $($vis)* static $ident: $ident::Static<$ty> = $ident::Static::<$ty> {
                 _storage: {
