@@ -78,6 +78,7 @@ jobs:
 
     - name: Install required crates
       uses: taiki-e/install-action@v2
+      if: ${{ matrix.needs }}
       with:
         tool: ${{ matrix.needs }}
   

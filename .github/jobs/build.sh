@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cargo build --verbose
+cargo build
 
 if [[ "${RUNNER_OS:-}" == "Linux" ]]; then
   RUSTFLAGS="-C target-feature=+crt-static" \
