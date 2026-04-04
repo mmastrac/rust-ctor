@@ -14,7 +14,8 @@ pub fn init_2() {
 
 #[cfg(target_family = "wasm")]
 #[unsafe(no_mangle)]
-pub extern "C" fn _start() {
+pub extern "C" fn _start() -> u32 {
     assert_eq!(STATE.load(Ordering::Relaxed), 2);
-    libc_eprintln!("WASM ran successfully!");
+    println!("WASM ran successfully!");
+    42
 }
