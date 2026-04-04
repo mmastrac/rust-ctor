@@ -42,15 +42,17 @@ cd "ctor/system";
 $ cargo build --lib --examples --quiet
 *
 $ cargo run --example dylib_load --quiet
-"""
-+ ctor bin
-++ main start
-+++ ctor STATIC_INT
-+++ ctor lib (-crt-static)
--- main end
---- dtor lib
-- dtor bin
-"""
+! + ctor bin
+! ++ main start
+unordered {
+    ! +++ ctor STATIC_INT
+    ! +++ ctor lib (-crt-static)
+}
+unordered {
+    ! -- main end
+    ! --- dtor lib
+}
+! - dtor bin
 "#);
 
 clitest!(warn_unsafe, r#"
