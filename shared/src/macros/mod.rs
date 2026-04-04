@@ -237,6 +237,9 @@ macro_rules! __unify_features {
     };
 
     // Parse meta into features
+    (continue, next=$next_macro:path, meta=[unsafe $(, $($meta:tt)* )?], features=[$($features:tt)*], $($rest:tt)*) => {
+        $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($($meta)*)?], features=[no_warn_on_missing_unsafe,$($features)*], $($rest)*);
+    };
     (continue, next=$next_macro:path, meta=[used(linker) $(, $($meta:tt)* )?], features=[$($features:tt)*], $($rest:tt)*) => {
         $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($($meta)*)?], features=[used_linker,$($features)*], $($rest)*);
     };

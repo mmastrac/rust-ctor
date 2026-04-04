@@ -6,4 +6,7 @@ publish = false
 [dependencies]
 ctor = { path = "../../../ctor", default-features = false, features = ["proc_macro"] }
 
+[features]
+no_warn_on_missing_unsafe = ["ctor/no_warn_on_missing_unsafe"]
+
 [workspace]

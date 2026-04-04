@@ -79,7 +79,7 @@ jobs:
         -D missing-docs
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v6
 
     - name: Install required Rust tools
       uses: taiki-e/install-action@v2
@@ -95,7 +95,7 @@ jobs:
         target: ${{ matrix.rust-extra-target }}
 
     - name: Cache Rust files
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           ~/.cargo/registry/index/

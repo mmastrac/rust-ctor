@@ -124,12 +124,16 @@ unordered {
 
 clitest!(warn_unsafe, r#"
 set RUSTFLAGS "";
+set CARGO_TARGET_DIR "target/warn_yes";
 cd "ctor/warn-unsafe";
 defer {
     $ cargo clean --quiet
 }
 $ cargo build
-*
+ignore {
+    !    Compiling %{DATA}
+    !     Blocking waiting for file lock on package cache
+}
 ! warning: use of deprecated function `foo::ctor_without_unsafe_is_deprecated`: ctor deprecation note:
 !          
 !           Use of #[ctor] without `unsafe fn` is deprecated. As code execution before main
@@ -144,5 +148,20 @@ $ cargo build
 !   = note: this warning originates in the macro `$crate::__support::ctor_entry` which comes from the expansion of the attribute macro `ctor` (in Nightly builds, run with -Z macro-backtrace for more info)
 ! 
 ! warning: `warn-unsafe` (bin "warn-unsafe") generated 1 warning
+!     Finished `dev` profile %{DATA}
+"#);
+
+clitest!(warn_unsafe_disabled, r#"
+set RUSTFLAGS "";
+set CARGO_TARGET_DIR "target/warn_no";
+cd "ctor/warn-unsafe";
+defer {
+    $ cargo clean --quiet
+}
+$ cargo build --features no_warn_on_missing_unsafe
+reject {
+    ! warning: %{DATA}
+}
+*
 !     Finished `dev` profile %{DATA}
 "#);
