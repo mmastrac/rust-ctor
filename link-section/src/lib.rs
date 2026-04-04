@@ -198,6 +198,7 @@ pub mod __support {
     #[allow(unknown_lints, edition_2024_expr_fragment_specifier)]
     macro_rules! __in_section_crate {
         ($ident:ident generic $section:ident $section_ty:ty, ($(#[$meta:meta])* $vis:vis fn $ident_fn:ident($($args:tt)*) $(-> $ret:ty)? $body:block)) => {
+            $(#[$meta])*
             $crate::__support::section_name!(
                 (
                     // Split the function into a static item and a function pointer
@@ -213,12 +214,14 @@ pub mod __support {
             );
         };
         ($ident:ident generic $section:ident $section_ty:ty, ($(#[$meta:meta])* $vis:vis static $ident_static:ident : $ty:ty = $value:expr;)) => {
+            $(#[$meta])*
             $crate::__support::section_name!(
                 (#[no_mangle] #[link_section = __] $vis static $ident_static: <$section_ty as $crate::__support::SectionItemType>::Item = $value;)
                 $section section $ident
             );
         };
         ($ident:ident no_generic $section:ident $section_ty:ty, ($(#[$meta:meta])* $vis:vis fn $ident_fn:ident($($args:tt)*) $(-> $ret:ty)? $body:block)) => {
+            $(#[$meta])*
             $crate::__support::section_name!(
                 (
                     #[no_mangle]
@@ -229,6 +232,7 @@ pub mod __support {
             );
         };
         ($ident:ident no_generic $section:ident $section_ty:ty, ($(#[$meta:meta])* $item:item)) => {
+            $(#[$meta])*
             $crate::__support::section_name!(
                 (#[no_mangle] #[link_section = __] $item)
                 $section section $ident
