@@ -111,10 +111,10 @@ pub mod __support {
             $crate::__support::section_name!(__ $pattern hash ($section_prefix "$") ("$d") $name);
         };
         (__ $pattern:tt symbol $section_prefix:literal start $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ("__start_" $section_prefix ",") ("$a") $name);
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix "$") ("$a") $name);
         };
         (__ $pattern:tt symbol $section_prefix:literal end $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ("__stop_" $section_prefix ",") ("$c") $name);
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix "$") ("$c") $name);
         };
 
         (__ $pattern:tt hash $prefix:tt $suffix:tt $name:ident) => {
