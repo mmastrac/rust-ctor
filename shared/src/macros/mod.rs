@@ -406,6 +406,7 @@ macro_rules! __ctor_entry {
 
                 #[allow(non_camel_case_types, unreachable_pub)]
                 pub struct Static<T> {
+                    #[allow(clippy::incompatible_msrv)] // MSRV for statics is 1.70
                     pub _storage: ::std::sync::OnceLock<T>
                 }
             }

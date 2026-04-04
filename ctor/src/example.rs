@@ -7,7 +7,6 @@ use ctor::{ctor, dtor};
 use libc_print::*;
 use std::collections::HashMap;
 
-#[allow(clippy::incompatible_msrv)] // MSRV for statics is 1.70
 #[ctor]
 /// This is an immutable static, evaluated at init time
 static STATIC_CTOR: HashMap<u32, &'static str> = unsafe {
@@ -90,7 +89,6 @@ pub mod module {
     use ctor::*;
     use libc_print::*;
 
-    #[allow(clippy::incompatible_msrv)] // MSRV for statics is 1.70
     #[ctor]
     pub(crate) static STATIC_CTOR: u8 = unsafe {
         libc_eprintln!("module::STATIC_CTOR");
