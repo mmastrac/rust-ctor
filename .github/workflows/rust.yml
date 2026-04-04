@@ -26,8 +26,9 @@ jobs:
                 "this.job == 'test'": "cargo-expand"
             rust-toolchain:
               $match:
-                "this.job == 'miri'": "nightly"
-                "this.job == 'clippy'": "nightly"
+                "this.job == 'miri'": nightly
+                "this.job == 'clippy'": nightly
+                "this.job == 'build'": ["1.56", stable, beta, nightly]
                 "true": "stable"
             rust-extra-target:
               $match:
@@ -42,10 +43,10 @@ jobs:
                 job: [build, clippy, test, miri, wasm]
               macos:
                 os: macOS-latest
-                job: [build, clippy, test, miri]
+                job: [clippy, test, miri]
               windows:
                 os: windows-latest
-                job: [build, clippy, test]
+                job: [clippy, test]
           config: |
             github: ${{ toJSON(github) }}
 
