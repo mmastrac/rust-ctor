@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -xeuo pipefail
 
 cargo test

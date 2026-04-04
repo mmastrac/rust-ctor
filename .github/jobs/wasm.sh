@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
-set +x
+set -xeuo pipefail
 
 cd tests/ctor/wasm
 echo "wasm32-unknown-unknown..."

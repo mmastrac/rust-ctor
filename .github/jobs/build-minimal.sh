@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -xeuo pipefail
 
 # Remove Cargo.lock for testing down-level Rust versions
-rm Cargo.lock && cargo run --example example
+rm Cargo.lock || true
+cargo clean
+cargo run -p ctor --example example
