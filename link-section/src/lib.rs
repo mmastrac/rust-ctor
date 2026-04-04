@@ -127,18 +127,21 @@ pub mod __support {
     #[doc(hidden)]
     macro_rules! __section_parse {
         // Has a generic (note that $generic eats the trailing semicolon)
-        (#[section($section:ident)] $vis:vis static $ident:ident : $(:: $path_prefix:ident ::)? $($path:ident)::* < $($generic:tt)*) => {
-            $crate::__section_parse!(#[section($section)] $vis static $ident: ( $(:: $path_prefix ::)? $($path)::* < $($generic)*) generic);
+        (#[section($section:ident)] $(#[$meta:meta])* $vis:vis static $ident:ident : $(:: $path_prefix:ident ::)? $($path:ident)::* < $($generic:tt)*) => {
+            $crate::__section_parse!(#[section($section)] $(#[$meta])* $vis static $ident: ( $(:: $path_prefix ::)? $($path)::* < $($generic)*) generic);
         };
         // No generic
-        (#[section($section:ident)] $vis:vis static $ident:ident : $(:: $path_prefix:ident ::)? $($path:ident)::* ;) => {
-            $crate::__section_parse!(#[section($section)] $vis static $ident: ( $(:: $path_prefix ::)? $($path)::* ;) no_generic);
+        (#[section($section:ident)] $(#[$meta:meta])* $vis:vis static $ident:ident : $(:: $path_prefix:ident ::)? $($path:ident)::* ;) => {
+            $crate::__section_parse!(#[section($section)] $(#[$meta])* $vis static $ident: ( $(:: $path_prefix ::)? $($path)::* ;) no_generic);
         };
         // Both end up here...
-        (#[section($section:ident)] $vis:vis static $ident:ident : ($ty:ty ;) $generic:ident) => {
+        (#[section($section:ident)] $(#[$meta:meta])* $vis:vis static $ident:ident : ($ty:ty ;) $generic:ident) => {
             macro_rules! $ident {
-                (item=$item:tt) => {
+                (v=0 (item=$item:tt $rest:tt)) => {
                     $crate::__support::in_section_crate!($ident $generic $section $ty, $item);
+                };
+                (v=$v:literal $rest:tt) => {
+                    const _: () = { compile_error!(concat!("link-section: Unsupported version: `", stringify!($v), "`")); };
                 };
             }
 
@@ -185,7 +188,7 @@ pub mod __support {
     macro_rules! __in_section_parse {
         (#[in_section($name:path)] $($item:tt)*) => {
             $name ! (
-                item=($($item)*)
+                v=0 (item=($($item)*) ())
             );
         };
     }
@@ -194,7 +197,7 @@ pub mod __support {
     #[doc(hidden)]
     #[allow(unknown_lints, edition_2024_expr_fragment_specifier)]
     macro_rules! __in_section_crate {
-        ($ident:ident generic $section:ident $section_ty:ty, ($vis:vis fn $ident_fn:ident($($args:tt)*) $(-> $ret:ty)? $body:block)) => {
+        ($ident:ident generic $section:ident $section_ty:ty, ($(#[$meta:meta])* $vis:vis fn $ident_fn:ident($($args:tt)*) $(-> $ret:ty)? $body:block)) => {
             $crate::__support::section_name!(
                 (
                     // Split the function into a static item and a function pointer
@@ -209,13 +212,13 @@ pub mod __support {
                 $section section $ident
             );
         };
-        ($ident:ident generic $section:ident $section_ty:ty, ($vis:vis static $ident_static:ident : $ty:ty = $value:expr;)) => {
+        ($ident:ident generic $section:ident $section_ty:ty, ($(#[$meta:meta])* $vis:vis static $ident_static:ident : $ty:ty = $value:expr;)) => {
             $crate::__support::section_name!(
                 (#[no_mangle] #[link_section = __] $vis static $ident_static: <$section_ty as $crate::__support::SectionItemType>::Item = $value;)
                 $section section $ident
             );
         };
-        ($ident:ident no_generic $section:ident $section_ty:ty, ($vis:vis fn $ident_fn:ident($($args:tt)*) $(-> $ret:ty)? $body:block)) => {
+        ($ident:ident no_generic $section:ident $section_ty:ty, ($(#[$meta:meta])* $vis:vis fn $ident_fn:ident($($args:tt)*) $(-> $ret:ty)? $body:block)) => {
             $crate::__support::section_name!(
                 (
                     #[no_mangle]
@@ -225,7 +228,7 @@ pub mod __support {
                 $section fn_body $ident
             );
         };
-        ($ident:ident no_generic $section:ident $section_ty:ty, ($item:item)) => {
+        ($ident:ident no_generic $section:ident $section_ty:ty, ($(#[$meta:meta])* $item:item)) => {
             $crate::__support::section_name!(
                 (#[no_mangle] #[link_section = __] $item)
                 $section section $ident
