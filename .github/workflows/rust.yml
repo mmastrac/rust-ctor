@@ -86,7 +86,7 @@ jobs:
         tool: ${{ matrix.needs }}
   
     - name: Install Rust toolchain (${{ matrix.rust-toolchain }})
-      uses: actions-rs/toolchain@v1
+      uses: actions-rust-lang/setup-rust-toolchain@v1
       with:
         toolchain: ${{ matrix.rust-toolchain }}
         components: ${{ matrix.rust-components }}
