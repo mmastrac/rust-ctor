@@ -1,11 +1,11 @@
 [package]
 name = "ctor"
 version = "0.9.0"
-authors = ["Matt Mastracci <matthew@mastracci.com>"]
+authors.workspace = true
 edition = "2021"
 description = "__attribute__((constructor)) for Rust"
-license = "Apache-2.0 OR MIT"
-repository = "https://github.com/mmastrac/rust-ctor"
+license.workspace = true
+repository.workspace = true
 readme = "../README.md"
 categories = ["no-std"]
 rust-version = "1.60"

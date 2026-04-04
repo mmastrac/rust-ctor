@@ -18,13 +18,12 @@ default-members = [
     "shared",
     "tests"
 ]
-exclude = [
-]
+exclude = []
+
 authors = ["Matt Mastracci <matthew@mastracci.com>"]
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/mmastrac/rust-ctor"
 readme = "README.md"
-categories = []
 
 [patch.crates-io]
 ctor = { path = "ctor" }
