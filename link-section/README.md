@@ -14,8 +14,4 @@ pub static CODE_SECTION: link_section::Section;
 pub fn link_section_function() {
     println!("link_section_function");
 }
-
-
-
 ```
-

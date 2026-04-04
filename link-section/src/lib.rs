@@ -1,3 +1,5 @@
+#![doc = include_str!("../README.md")]
+
 #[doc(hidden)]
 pub mod __support {
     pub use crate::__in_section_crate as in_section_crate;
@@ -45,9 +47,7 @@ pub mod __support {
         };
     }
 
-    #[cfg(all(
-        target_os = "linux",
-    ))]
+    #[cfg(target_os = "linux")]
     #[macro_export]
     #[doc(hidden)]
     macro_rules! __section_name {
@@ -191,6 +191,7 @@ pub mod __support {
 
     #[macro_export]
     #[doc(hidden)]
+    #[allow(unknown_lints, edition_2024_expr_fragment_specifier)]
     macro_rules! __in_section_crate {
         ($ident:ident generic $section:ident $section_ty:ty, ($vis:vis fn $ident_fn:ident($($args:tt)*) $(-> $ret:ty)? $body:block)) => {
             $crate::__support::section_name!(
@@ -332,11 +333,11 @@ pub struct Section {
 impl Section {
     /// The start address of the section.
     pub const fn start_ptr(&self) -> *const () {
-        self.start as *const ()
+        self.start
     }
     /// The end address of the section.
     pub const fn end_ptr(&self) -> *const () {
-        self.end as *const ()
+        self.end
     }
     /// The byte length of the section.
     pub const fn byte_len(&self) -> usize {
@@ -370,7 +371,7 @@ pub struct TypedSection<T> {
 
 impl<T> TypedSection<T> {
     /// The stride of the typed section.
-    pub const fn stride() -> usize {
+    pub const fn stride(&self) -> usize {
         // Compute the size required for C to store two instances of T side-by-side.
         // TODO: Can we just use align_of/size_of?
         #[repr(C)]
@@ -384,8 +385,7 @@ impl<T> TypedSection<T> {
         let ptr: *const Sizer<T> = sizer.as_ptr();
         let start = ptr as *const u8;
         let end = unsafe { ::core::ptr::addr_of!((*ptr).t3) } as *const u8;
-        let size = unsafe { end.offset_from(start) as usize / 2 };
-        size
+        unsafe { end.offset_from(start) as usize / 2 }
     }
 
     /// The start address of the section.
@@ -405,12 +405,17 @@ impl<T> TypedSection<T> {
 
     /// The number of elements in the section.
     pub const fn len(&self) -> usize {
-        Self::byte_len(&self) / Self::stride()
+        self.byte_len() / self.stride()
+    }
+
+    /// True if the section is empty.
+    pub const fn is_empty(&self) -> bool {
+        self.len() == 0
     }
 
     /// The section as a slice.
     pub const fn as_slice(&self) -> &[T] {
-        if self.len() == 0 {
+        if self.is_empty() {
             &[]
         } else {
             unsafe { ::core::slice::from_raw_parts(self.start_ptr(), self.len()) }
@@ -422,14 +427,14 @@ impl<'a, T> ::core::iter::IntoIterator for &'a TypedSection<T> {
     type Item = &'a T;
     type IntoIter = ::core::slice::Iter<'a, T>;
     fn into_iter(self) -> Self::IntoIter {
-        self.as_slice().into_iter()
+        self.as_slice().iter()
     }
 }
 
 impl<T> ::core::ops::Deref for TypedSection<T> {
     type Target = [T];
     fn deref(&self) -> &Self::Target {
-        &self.as_slice()
+        self.as_slice()
     }
 }
 
