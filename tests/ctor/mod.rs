@@ -3,6 +3,9 @@ use clitest_lib::clitest;
 clitest!(edition_2018, r#"
 set RUSTFLAGS "";
 cd "ctor/edition-2018";
+defer {
+    $ cargo clean --quiet
+}
 $ cargo build --quiet
 *
 $ cargo run --quiet
@@ -13,6 +16,9 @@ $ cargo run --quiet
 clitest!(edition_2021, r#"
 set RUSTFLAGS "";
 cd "ctor/edition-2021";
+defer {
+    $ cargo clean --quiet
+}
 $ cargo build --quiet
 *
 $ cargo run --quiet
@@ -23,6 +29,9 @@ $ cargo run --quiet
 clitest!(edition_2024, r#"
 set RUSTFLAGS "";
 cd "ctor/edition-2024";
+defer {
+    $ cargo clean --quiet
+}
 $ cargo build --quiet
 *
 $ cargo run --quiet
@@ -31,14 +40,22 @@ $ cargo run --quiet
 "#);
 
 clitest!(no_std, r#"
+set RUSTFLAGS "";
 cd "ctor/no-std";
+defer {
+    $ cargo clean --quiet
+}
 $ cargo build --quiet
 *
 "#);
 
-clitest!(system, r#"
-set RUSTFLAGS "";
+clitest!(system_no_crt_static, r#"
+set RUSTFLAGS "-C target-feature=-crt-static";
+set CARGO_TARGET_DIR "target/system_no_crt_static";
 cd "ctor/system";
+defer {
+    $ cargo clean --quiet
+}
 $ cargo build --lib --examples --quiet
 *
 $ cargo run --example dylib_load --quiet
@@ -55,9 +72,36 @@ unordered {
 ! - dtor bin
 "#);
 
+#[cfg(not(target_vendor = "apple"))]
+clitest!(system_crt_static, r#"
+set RUSTFLAGS "-C target-feature=+crt-static";
+set CARGO_TARGET_DIR "target/system_crt_static";
+cd "ctor/system";
+defer {
+    $ cargo clean --quiet
+}
+$ cargo build --lib --examples --quiet
+*
+$ cargo run --example dylib_load --quiet
+! + ctor bin
+! ++ main start
+unordered {
+    ! +++ ctor STATIC_INT
+    ! +++ ctor lib (+crt-static)
+}
+unordered {
+    ! -- main end
+    ! --- dtor lib
+}
+! - dtor bin
+"#);
+
 clitest!(warn_unsafe, r#"
 set RUSTFLAGS "";
 cd "ctor/warn-unsafe";
+defer {
+    $ cargo clean --quiet
+}
 $ cargo build
 *
 ! warning: use of deprecated function `foo::ctor_without_unsafe_is_deprecated`: ctor deprecation note:
