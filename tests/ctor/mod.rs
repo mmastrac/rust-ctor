@@ -1,5 +1,7 @@
 use clitest_lib::clitest;
 
+// Does not work on apple platforms
+#[cfg(not(target_vendor = "apple"))]
 clitest!(crt_static, r#"
 set RUSTFLAGS "-C target-feature=+crt-static";
 cd "ctor/crt-static";
