@@ -14,32 +14,32 @@ static STATIC_CTOR: HashMap<u32, &'static str> = unsafe {
     _ = m.insert(0, "foo");
     _ = m.insert(1, "bar");
     _ = m.insert(2, "baz");
-    libc_eprintln!("STATIC_CTOR");
+    libc_println!("STATIC_CTOR");
     m
 };
 
 #[ctor(anonymous)]
 unsafe fn anonymous_ctor() {
-    libc_eprintln!("ctor_anonymous (#1)");
+    libc_println!("ctor_anonymous (#1)");
     // We can still reference the function itself
     let f = anonymous_ctor;
 }
 
 #[ctor(anonymous)]
 unsafe fn anonymous_ctor() {
-    libc_eprintln!("ctor_anonymous (#2)");
+    libc_println!("ctor_anonymous (#2)");
 }
 
 const _: () = {
     #[ctor]
     unsafe fn anonymous_ctor() {
-        libc_eprintln!("ctor_anonymous (#3)");
+        libc_println!("ctor_anonymous (#3)");
         let f = anonymous_ctor;
     }
 
     #[dtor]
     unsafe fn anonymous_dtor() {
-        libc_eprintln!("dtor_anonymous");
+        libc_println!("dtor_anonymous");
         let f = anonymous_dtor;
     }
 };
@@ -47,7 +47,7 @@ const _: () = {
 #[ctor]
 #[allow(unsafe_code)]
 unsafe fn ctor() {
-    libc_eprintln!("ctor");
+    libc_println!("ctor");
     // We can still reference the function itself
     let f = ctor;
 }
@@ -55,13 +55,13 @@ unsafe fn ctor() {
 #[ctor]
 #[allow(unsafe_code)]
 unsafe fn ctor_unsafe() {
-    libc_eprintln!("ctor_unsafe");
+    libc_println!("ctor_unsafe");
 }
 
 #[dtor]
 #[allow(unsafe_code)]
 unsafe fn dtor() {
-    libc_eprintln!("dtor");
+    libc_println!("dtor");
     // We can still reference the function itself
     let f = dtor;
 }
@@ -69,18 +69,18 @@ unsafe fn dtor() {
 #[dtor]
 #[allow(unsafe_code)]
 unsafe fn dtor_unsafe() {
-    libc_eprintln!("dtor_unsafe");
+    libc_println!("dtor_unsafe");
 }
 
 #[dtor(anonymous)]
 unsafe fn anonymous_dtor() {
-    libc_eprintln!("dtor_anonymous (#1)");
+    libc_println!("dtor_anonymous (#1)");
     let f = anonymous_dtor;
 }
 
 #[dtor(anonymous)]
 unsafe fn anonymous_dtor() {
-    libc_eprintln!("dtor_anonymous (#2");
+    libc_println!("dtor_anonymous (#2)");
     let f = anonymous_dtor;
 }
 
@@ -91,21 +91,21 @@ pub mod module {
 
     #[ctor]
     pub(crate) static STATIC_CTOR: u8 = unsafe {
-        libc_eprintln!("module::STATIC_CTOR");
+        libc_println!("module::STATIC_CTOR");
         42
     };
 
     #[dtor]
     #[allow(unsafe_code)]
     unsafe fn dtor_module() {
-        libc_eprintln!("module::dtor_module");
+        libc_println!("module::dtor_module");
     }
 }
 
 /// Executable main which demonstrates the various types of ctor/dtor.
 pub fn main() {
     use libc_print::*;
-    libc_eprintln!("main!");
-    libc_eprintln!("STATIC_CTOR = {:?}", *STATIC_CTOR);
-    libc_eprintln!("module::STATIC_CTOR = {:?}", *module::STATIC_CTOR);
+    libc_println!("main!");
+    libc_println!("STATIC_CTOR = {:?}", *STATIC_CTOR);
+    libc_println!("module::STATIC_CTOR = {:?}", *module::STATIC_CTOR);
 }
