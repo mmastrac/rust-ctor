@@ -157,7 +157,7 @@ pub fn hash(item: TokenStream) -> TokenStream {
         while output.len() < max_length + prefix.len() {
             let c = valid_section_chars[hash as usize % valid_section_chars.len()];
             output.push(c as char);
-            hash = hash / valid_section_chars.len() as u64;
+            hash /= valid_section_chars.len() as u64;
         }
         output.push_str(&suffix);
         output
@@ -172,7 +172,7 @@ pub fn hash(item: TokenStream) -> TokenStream {
             match input {
                 _ if *found => stream.extend([input]),
                 TokenTree::Ident(ident) if ident.to_string() == "__" => {
-                    stream.extend([TokenTree::Literal(Literal::string(&output))]);
+                    stream.extend([TokenTree::Literal(Literal::string(output))]);
                     *found = true;
                 }
                 TokenTree::Group(group) => stream.extend([TokenTree::Group(Group::new(

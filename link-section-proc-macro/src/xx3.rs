@@ -1,3 +1,5 @@
+#![allow(clippy::needless_range_loop)]
+
 const P64_1: u64 = 0x9E3779B185EBCA87;
 const P64_2: u64 = 0xC2B2AE3D27D4EB4F;
 const P64_3: u64 = 0x165667B19E3779F9;
@@ -271,6 +273,6 @@ fn xxh3_64(data: &[u8]) -> u64 {
 
 /// XXH3 64-bit digest of `s` (same as `XXH3_64bits` in the reference implementation).
 #[inline]
-pub fn xx3hash(s: &str) -> u64 {
+pub(crate) fn xx3hash(s: &str) -> u64 {
     xxh3_64(s.as_bytes())
 }
