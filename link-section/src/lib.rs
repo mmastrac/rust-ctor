@@ -136,6 +136,7 @@ pub mod __support {
         };
         // Both end up here...
         (#[section($section:ident)] $(#[$meta:meta])* $vis:vis static $ident:ident : ($ty:ty ;) $generic:ident) => {
+            /// Internal macro for parsing the section.
             macro_rules! $ident {
                 (v=0 (item=$item:tt $rest:tt)) => {
                     $crate::__support::in_section_crate!($ident $generic $section $ty, $item);
@@ -145,6 +146,7 @@ pub mod __support {
                 };
             }
 
+            $(#[$meta])*
             $vis static $ident: $crate::__support::Section< $ty > = $crate::__support::Section::new(
                 {
                     $crate::__support::section_name!(
