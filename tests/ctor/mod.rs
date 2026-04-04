@@ -92,7 +92,8 @@ unordered {
 ! - dtor bin
 "#);
 
-#[cfg(all(not(target_vendor = "apple"), not(target_os = "linux")))]
+// Only Windows supports +crt-static w/dylibs
+#[cfg(windows)]
 clitest!(system_crt_static, r#"
 set RUSTFLAGS "-C target-feature=+crt-static";
 set CARGO_TARGET_DIR "target/system_crt_static";
