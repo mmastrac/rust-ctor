@@ -1,4 +1,5 @@
 #![doc = include_str!("../README.md")]
+#![allow(unsafe_code)]
 
 #[doc(hidden)]
 pub mod __support {
@@ -273,6 +274,7 @@ pub mod __support {
     impl<T: sealed::FromRawSection> ::core::ops::Deref for Section<T> {
         type Target = T;
         fn deref(&self) -> &Self::Target {
+            // SAFETY: all sections are repr(C)
             unsafe { ::core::mem::transmute(self) }
         }
     }
