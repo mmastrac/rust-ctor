@@ -13,6 +13,9 @@ default-members = [
     "dtor-proc-macro",
     "shared",
 ]
+exclude = [
+    "tests/*",
+]
 resolver = "2"
 
 [patch.crates-io]

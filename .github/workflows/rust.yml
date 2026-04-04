@@ -29,9 +29,12 @@ jobs:
                 "this.job == 'miri'": "nightly"
                 "this.job == 'clippy'": "nightly"
                 "true": "stable"
+            rust-extra-target:
+              $match:
+                "this.job == 'wasm'": "wasm32-unknown-unknown"
             rust-components:
               $match:
-                "this.job == 'miri'": "miri"
+                "this.job == 'miri'": "miri,rust-src"
                 "this.job == 'clippy'": "clippy"
             label:
               linux:
@@ -41,8 +44,8 @@ jobs:
                 os: macOS-latest
                 job: [build, clippy, test, miri]
               windows:
-                os: windows-2019
-                job: [build, clippy, test, miri]
+                os: windows-latest
+                job: [build, clippy, test]
           config: |
             github: ${{ toJSON(github) }}
 
@@ -100,5 +103,5 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-cargo-${{ env.CACHE_KEY }}-
 
-    - name: Run job
+    - name: Run ${{ matrix.job }} job
       run: bash "$GITHUB_WORKSPACE/.github/jobs/${{ matrix.job }}.sh"
