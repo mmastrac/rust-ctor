@@ -47,12 +47,13 @@ jobs:
             github: ${{ toJSON(github) }}
 
   build:
-    name: "Check OS"
+    name: ${{ matrix.label }} / ${{ matrix.job }} (${{ matrix.rust-toolchain }})
     runs-on: ${{ matrix.os }}
     needs: generate-matrix
     strategy:
       fail-fast: false
-      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+      matrix:
+        include: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
     env:
       CACHE_KEY: 1
       CLIPPY_LINTS: >-
