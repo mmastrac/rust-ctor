@@ -10,13 +10,49 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.generate.outputs.matrix }}
+    steps:
+      - id: generate
+        uses: "mmastrac/mmm-matrix@v1"
+        with:
+          input: |
+            project: [ctor, link-section]
+            needs:
+              $match:
+                "this.job == 'wasm'": "wasmtime-cli"
+                "this.job == 'test'": "cargo-expand"
+            rust-toolchain:
+              $match:
+                "this.job == 'miri'": "nightly"
+                "this.job == 'clippy'": "nightly"
+                "true": "stable"
+            rust-components:
+              $match:
+                "this.job == 'miri'": "miri"
+                "this.job == 'clippy'": "clippy"
+            label:
+              linux:
+                os: ubuntu-latest
+                job: [build, clippy, test, miri, wasm]
+              macos:
+                os: macOS-latest
+                job: [build, clippy, test, miri]
+              windows:
+                os: windows-2019
+                job: [build, clippy, test, miri]
+          config: |
+            github: ${{ toJSON(github) }}
+
   build:
     name: "Check OS"
     runs-on: ${{ matrix.os }}
+    needs: generate-matrix
     strategy:
       fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
     env:
       CACHE_KEY: 1
       CLIPPY_LINTS: >-
@@ -39,15 +75,17 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install cargo-expand
-      uses: baptiste0928/cargo-install@v3
+    - name: Install required crates
+      uses: taiki-e/install-action@v2
       with:
-        crate: cargo-expand
-    - name: Install wasmtime-cli
-      uses: baptiste0928/cargo-install@v3
-      with:
-        crate: wasmtime-cli
+        tool: ${{ needs.generate-matrix.outputs.matrix.tool }}
   
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ needs.generate-matrix.outputs.matrix.toolchain }}
+        components: clippy,rustfmt,miri
+
     - name: Cache Rust files
       uses: actions/cache@v4
       with:
@@ -60,31 +98,5 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-cargo-${{ env.CACHE_KEY }}-
 
-    - name: Build
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
-
-    - name: Clippy
-      run: cargo clippy --examples --bins --all -- ${{ env.CLIPPY_LINTS }}
-    - name: Clippy (all features)
-      run: |
-        rustup toolchain add nightly
-        rustup component add clippy --toolchain nightly
-        cargo +nightly clippy --all-features --examples --bins --all -- ${{ env.CLIPPY_LINTS }}
-
-    - name: Build with static CRT
-      if: matrix.os == 'ubuntu-latest'
-      run: RUSTFLAGS="-C target-feature=+crt-static" cargo run --example example --target x86_64-unknown-linux-gnu --verbose
-
-    - name: Run Wasm tests
-      run: |
-        rustup target add wasm32-unknown-unknown
-        cargo build --target wasm32-unknown-unknown -p tests-wasm
-        wasmtime run target/wasm32-unknown-unknown/debug/tests_wasm.wasm
-
-    - name: Run miri test
-      run: |
-        rustup component add miri --toolchain nightly
-        cd tests/edition-2018
-        cargo +nightly miri run
+    - name: Run job
+      run: bash "$GITHUB_WORKSPACE/.github/jobs/${{ matrix.job }}.sh"
