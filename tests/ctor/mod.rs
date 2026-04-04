@@ -1,5 +1,23 @@
 use clitest_lib::clitest;
 
+clitest!(crt_static, r#"
+set RUSTFLAGS "-C target-feature=+crt-static";
+cd "ctor/crt-static";
+defer {
+    $ cargo clean --quiet
+}
+$ rustc -vV
+%SET TARGET "$target"
+*
+! host: %{DATA:target}
+*
+$ cargo build --quiet --target $TARGET
+*
+$ cargo run --quiet --target $TARGET
+! +crt-static
+! main
+"#);
+
 clitest!(edition_2018, r#"
 set RUSTFLAGS "";
 cd "ctor/edition-2018";
