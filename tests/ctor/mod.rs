@@ -76,13 +76,19 @@ unordered {
 clitest!(system_crt_static, r#"
 set RUSTFLAGS "-C target-feature=+crt-static";
 set CARGO_TARGET_DIR "target/system_crt_static";
+if TARGET_OS == "linux" {
+    set TARGET "x86_64-unknown-linux-gnu";
+}
+if TARGET_OS == "windows" {
+    set TARGET "x86_64-pc-windows-gnu";
+}
 cd "ctor/system";
 defer {
     $ cargo clean --quiet
 }
-$ cargo build --lib --examples --quiet
+$ cargo build --lib --examples --quiet --target $TARGET
 *
-$ cargo run --example dylib_load --quiet
+$ cargo run --example dylib_load --quiet --target $TARGET
 ! + ctor bin
 ! ++ main start
 unordered {
