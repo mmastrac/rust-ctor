@@ -11,7 +11,7 @@ used_linker = []
 proc_macro = []
 no_warn_on_missing_unsafe = []
 
-[dependencies]
+[dev-dependencies]
 macrotest = "1"
 trybuild = "1"
 
