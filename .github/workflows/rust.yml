@@ -105,4 +105,4 @@ jobs:
           ${{ runner.os }}-cargo-${{ env.CACHE_KEY }}-
 
     - name: Run ${{ matrix.job }}
-      run: bash "$GITHUB_WORKSPACE/.github/jobs/${{ matrix.job }}.sh"
+      run: ".github/jobs/${{ matrix.job }}.sh"
