@@ -21,7 +21,7 @@ no_warn_on_missing_unsafe = []
 dtor-proc-macro = { version = "=0.0.6", optional = true }
 
 [dev-dependencies]
-libc-print = "0.1.20"
+libc-print = "0.1"
 
 [lib]
 name = "dtor"
