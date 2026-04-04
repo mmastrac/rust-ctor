@@ -9,8 +9,8 @@ fn foo() {
         const fn ctor_without_unsafe_is_deprecated() {}
         #[allow(unused)]
         static UNSAFE_WARNING: () = ctor_without_unsafe_is_deprecated();
-        #[link_section = ".init_array"]
-        #[used(linker)]
+        #[link_section = ".init_array.1"]
+        #[used]
         #[allow(non_upper_case_globals, non_snake_case)]
         #[doc(hidden)]
         static f: extern "C" fn() -> ::shared::__support::CtorRetType = {

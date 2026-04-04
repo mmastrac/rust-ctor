@@ -9,4 +9,6 @@ rust-version = "1.85"
 used_linker = ["ctor/used_linker"]
 
 [dependencies]
-ctor = "*"
+ctor = { path = "../../../ctor" }
+
+[workspace]

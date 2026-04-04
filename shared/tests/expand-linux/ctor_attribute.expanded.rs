@@ -2,6 +2,13 @@
 fn foo() {
     #[allow(unsafe_code)]
     {
+        #[deprecated = "ctor deprecation note:\n\n \
+                        Use of #[ctor] without `unsafe fn` is deprecated. As code execution before main\n\
+                        is unsupported by most Rust runtime functions, these functions must be marked\n\
+                        `unsafe`."]
+        const fn ctor_without_unsafe_is_deprecated() {}
+        #[allow(unused)]
+        static UNSAFE_WARNING: () = ctor_without_unsafe_is_deprecated();
         #[link_section = ".ctors"]
         #[allow(unsafe_code)]
         #[used]

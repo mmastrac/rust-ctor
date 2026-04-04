@@ -8,9 +8,9 @@ publish = false
 used_linker = ["ctor/used_linker"]
 
 [dependencies]
-ctor = "*"
+ctor = { path = "../../../ctor" }
 dlopen = "0.1.8"
-libc-print = "0.1.15"
+libc-print = "0.1"
 libc = { version = "0.2.96", default-features = false }
 
 [[example]]
@@ -24,3 +24,5 @@ path = "src/dylib_load.rs"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(never)'] }
+
+[workspace]

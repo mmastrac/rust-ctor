@@ -75,12 +75,13 @@ unsafe fn sleep(seconds: u32) {
 
 /// Entry point for the executable.
 pub fn main() {
+    let target_dir = std::env::var("CARGO_TARGET_DIR").unwrap_or_else(|_| "target".to_string());
     #[allow(unsafe_code)]
     unsafe {
         sleep(1);
         libc_ewriteln!("++ main start");
         let lib = Library::open(format!(
-            "target/debug/examples/{}dylib.{}",
+            "{target_dir}/debug/examples/{}dylib.{}",
             prefix(),
             lib_extension()
         ))

@@ -10,13 +10,55 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.generate.outputs.matrix }}
+    steps:
+      - id: generate
+        uses: "mmastrac/mmm-matrix@v1"
+        with:
+          input: |
+            project: [ctor]
+            needs:
+              $match:
+                "this.job == 'wasm'": "wasmtime-cli"
+                "this.job == 'test'": "cargo-expand"
+            rust-toolchain:
+              $match:
+                "this.job == 'miri'": nightly
+                "this.job == 'clippy'": nightly
+                "this.job == 'build'": [stable, beta, nightly]
+                "this.job == 'build-minimal'": ["1.65"]
+                "true": "stable"
+            rust-extra-target:
+              $match:
+                "this.job == 'wasm'": "wasm32-unknown-unknown,wasm32-wasip1"
+            rust-components:
+              $match:
+                "this.job == 'miri'": "miri,rust-src"
+                "this.job == 'clippy'": "clippy"
+            label:
+              linux:
+                os: ubuntu-latest
+                job: [build, build-minimal, clippy, test, miri, wasm]
+              macos:
+                os: macOS-latest
+                job: [clippy, test, miri]
+              windows:
+                os: windows-latest
+                job: [clippy, test]
+          config: |
+            github: ${{ toJSON(github) }}
+
   build:
-    name: "Check OS"
+    name: ${{ matrix.label }} / ${{ matrix.job }} (${{ matrix.rust-toolchain }})
     runs-on: ${{ matrix.os }}
+    needs: generate-matrix
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macOS-latest, windows-latest]
+        include: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
     env:
       CACHE_KEY: 1
       CLIPPY_LINTS: >-
@@ -37,54 +79,32 @@ jobs:
         -D missing-docs
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v6
 
-    - name: Install cargo-expand
-      uses: baptiste0928/cargo-install@v3
+    - name: Install required Rust tools
+      uses: taiki-e/install-action@v2
+      if: ${{ matrix.needs }}
       with:
-        crate: cargo-expand
-    - name: Install wasmtime-cli
-      uses: baptiste0928/cargo-install@v3
-      with:
-        crate: wasmtime-cli
+        tool: ${{ matrix.needs }}
   
+    - name: Install Rust toolchain (${{ matrix.rust-toolchain }})
+      uses: actions-rust-lang/setup-rust-toolchain@v1
+      with:
+        toolchain: ${{ matrix.rust-toolchain }}
+        components: ${{ matrix.rust-components }}
+        target: ${{ matrix.rust-extra-target }}
+
     - name: Cache Rust files
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           ~/.cargo/registry/index/
           ~/.cargo/registry/cache/
           ~/.cargo/git/db/
-          target/wasm32-unknown-unknown
-        key: ${{ runner.os }}-cargo-${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.lock') }}
+          target/**/*.rlib
+        key: ${{ env.CACHE_KEY }}-${{ runner.os }}-cargo-${{ matrix.rust-toolchain }}-${{ hashFiles('**/Cargo.lock') }}
         restore-keys: |
-          ${{ runner.os }}-cargo-${{ env.CACHE_KEY }}-
+          ${{ env.CACHE_KEY }}-${{ runner.os }}-cargo-${{ matrix.rust-toolchain }}-
 
-    - name: Build
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
-
-    - name: Clippy
-      run: cargo clippy --examples --bins --all -- ${{ env.CLIPPY_LINTS }}
-    - name: Clippy (all features)
-      run: |
-        rustup toolchain add nightly
-        rustup component add clippy --toolchain nightly
-        cargo +nightly clippy --all-features --examples --bins --all -- ${{ env.CLIPPY_LINTS }}
-
-    - name: Build with static CRT
-      if: matrix.os == 'ubuntu-latest'
-      run: RUSTFLAGS="-C target-feature=+crt-static" cargo run --example example --target x86_64-unknown-linux-gnu --verbose
-
-    - name: Run Wasm tests
-      run: |
-        rustup target add wasm32-unknown-unknown
-        cargo build --target wasm32-unknown-unknown -p tests-wasm
-        wasmtime run target/wasm32-unknown-unknown/debug/tests_wasm.wasm
-
-    - name: Run miri test
-      run: |
-        rustup component add miri --toolchain nightly
-        cd tests/edition-2018
-        cargo +nightly miri run
+    - name: Run ${{ matrix.job }}
+      run: ".github/jobs/${{ matrix.job }}.sh"

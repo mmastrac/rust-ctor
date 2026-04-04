@@ -1,0 +1,11 @@
+[package]
+name = "tests"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dev-dependencies]
+clitest-lib = "0.4.4"
+
+[lib]
+path = "test.rs"

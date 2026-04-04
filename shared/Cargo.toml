@@ -9,9 +9,9 @@ default = ["std"]
 std = []
 used_linker = []
 proc_macro = []
-__no_warn_on_missing_unsafe = []
+no_warn_on_missing_unsafe = []
 
-[dependencies]
+[dev-dependencies]
 macrotest = "1"
 trybuild = "1"
 

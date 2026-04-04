@@ -1,22 +1,8 @@
-//! This example demonstrates the various types of ctor/dtor in an executable
-//! context.
-
-#![cfg_attr(feature = "used_linker", feature(used_with_arg))]
+//! This example demonstrates the features available at the minimum supported
+//! Rust version (MSRV) for the `ctor` crate.
 
 use ctor::{ctor, dtor};
 use libc_print::*;
-use std::collections::HashMap;
-
-#[ctor]
-/// This is an immutable static, evaluated at init time
-static STATIC_CTOR: HashMap<u32, &'static str> = unsafe {
-    let mut m = HashMap::new();
-    _ = m.insert(0, "foo");
-    _ = m.insert(1, "bar");
-    _ = m.insert(2, "baz");
-    libc_println!("STATIC_CTOR");
-    m
-};
 
 #[ctor(anonymous)]
 unsafe fn anonymous_ctor() {
@@ -89,12 +75,6 @@ pub mod module {
     use ctor::*;
     use libc_print::*;
 
-    #[ctor]
-    pub(crate) static STATIC_CTOR: u8 = unsafe {
-        libc_println!("module::STATIC_CTOR");
-        42
-    };
-
     #[dtor]
     #[allow(unsafe_code)]
     unsafe fn dtor_module() {
@@ -106,6 +86,4 @@ pub mod module {
 pub fn main() {
     use libc_print::*;
     libc_println!("main!");
-    libc_println!("STATIC_CTOR = {:?}", *STATIC_CTOR);
-    libc_println!("module::STATIC_CTOR = {:?}", *module::STATIC_CTOR);
 }
