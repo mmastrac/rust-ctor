@@ -12,9 +12,16 @@ Module initialization/teardown functions for Rust (like
 `__attribute__((constructor))` in C/C++) for Linux, OSX, FreeBSD, NetBSD,
 Illumos, OpenBSD, DragonFlyBSD, Android, iOS, WASM, and Windows.
 
-This library currently requires **Rust > 1.60** at a minimum for edition 2021
-support. Library versions 0.2.x should work for edition 2018, and 1.0 is planned
-to be released as 2021-only.
+## MSRV
+
+For most platforms, this library currently has a MSRV of **Rust >= 1.60**.
+Library versions 0.2.x should work for edition 2018, and 1.0 is planned to be
+released as 2021-only.
+
+Static items are supported, but require **Rust >= 1.70**.
+
+This library supports WASM targets, and the MSRV for this target is **Rust >=
+1.85**.
 
 ## Zero Dependency
 
@@ -30,7 +37,6 @@ supported but not tested as part of the automatic builds. This library will also
 work as expected in both `bin` and `cdylib` outputs, ie: the `ctor` and `dtor`
 will run at executable or library startup/shutdown respectively.
 
-This library supports WASM targets, but the MSRV for this target is 1.85.
 
 ## Features
 
