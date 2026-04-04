@@ -24,9 +24,9 @@ pub mod __support {
     pub use crate::__ctor_parse as ctor_parse;
     pub use crate::__dtor_entry as dtor_entry;
     pub use crate::__dtor_parse as dtor_parse;
+    pub use crate::__get_priority as get_priority;
     pub use crate::__if_has_feature as if_has_feature;
     pub use crate::__if_unsafe as if_unsafe;
-    pub use crate::__get_priority as get_priority;
     pub use crate::__unify_features as unify_features;
 }
 
@@ -129,9 +129,9 @@ macro_rules! declare_features {
         declare_features!( __ crate $crate_features );
     };
 
-    ( __ crate [$( 
+    ( __ crate [$(
         $( #[doc = $doc:literal] )*
-        $feature_name:ident $feature_name_str:literal = $feature_include_macro:ident ; 
+        $feature_name:ident $feature_name_str:literal = $feature_include_macro:ident ;
     )*] ) => {
         /// # Crate features
         ///
@@ -152,7 +152,7 @@ macro_rules! declare_features {
                 $true
             };
         }
-        
+
         #[doc(hidden)]
         #[macro_export]
         #[cfg(not(feature = $feature_name_str))]
