@@ -12,7 +12,7 @@ Module initialization/teardown functions for Rust (like
 `__attribute__((constructor))` in C/C++) for Linux, OSX, FreeBSD, NetBSD,
 Illumos, OpenBSD, DragonFlyBSD, Android, iOS, WASM, and Windows.
 
-This library currently requires **Rust > 1.56.0** at a minimum for edition 2021
+This library currently requires **Rust > 1.60** at a minimum for edition 2021
 support. Library versions 0.2.x should work for edition 2018, and 1.0 is planned
 to be released as 2021-only.
 

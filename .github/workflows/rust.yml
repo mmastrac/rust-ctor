@@ -28,7 +28,7 @@ jobs:
               $match:
                 "this.job == 'miri'": nightly
                 "this.job == 'clippy'": nightly
-                "this.job == 'build'": ["1.56", stable, beta, nightly]
+                "this.job == 'build'": ["1.60", stable, beta, nightly]
                 "true": "stable"
             rust-extra-target:
               $match:
