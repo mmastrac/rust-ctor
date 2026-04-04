@@ -5,4 +5,6 @@ edition = "2021"
 publish = false
 
 [dependencies]
-ctor = { path = "../../ctor", default-features = false, features = ["proc_macro"] }
+ctor = { path = "../../../ctor", default-features = false, features = ["proc_macro"] }
+
+[workspace]

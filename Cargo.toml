@@ -5,6 +5,7 @@ members = [
     "ctor-proc-macro",
     "dtor-proc-macro",
     "shared",
+    "tests"
 ]
 default-members = [
     "ctor",
@@ -12,9 +13,9 @@ default-members = [
     "ctor-proc-macro",
     "dtor-proc-macro",
     "shared",
+    "tests"
 ]
 exclude = [
-    "tests"
 ]
 resolver = "2"
 

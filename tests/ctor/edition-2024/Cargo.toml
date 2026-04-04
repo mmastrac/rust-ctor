@@ -10,3 +10,5 @@ used_linker = ["ctor/used_linker"]
 
 [dependencies]
 ctor = "*"
+
+[workspace]

@@ -24,3 +24,5 @@ path = "src/dylib_load.rs"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(never)'] }
+
+[workspace]
