@@ -393,7 +393,8 @@ macro_rules! __ctor_entry {
             #[allow(unsafe_code)]
             mod $ident {
                 $crate::__support::if_unsafe!($($unsafe)?, {}, {
-                    $crate::__support::if_has_feature!( __no_warn_on_missing_unsafe, $features, {
+                    $crate::__support::if_has_feature!( __no_warn_on_missing_unsafe, $features, {},
+                    {
                         #[deprecated="ctor deprecation note:\n\n \
                         Use of #[ctor] without `unsafe { ... }` is deprecated. As code execution before main\n\
                         is unsupported by most Rust runtime functions, these functions must be marked\n\
@@ -401,7 +402,7 @@ macro_rules! __ctor_entry {
                             const fn ctor_without_unsafe_is_deprecated() {}
                             #[allow(unused)]
                             static UNSAFE_WARNING: () = ctor_without_unsafe_is_deprecated();
-                    }, {});
+                    });
                 });
 
                 #[allow(non_camel_case_types, unreachable_pub)]

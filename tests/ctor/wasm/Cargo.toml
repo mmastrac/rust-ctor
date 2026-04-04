@@ -9,3 +9,5 @@ crate-type = ["cdylib"]
 
 [dependencies]
 ctor = "*"
+
+[workspace]
