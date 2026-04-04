@@ -8,6 +8,6 @@ publish = false
 crate-type = ["cdylib"]
 
 [dependencies]
-ctor = "*"
+ctor = { path = "../../../ctor" }
 
 [workspace]

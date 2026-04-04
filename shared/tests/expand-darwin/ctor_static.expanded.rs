@@ -1,3 +1,4 @@
+#[allow(clippy::incompatible_msrv)]
 static STATIC_CTOR: STATIC_CTOR::Static<HashMap<u32, &'static str>> = STATIC_CTOR::Static::<
     HashMap<u32, &'static str>,
 > {
@@ -17,6 +18,7 @@ static STATIC_CTOR: STATIC_CTOR::Static<HashMap<u32, &'static str>> = STATIC_CTO
         ::std::sync::OnceLock::new()
     },
 };
+#[allow(clippy::incompatible_msrv)]
 impl ::core::ops::Deref for STATIC_CTOR::Static<HashMap<u32, &'static str>> {
     type Target = HashMap<u32, &'static str>;
     fn deref(&self) -> &HashMap<u32, &'static str> {

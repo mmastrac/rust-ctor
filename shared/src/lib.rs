@@ -1,3 +1,5 @@
+//! Shared macros and utilities for the `ctor` and `dtor` crates.
+
 pub mod macros;
 
 pub use __support::ctor_parse;

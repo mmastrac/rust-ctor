@@ -8,6 +8,6 @@ publish = false
 used_linker = ["ctor/used_linker"]
 
 [dependencies]
-ctor = "*"
+ctor = { path = "../../../ctor" }
 
 [workspace]

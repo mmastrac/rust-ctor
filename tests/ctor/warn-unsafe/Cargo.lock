@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "ctor"
-version = "0.8.0"
+version = "0.9.0"
 dependencies = [
  "ctor-proc-macro",
  "dtor",
@@ -18,9 +18,7 @@ checksum = "52560adf09603e58c9a7ee1fe1dcb95a16927b17c127f0ac02d6e768a0e25bc1"
 
 [[package]]
 name = "dtor"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1057d6c64987086ff8ed0fd3fbf377a6b7d205cc7715868cd401705f715cbe4"
+version = "0.4.0"
 dependencies = [
  "dtor-proc-macro",
 ]

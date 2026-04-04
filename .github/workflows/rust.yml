@@ -19,7 +19,7 @@ jobs:
         uses: "mmastrac/mmm-matrix@v1"
         with:
           input: |
-            project: [ctor, link-section]
+            project: [ctor]
             needs:
               $match:
                 "this.job == 'wasm'": "wasmtime-cli"

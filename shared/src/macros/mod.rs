@@ -1,3 +1,5 @@
+//! Shared macros for the `ctor` and `dtor` crates.
+
 #[doc(hidden)]
 #[allow(unused)]
 pub mod __support {
@@ -378,6 +380,7 @@ macro_rules! __ctor_entry {
                 }
             };
 
+            #[allow(clippy::incompatible_msrv)] // MSRV for statics is 1.70
             impl ::core::ops::Deref for $ident::Static<$ty> {
                 type Target = $ty;
                 fn deref(&self) -> &$ty {
