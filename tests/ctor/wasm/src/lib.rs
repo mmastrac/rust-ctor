@@ -16,4 +16,5 @@ pub fn init_2() {
 #[unsafe(no_mangle)]
 pub extern "C" fn _start() {
     assert_eq!(STATE.load(Ordering::Relaxed), 2);
+    libc_eprintln!("WASM ran successfully!");
 }

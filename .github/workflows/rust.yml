@@ -79,13 +79,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Install required crates
+    - name: Install required Rust tools
       uses: taiki-e/install-action@v2
       if: ${{ matrix.needs }}
       with:
         tool: ${{ matrix.needs }}
   
-    - name: Install Rust toolchain
+    - name: Install Rust toolchain (${{ matrix.rust-toolchain }})
       uses: actions-rs/toolchain@v1
       with:
         toolchain: ${{ matrix.rust-toolchain }}
@@ -104,5 +104,5 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-cargo-${{ env.CACHE_KEY }}-
 
-    - name: Run ${{ matrix.job }} job
+    - name: Run ${{ matrix.job }}
       run: bash "$GITHUB_WORKSPACE/.github/jobs/${{ matrix.job }}.sh"
