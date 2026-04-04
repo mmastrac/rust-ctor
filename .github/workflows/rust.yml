@@ -102,9 +102,9 @@ jobs:
           ~/.cargo/registry/cache/
           ~/.cargo/git/db/
           target/**/*.rlib
-        key: ${{ runner.os }}-cargo-${{ env.CACHE_KEY }}-${{ hashFiles('**/Cargo.lock') }}
+        key: ${{ env.CACHE_KEY }}-${{ runner.os }}-cargo-${{ matrix.rust-toolchain }}-${{ hashFiles('**/Cargo.lock') }}
         restore-keys: |
-          ${{ runner.os }}-cargo-${{ env.CACHE_KEY }}-
+          ${{ env.CACHE_KEY }}-${{ runner.os }}-cargo-${{ matrix.rust-toolchain }}-
 
     - name: Run ${{ matrix.job }}
       run: ".github/jobs/${{ matrix.job }}.sh"

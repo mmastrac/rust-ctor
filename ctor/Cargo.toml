@@ -37,3 +37,7 @@ libc-print = "0.1"
 [[example]]
 name = "example"
 path = "src/example.rs"
+
+[[example]]
+name = "msrv"
+path = "src/msrv.rs"

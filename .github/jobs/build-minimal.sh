@@ -6,4 +6,4 @@ rm Cargo.lock || true
 
 # Only run the example
 cargo clean
-cargo run -p ctor --example example
+cargo run -p ctor --example msrv
