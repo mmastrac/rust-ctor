@@ -48,3 +48,9 @@ $ cargo run --example dylib_load --quiet
 - dtor bin
 """
 "#);
+
+clitest!(warn_unsafe, r#"
+cd "ctor/warn-unsafe";
+$ cargo build
+*
+"#);

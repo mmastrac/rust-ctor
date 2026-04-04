@@ -263,7 +263,7 @@ macro_rules! __unify_features {
 ///
 /// This macro matches the features recursively.
 ///
-/// Example: `[(link_section = ".ctors") , used_linker , __warn_on_missing_unsafe ,]`
+/// Example: `[(link_section = ".ctors") , used_linker , __no_warn_on_missing_unsafe ,]`
 #[doc(hidden)]
 #[macro_export]
 #[allow(unknown_lints, edition_2024_expr_fragment_specifier)]
@@ -335,7 +335,7 @@ macro_rules! __ctor_entry {
             #[allow(unsafe_code)]
             {
                 $crate::__support::if_unsafe!($($unsafe)?, {}, {
-                    $crate::__support::if_has_feature!( __warn_on_missing_unsafe, $features, {
+                    $crate::__support::if_has_feature!( __no_warn_on_missing_unsafe, $features, {}, {
                         #[deprecated="ctor deprecation note:\n\n \
                         Use of #[ctor] without `unsafe fn` is deprecated. As code execution before main\n\
                         is unsupported by most Rust runtime functions, these functions must be marked\n\
@@ -343,7 +343,7 @@ macro_rules! __ctor_entry {
                             const fn ctor_without_unsafe_is_deprecated() {}
                             #[allow(unused)]
                             static UNSAFE_WARNING: () = ctor_without_unsafe_is_deprecated();
-                    }, {});
+                    });
                 });
 
                 $crate::__support::ctor_call!(
@@ -393,8 +393,7 @@ macro_rules! __ctor_entry {
             #[allow(unsafe_code)]
             mod $ident {
                 $crate::__support::if_unsafe!($($unsafe)?, {}, {
-                    $crate::__support::if_has_feature!( __no_warn_on_missing_unsafe, $features, {},
-                    {
+                    $crate::__support::if_has_feature!( __no_warn_on_missing_unsafe, $features, {}, {
                         #[deprecated="ctor deprecation note:\n\n \
                         Use of #[ctor] without `unsafe { ... }` is deprecated. As code execution before main\n\
                         is unsupported by most Rust runtime functions, these functions must be marked\n\
@@ -457,7 +456,7 @@ macro_rules! __dtor_entry {
             #[allow(unsafe_code)]
             {
                 $crate::__support::if_unsafe!($($unsafe)?, {}, {
-                    $crate::__support::if_has_feature!( __warn_on_missing_unsafe, $features, {
+                    $crate::__support::if_has_feature!( __no_warn_on_missing_unsafe, $features, {}, {
                         #[deprecated="dtor deprecation note:\n\n \
                         Use of #[dtor] without `unsafe fn` is deprecated. As code execution after main\n\
                         is unsupported by most Rust runtime functions, these functions must be marked\n\
@@ -465,7 +464,7 @@ macro_rules! __dtor_entry {
                         const fn dtor_without_unsafe_is_deprecated() {}
                         #[allow(unused)]
                         static UNSAFE_WARNING: () = dtor_without_unsafe_is_deprecated();
-                    }, {});
+                    });
                 });
 
                 $crate::__support::ctor_call!(
