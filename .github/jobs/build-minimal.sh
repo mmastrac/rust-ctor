@@ -4,5 +4,5 @@ set -xeuo pipefail
 # Remove Cargo.lock for testing down-level Rust versions
 rm Cargo.lock || true
 cargo clean
-cargo update -p libc --precise 0.1
+cargo update -p libc --precise 0.2.87
 cargo run -p ctor --example example
