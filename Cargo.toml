@@ -20,6 +20,7 @@ default-members = [
 ]
 exclude = []
 
+[workspace.package]
 authors = ["Matt Mastracci <matthew@mastracci.com>"]
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/mmastrac/rust-ctor"
