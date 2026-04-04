@@ -34,6 +34,7 @@ impl ::core::ops::Deref for STATIC_CTOR::Static<HashMap<u32, &'static str>> {
 mod STATIC_CTOR {
     #[allow(non_camel_case_types, unreachable_pub)]
     pub struct Static<T> {
+        #[allow(clippy::incompatible_msrv)]
         pub _storage: ::std::sync::OnceLock<T>,
     }
 }
