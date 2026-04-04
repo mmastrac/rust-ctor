@@ -45,6 +45,82 @@ pub mod __support {
         };
     }
 
+    #[cfg(all(
+        target_os = "linux",
+    ))]
+    #[macro_export]
+    #[doc(hidden)]
+    macro_rules! __section_name {
+        ($pattern:tt data $($rest:tt)*) => {
+            $crate::__support::section_name!(__ $pattern symbol ".data" $($rest)*);
+        };
+        ($pattern:tt code $($rest:tt)*) => {
+            $crate::__support::section_name!(__ $pattern symbol ".text" $($rest)*);
+        };
+        ($pattern:tt $unknown_section:ident $($rest:tt)*) => {
+            const _: () = {
+                compile_error!("Unknown section type: `{}`", stringify!($unknown_section));
+            };
+        };
+
+        (__ $pattern:tt symbol $section_prefix:literal bare $name:ident) => {
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") () $name);
+        };
+        (__ $pattern:tt symbol $section_prefix:literal section $name:ident) => {
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") () $name);
+        };
+        (__ $pattern:tt symbol $section_prefix:literal fn_body $name:ident) => {
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") () $name);
+        };
+        (__ $pattern:tt symbol $section_prefix:literal start $name:ident) => {
+            $crate::__support::section_name!(__ $pattern hash ("__start_" $section_prefix ",") () $name);
+        };
+        (__ $pattern:tt symbol $section_prefix:literal end $name:ident) => {
+            $crate::__support::section_name!(__ $pattern hash ("__stop_" $section_prefix ",") () $name);
+        };
+
+        (__ $pattern:tt hash $prefix:tt $suffix:tt $name:ident) => {
+            $crate::__support::hash!($pattern $name $prefix $suffix 10 64 "_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
+        };
+    }
+
+    #[cfg(target_vendor = "pc")]
+    #[macro_export]
+    #[doc(hidden)]
+    macro_rules! __section_name {
+        ($pattern:tt data $($rest:tt)*) => {
+            $crate::__support::section_name!(__ $pattern symbol ".data" $($rest)*);
+        };
+        ($pattern:tt code $($rest:tt)*) => {
+            $crate::__support::section_name!(__ $pattern symbol ".text" $($rest)*);
+        };
+        ($pattern:tt $unknown_section:ident $($rest:tt)*) => {
+            const _: () = {
+                compile_error!("Unknown section type: `{}`", stringify!($unknown_section));
+            };
+        };
+
+        (__ $pattern:tt symbol $section_prefix:literal bare $name:ident) => {
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix "$") ("$b") $name);
+        };
+        (__ $pattern:tt symbol $section_prefix:literal section $name:ident) => {
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix "$") ("$b") $name);
+        };
+        (__ $pattern:tt symbol $section_prefix:literal fn_body $name:ident) => {
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix "$") ("$d") $name);
+        };
+        (__ $pattern:tt symbol $section_prefix:literal start $name:ident) => {
+            $crate::__support::section_name!(__ $pattern hash ("__start_" $section_prefix ",") ("$a") $name);
+        };
+        (__ $pattern:tt symbol $section_prefix:literal end $name:ident) => {
+            $crate::__support::section_name!(__ $pattern hash ("__stop_" $section_prefix ",") ("$c") $name);
+        };
+
+        (__ $pattern:tt hash $prefix:tt $suffix:tt $name:ident) => {
+            $crate::__support::hash!($pattern $name $prefix $suffix 10 64 "_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
+        };
+    }
+
     /// Define a link section.
     #[macro_export]
     #[doc(hidden)]
