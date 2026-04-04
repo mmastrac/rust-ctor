@@ -445,7 +445,7 @@ impl<T> ::core::fmt::Debug for TypedSection<T> {
             .field("start", &self.start_ptr())
             .field("end", &self.end_ptr())
             .field("len", &self.len())
-            .field("stride", &Self::stride())
+            .field("stride", &self.stride())
             .finish()
     }
 }
