@@ -79,13 +79,13 @@ jobs:
     - name: Install required crates
       uses: taiki-e/install-action@v2
       with:
-        tool: ${{ needs.generate-matrix.outputs.matrix.tool }}
+        tool: ${{ matrix.needs }}
   
     - name: Install Rust toolchain
       uses: actions-rs/toolchain@v1
       with:
-        toolchain: ${{ needs.generate-matrix.outputs.matrix.toolchain }}
-        components: clippy,rustfmt,miri
+        toolchain: ${{ matrix.rust-toolchain }}
+        components: ${{ matrix.rust-components }}
 
     - name: Cache Rust files
       uses: actions/cache@v4
