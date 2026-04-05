@@ -18,5 +18,6 @@ task:
   test_script:
     - . $HOME/.cargo/env || true
     - cargo install cargo-expand
-    - cargo test
+    # Avoid random test failures
+    - RUST_TEST_THREADS=1 cargo test
   before_cache_script: rm -rf $HOME/.cargo/registry/index
