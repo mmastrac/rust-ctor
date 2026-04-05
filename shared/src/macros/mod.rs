@@ -24,9 +24,9 @@ pub mod __support {
     pub use crate::__ctor_parse as ctor_parse;
     pub use crate::__dtor_entry as dtor_entry;
     pub use crate::__dtor_parse as dtor_parse;
+    pub use crate::__get_priority as get_priority;
     pub use crate::__if_has_feature as if_has_feature;
     pub use crate::__if_unsafe as if_unsafe;
-    pub use crate::__get_priority as get_priority;
     pub use crate::__unify_features as unify_features;
 }
 
@@ -61,19 +61,19 @@ pub mod __support {
 #[macro_export]
 macro_rules! __ctor_parse {
     (#[ctor $(($($meta:tt)*))?] $(#[$imeta:meta])* pub ( $($extra:tt)* ) $($item:tt)*) => {
-        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], features=[], imeta=$(#[$imeta])*, vis=[pub($($extra)*)], item=$($item)*);
+        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], imeta=$(#[$imeta])*, vis=[pub($($extra)*)], item=$($item)*);
     };
     (#[ctor $(($($meta:tt)*))?] $(#[$imeta:meta])* pub $($item:tt)*) => {
-        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], features=[], imeta=$(#[$imeta])*, vis=[pub], item=$($item)*);
+        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], imeta=$(#[$imeta])*, vis=[pub], item=$($item)*);
     };
     (#[ctor $(($($meta:tt)*))?] $(#[$imeta:meta])* fn $($item:tt)*) => {
-        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], features=[], imeta=$(#[$imeta])*, vis=[], item=fn $($item)*);
+        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], imeta=$(#[$imeta])*, vis=[], item=fn $($item)*);
     };
     (#[ctor $(($($meta:tt)*))?] $(#[$imeta:meta])* unsafe $($item:tt)*) => {
-        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], features=[], imeta=$(#[$imeta])*, vis=[], item=unsafe $($item)*);
+        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], imeta=$(#[$imeta])*, vis=[], item=unsafe $($item)*);
     };
     (#[ctor $(($($meta:tt)*))?] $(#[$imeta:meta])* static $($item:tt)*) => {
-        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], features=[], imeta=$(#[$imeta])*, vis=[], item=static $($item)*);
+        $crate::__support::unify_features!(next=$crate::__support::ctor_entry, meta=[$($($meta)*)?], imeta=$(#[$imeta])*, vis=[], item=static $($item)*);
     };
     // Reorder attributes that aren't `#[ctor]`
     (#[$imeta:meta] $($rest:tt)*) => {
@@ -100,16 +100,16 @@ macro_rules! __ctor_parse {
 #[macro_export]
 macro_rules! __dtor_parse {
     (#[dtor $(($($meta:tt)*))?] $(#[$imeta:meta])* pub ( $($extra:tt)* ) $($item:tt)*) => {
-        $crate::__support::unify_features!(next=$crate::__support::dtor_entry, meta=[$($($meta)*)?], features=[], imeta=$(#[$imeta])*, vis=[pub($($extra)*)], item=$($item)*);
+        $crate::__support::unify_features!(next=$crate::__support::dtor_entry, meta=[$($($meta)*)?], imeta=$(#[$imeta])*, vis=[pub($($extra)*)], item=$($item)*);
     };
     (#[dtor $(($($meta:tt)*))?] $(#[$imeta:meta])* pub $($item:tt)*) => {
-        $crate::__support::unify_features!(next=$crate::__support::dtor_entry, meta=[$($($meta)*)?], features=[], imeta=$(#[$imeta])*, vis=[pub], item=$($item)*);
+        $crate::__support::unify_features!(next=$crate::__support::dtor_entry, meta=[$($($meta)*)?], imeta=$(#[$imeta])*, vis=[pub], item=$($item)*);
     };
     (#[dtor $(($($meta:tt)*))?] $(#[$imeta:meta])* fn $($item:tt)*) => {
-        $crate::__support::unify_features!(next=$crate::__support::dtor_entry, meta=[$($($meta)*)?], features=[], imeta=$(#[$imeta])*, vis=[], item=fn $($item)*);
+        $crate::__support::unify_features!(next=$crate::__support::dtor_entry, meta=[$($($meta)*)?], imeta=$(#[$imeta])*, vis=[], item=fn $($item)*);
     };
     (#[dtor $(($($meta:tt)*))?] $(#[$imeta:meta])* unsafe $($item:tt)*) => {
-        $crate::__support::unify_features!(next=$crate::__support::dtor_entry, meta=[$($($meta)*)?], features=[], imeta=$(#[$imeta])*, vis=[], item=unsafe $($item)*);
+        $crate::__support::unify_features!(next=$crate::__support::dtor_entry, meta=[$($($meta)*)?], imeta=$(#[$imeta])*, vis=[], item=unsafe $($item)*);
     };
     // Reorder attributes that aren't `#[dtor]`
     (#[$imeta:meta] $($rest:tt)*) => {
@@ -129,9 +129,9 @@ macro_rules! declare_features {
         declare_features!( __ crate $crate_features );
     };
 
-    ( __ crate [$( 
+    ( __ crate [$(
         $( #[doc = $doc:literal] )*
-        $feature_name:ident $feature_name_str:literal = $feature_include_macro:ident ; 
+        $feature_name:ident $feature_name_str:literal = $feature_include_macro:ident ;
     )*] ) => {
         /// # Crate features
         ///
@@ -152,7 +152,7 @@ macro_rules! declare_features {
                 $true
             };
         }
-        
+
         #[doc(hidden)]
         #[macro_export]
         #[cfg(not(feature = $feature_name_str))]
@@ -162,6 +162,14 @@ macro_rules! declare_features {
             };
         }
         )*
+
+        #[doc(hidden)]
+        #[macro_export]
+        macro_rules! __features_expand {
+            (next=$next_macro:path, $args:tt) => {
+                $crate::__features_expand_all!(next=$next_macro, $args, $( $feature_name / $feature_include_macro )*);
+            };
+        }
     };
 }
 
@@ -196,6 +204,25 @@ declare_features!(
     ];
 );
 
+/// Expands all of the crate features into the features list.
+#[macro_export]
+macro_rules! __features_expand_all {
+    // Entry
+    (next=$next:path, $args:tt, $($macro:tt)*) => {
+        $crate::__features_expand_all!(: [] $next, $args, $($macro)*);
+    };
+    (: [$($features:tt)*] $next:path, $args:tt, $first_macro_feature:ident / $first_macro:ident $($rest:tt)*) => {
+        $crate:: $first_macro !(
+            $crate::__features_expand_all!(: [$first_macro_feature,$($features)*] $next, $args, $($rest)*);
+            $crate::__features_expand_all!(: [$($features)*] $next, $args, $($rest)*);
+        );
+    };
+    // Exit
+    (: [$($features:tt)*] $next:path, $args:tt,) => {
+        $next!(features=[$($features)*], $args);
+    };
+}
+
 /// Extract #[ctor/dtor] attribute parameters and crate features and turn them
 /// into a unified feature array.
 ///
@@ -209,31 +236,14 @@ declare_features!(
 #[macro_export]
 macro_rules! __unify_features {
     // Entry
-    (next=$next_macro:path, meta=[$($meta:tt)*], features=[$($features:tt)*], $($rest:tt)*) => {
-        $crate::__support::unify_features!(std, next=$next_macro, meta=[$($meta)*], features=[$($features)*], $($rest)*);
+    (next=$next_macro:path, meta=[$($meta:tt)*], $($rest:tt)*) => {
+        // Expand all crate features
+        $crate::__features_expand!(next=$crate::__unify_features, [next=$next_macro, meta=[$($meta)*], $($rest)*]);
     };
 
-    // Add std feature if cfg(feature="std")
-    (std, next=$next_macro:path, meta=[$($meta:tt)*], features=[$($features:tt)*], $($rest:tt)*) => {
-        $crate::__include_std_feature!(
-            $crate::__support::unify_features!(used_linker, next=$next_macro, meta=[$($meta)*], features=[std,$($features)*], $($rest)*);
-            $crate::__support::unify_features!(used_linker, next=$next_macro, meta=[$($meta)*], features=[$($features)*], $($rest)*);
-        );
-    };
-
-    // Add used_linker feature if cfg(feature="used_linker")
-    (used_linker, next=$next_macro:path, meta=[$($meta:tt)*], features=[$($features:tt)*], $($rest:tt)*) => {
-        $crate::__include_used_linker_feature!(
-            $crate::__support::unify_features!(no_warn_on_missing_unsafe, next=$next_macro, meta=[$($meta)*], features=[used_linker,$($features)*], $($rest)*);
-            $crate::__support::unify_features!(no_warn_on_missing_unsafe, next=$next_macro, meta=[$($meta)*], features=[$($features)*], $($rest)*);
-        );
-    };
-    // Add no_warn_on_missing_unsafe feature if cfg(feature="no_warn_on_missing_unsafe")
-    (no_warn_on_missing_unsafe, next=$next_macro:path, meta=[$($meta:tt)*], features=[$($features:tt)*], $($rest:tt)*) => {
-        $crate::__include_no_warn_on_missing_unsafe_feature!(
-            $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($meta)*], features=[no_warn_on_missing_unsafe,$($features)*], $($rest)*);
-            $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($meta)*], features=[$($features)*], $($rest)*);
-        );
+    // Post-expansion
+    (features=[$($features:tt)*], [next=$next_macro:path, meta=[$($meta:tt)*], $($rest:tt)*]) => {
+        $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($meta)*], features=[$($features)*], $($rest)*);
     };
 
     // Parse meta into features

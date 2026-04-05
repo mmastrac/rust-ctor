@@ -1,0 +1,23 @@
+[package]
+name = "link-section"
+version = "0.0.3"
+authors.workspace = true
+edition = "2021"
+description = "Low-level link-section macro support for Rust"
+license.workspace = true
+repository.workspace = true
+readme.workspace = true
+categories = []
+
+[features]
+default = ["proc_macro"]
+proc_macro = ["dep:link-section-proc-macro"]
+
+[dependencies]
+link-section-proc-macro = { path = "../link-section-proc-macro", version = "=0.0.3", optional = true }
+
+[dev-dependencies]
+
+[[example]]
+name = "example"
+path = "src/example.rs"
