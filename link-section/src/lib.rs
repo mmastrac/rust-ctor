@@ -226,7 +226,7 @@ pub mod __support {
                 (
                     // Split the function into a static item and a function pointer
                     $(#[$meta])*
-                    #[no_mangle]
+                    #[used]
                     #[link_section = __]
                     $vis static $ident_fn: <$section_ty as $crate::__support::SectionItemType>::Item =
                         {
@@ -239,7 +239,7 @@ pub mod __support {
         };
         ($ident:ident generic $section:ident $section_ty:ty, ($(#[$meta:meta])* $vis:vis static $ident_static:ident : $ty:ty = $value:expr;)) => {
             $crate::__support::section_name!(
-                ($(#[$meta])* #[no_mangle] #[link_section = __] $vis static $ident_static: <$section_ty as $crate::__support::SectionItemType>::Item = $value;)
+                ($(#[$meta])* #[no_mangle] #[link_section = __] #[used]$vis static $ident_static: <$section_ty as $crate::__support::SectionItemType>::Item = $value;)
                 $section section $ident
             );
         };
@@ -247,7 +247,6 @@ pub mod __support {
             $crate::__support::section_name!(
                 (
                     $(#[$meta])*
-                    #[no_mangle]
                     #[link_section = __]
                     $vis fn $ident_fn($($args)*) $(-> $ret)? $body
                 )
@@ -256,7 +255,7 @@ pub mod __support {
         };
         ($ident:ident no_generic $section:ident $section_ty:ty, ($(#[$meta:meta])* $item:item)) => {
             $crate::__support::section_name!(
-                ($(#[$meta])* #[no_mangle] #[link_section = __] $item)
+                ($(#[$meta])* #[no_mangle] #[link_section = __] #[used]$item)
                 $section section $ident
             );
         };
