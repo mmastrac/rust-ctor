@@ -140,6 +140,7 @@ pub mod __support {
             }
 
             $(#[$meta])*
+            #[used]
             $vis static $ident: $crate::__support::Section< $ty, $generic_ty > = $crate::__support::Section::new(
                 {
                     $crate::__support::section_name!(
