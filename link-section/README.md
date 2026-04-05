@@ -2,6 +2,10 @@
 
 A crate for defining link sections in Rust.
 
+Sections are defined using the `#[section]` macro. This creates an associated
+`data` and `text` section, and items decorated with the `#[in_section]` macro are
+placed into the associated section.
+
 ## Platform Support
 
 | Platform                 | Support                                         |
@@ -9,6 +13,7 @@ A crate for defining link sections in Rust.
 | Linux                    | ✅ Supported, uses orphan section handling (§1) |
 | macOS                    | ✅ Fully supported                              |
 | Windows                  | ✅ Fully supported                              |
+| WASM                     | ✅ Fully supported                              |
 | Other LLVM/GCC platforms | ✅ Supported, uses orphan section handling (§1) |
 
 (§1) Orphan section handling is a feature of the linker that allows sections to

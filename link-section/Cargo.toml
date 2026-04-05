@@ -14,7 +14,7 @@ default = ["proc_macro"]
 proc_macro = ["dep:link-section-proc-macro"]
 
 [dependencies]
-link-section-proc-macro = { version = "=0.0.3", optional = true }
+link-section-proc-macro = { path = "../link-section-proc-macro", version = "=0.0.3", optional = true }
 
 [dev-dependencies]
 
