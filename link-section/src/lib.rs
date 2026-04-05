@@ -67,6 +67,7 @@ pub mod __support {
         (__ $pattern:tt symbol $section_prefix:literal bare $name:ident) => {
             $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") () $name);
         };
+        // Priority is _inverted_ for ordering purposes
         (__ $pattern:tt symbol $section_prefix:literal section $name:ident) => {
             $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") (".3") $name);
         };

@@ -1,6 +1,8 @@
 use clitest_lib::clitest;
 
-clitest!(basic, r#"
+clitest!(
+    basic,
+    r#"
 set RUSTFLAGS "";
 cd "link_section/basic";
 defer {
@@ -22,4 +24,5 @@ $ cargo run --quiet
 ! f: %{BASE16NUM}
 ! linked_function_2
 ! DEBUGGABLES: [1, 2, %{BASE16NUM}]
-"#);
+"#
+);
