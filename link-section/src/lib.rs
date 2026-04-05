@@ -68,16 +68,16 @@ pub mod __support {
             $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") () $name);
         };
         (__ $pattern:tt symbol $section_prefix:literal section $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") (".2") $name);
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") (".3") $name);
         };
         (__ $pattern:tt symbol $section_prefix:literal fn_body $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") (".4") $name);
-        };
-        (__ $pattern:tt symbol $section_prefix:literal start $name:ident) => {
             $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") (".1") $name);
         };
+        (__ $pattern:tt symbol $section_prefix:literal start $name:ident) => {
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") (".4") $name);
+        };
         (__ $pattern:tt symbol $section_prefix:literal end $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") (".3") $name);
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") (".2") $name);
         };
 
         (__ $pattern:tt hash $prefix:tt $suffix:tt $name:ident) => {
@@ -172,7 +172,7 @@ pub mod __support {
                         (
                             #[link_section = __]
                             #[used]
-                            static __START: ([$generic_ty; 0], u8) = ([], 1);
+                            static __START: [$generic_ty; 0] = [];
                         )
                         $section start $ident
                     );
