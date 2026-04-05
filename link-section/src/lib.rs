@@ -45,7 +45,7 @@ pub mod __support {
         };
     }
 
-    #[cfg(target_os = "linux")]
+    #[cfg(all(not(target_vendor = "apple"), not(target_vendor = "pc")))]
     #[macro_export]
     #[doc(hidden)]
     macro_rules! __section_name {
@@ -161,6 +161,7 @@ pub mod __support {
                         data start $ident
                     );
 
+                    // Windows always sorts, so we can use alphabetical order
                     #[cfg(target_vendor = "pc")]
                     $crate::__support::section_name!(
                         (
