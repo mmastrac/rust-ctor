@@ -102,7 +102,7 @@ pub mod __support {
         };
 
         (__ $pattern:tt symbol $section_prefix:literal bare $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix "$") ("$b") $name);
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix "$") () $name);
         };
         (__ $pattern:tt symbol $section_prefix:literal section $name:ident) => {
             $crate::__support::section_name!(__ $pattern hash ($section_prefix "$") ("$b") $name);
