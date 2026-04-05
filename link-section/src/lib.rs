@@ -128,14 +128,14 @@ pub mod __support {
     macro_rules! __section_parse {
         // Has a generic (note that $generic eats the trailing semicolon)
         (#[section($section:ident)] $(#[$meta:meta])* $vis:vis static $ident:ident : $(:: $path_prefix:ident ::)? $($path:ident)::* < $($generic:tt)*) => {
-            $crate::__section_parse!(#[section($section)] $(#[$meta])* $vis static $ident: ( $(:: $path_prefix ::)? $($path)::* < $($generic)*) generic);
+            $crate::__section_parse!(#[section($section)] $(#[$meta])* $vis static $ident: ( $(:: $path_prefix ::)? $($path)::* < $($generic)*) ( $($generic)* ) generic);
         };
         // No generic
         (#[section($section:ident)] $(#[$meta:meta])* $vis:vis static $ident:ident : $(:: $path_prefix:ident ::)? $($path:ident)::* ;) => {
-            $crate::__section_parse!(#[section($section)] $(#[$meta])* $vis static $ident: ( $(:: $path_prefix ::)? $($path)::* ;) no_generic);
+            $crate::__section_parse!(#[section($section)] $(#[$meta])* $vis static $ident: ( $(:: $path_prefix ::)? $($path)::* ;) ( () > ; ) no_generic);
         };
         // Both end up here...
-        (#[section($section:ident)] $(#[$meta:meta])* $vis:vis static $ident:ident : ($ty:ty ;) $generic:ident) => {
+        (#[section($section:ident)] $(#[$meta:meta])* $vis:vis static $ident:ident : ($ty:ty ;) ( $generic_ty:ty > ; ) $generic:ident) => {
             /// Internal macro for parsing the section.
             macro_rules! $ident {
                 (v=0 (item=$item:tt $rest:tt)) => {
@@ -147,7 +147,7 @@ pub mod __support {
             }
 
             $(#[$meta])*
-            $vis static $ident: $crate::__support::Section< $ty > = $crate::__support::Section::new(
+            $vis static $ident: $crate::__support::Section< $ty, $generic_ty > = $crate::__support::Section::new(
                 {
                     $crate::__support::section_name!(
                         (const fn section_name() -> &'static str { __ })
@@ -159,26 +159,34 @@ pub mod __support {
                 {
                     $crate::__support::section_name!(
                         (
+                            #[cfg(target_vendor = "apple")]
                             extern "C" {
-                                #[link_name = __] static __START: $crate::__support::SectionPtr;
+                                #[link_name = __] static __START: $crate::__support::SectionPtr<$generic_ty>;
                             }
+                            #[cfg(not(target_vendor = "apple"))]
+                            #[link_section = __]
+                            static __START: $crate::__support::SectionPtr<$generic_ty>;
                         )
                         $section start $ident
                     );
 
-                    unsafe { &raw const __START as $crate::__support::SectionPtr }
+                    unsafe { &raw const __START as $crate::__support::SectionPtr<$generic_ty> }
                 },
                 {
                     $crate::__support::section_name!(
                         (
+                            #[cfg(target_vendor = "apple")]
                             extern "C" {
-                                #[link_name = __] static __END: $crate::__support::SectionPtr;
+                                #[link_name = __] static __END: $crate::__support::SectionPtr<$generic_ty>;
                             }
+                            #[cfg(not(target_vendor = "apple"))]
+                            #[link_section = __]
+                            static __END: $crate::__support::SectionPtr<$generic_ty>;
                         )
                         $section end $ident
                     );
 
-                    unsafe { &raw const __END as $crate::__support::SectionPtr }
+                    unsafe { &raw const __END as $crate::__support::SectionPtr<$generic_ty> }
                 },
             );
         };
@@ -245,10 +253,10 @@ pub mod __support {
     }
 
     #[repr(C)]
-    pub struct Section<T: sealed::FromRawSection> {
+    pub struct Section<T: sealed::FromRawSection, S> {
         name: &'static str,
-        start: SectionPtr,
-        end: SectionPtr,
+        start: SectionPtr<S>,
+        end: SectionPtr<S>,
         _t: ::core::marker::PhantomData<T>,
     }
 
@@ -256,8 +264,8 @@ pub mod __support {
         type Item = T;
     }
 
-    impl<T: sealed::FromRawSection> Section<T> {
-        pub const fn new(name: &'static str, start: SectionPtr, end: SectionPtr) -> Self {
+    impl<T: sealed::FromRawSection, S> Section<T, S> {
+        pub const fn new(name: &'static str, start: SectionPtr<S>, end: SectionPtr<S>) -> Self {
             Self {
                 name,
                 start,
@@ -267,7 +275,7 @@ pub mod __support {
         }
     }
 
-    impl<'a, T: sealed::FromRawSection> ::core::iter::IntoIterator for &'a Section<T>
+    impl<'a, T: sealed::FromRawSection, S> ::core::iter::IntoIterator for &'a Section<T, S>
     where
         for<'b> &'b T: ::core::iter::IntoIterator,
     {
@@ -278,7 +286,7 @@ pub mod __support {
         }
     }
 
-    impl<T: sealed::FromRawSection> ::core::ops::Deref for Section<T> {
+    impl<T: sealed::FromRawSection, S> ::core::ops::Deref for Section<T, S> {
         type Target = T;
         fn deref(&self) -> &Self::Target {
             // SAFETY: all sections are repr(C)
@@ -286,16 +294,19 @@ pub mod __support {
         }
     }
 
-    impl<T: sealed::FromRawSection + ::core::fmt::Debug> ::core::fmt::Debug for Section<T> {
+    impl<T: sealed::FromRawSection + ::core::fmt::Debug, S> ::core::fmt::Debug for Section<T, S> {
         fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
             ::core::fmt::Debug::fmt(::core::ops::Deref::deref(self), f)
         }
     }
 
-    unsafe impl<T: sealed::FromRawSection> Sync for Section<T> {}
-    unsafe impl<T: sealed::FromRawSection> Send for Section<T> {}
+    unsafe impl<T: sealed::FromRawSection, S> Sync for Section<T, S> {}
+    unsafe impl<T: sealed::FromRawSection, S> Send for Section<T, S> {}
 
-    pub type SectionPtr = *const ();
+    #[cfg(target_vendor = "apple")]
+    pub type SectionPtr<T> = *const ::core::marker::PhantomData<T>;
+    #[cfg(not(target_vendor = "apple"))]
+    pub type SectionPtr<T> = *const [T; 0];
 
     mod sealed {
         pub trait FromRawSection {}
@@ -335,18 +346,18 @@ pub use ::link_section_proc_macro::in_section;
 #[repr(C)]
 pub struct Section {
     name: &'static str,
-    start: __support::SectionPtr,
-    end: __support::SectionPtr,
+    start: __support::SectionPtr<()>,
+    end: __support::SectionPtr<()>,
 }
 
 impl Section {
     /// The start address of the section.
     pub const fn start_ptr(&self) -> *const () {
-        self.start
+        self.start as *const ()
     }
     /// The end address of the section.
     pub const fn end_ptr(&self) -> *const () {
-        self.end
+        self.end as *const ()
     }
     /// The byte length of the section.
     pub const fn byte_len(&self) -> usize {
@@ -373,8 +384,8 @@ unsafe impl Send for Section {}
 #[repr(C)]
 pub struct TypedSection<T> {
     name: &'static str,
-    start: __support::SectionPtr,
-    end: __support::SectionPtr,
+    start: __support::SectionPtr<T>,
+    end: __support::SectionPtr<T>,
     _phantom: ::core::marker::PhantomData<T>,
 }
 

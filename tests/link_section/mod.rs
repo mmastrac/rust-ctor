@@ -14,6 +14,7 @@ $ cargo run --quiet
 ! CODE_SECTION: TypedSection { name: "__DATA,FN_ARRAY", start: %{BASE16NUM}, end: %{BASE16NUM}, len: 3, stride: 8 }
 ! [%{BASE16NUM}, %{BASE16NUM}, %{BASE16NUM}]
 ! f: %{BASE16NUM}
+! link_section_function
 ! f: %{BASE16NUM}
 ! linked_function
 ! f: %{BASE16NUM}
