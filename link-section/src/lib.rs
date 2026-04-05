@@ -343,7 +343,7 @@ pub mod __support {
 /// ```rust
 /// use link_section::{in_section, section};
 ///
-/// #[section(data)]
+/// #[section]
 /// pub static DATA_SECTION: link_section::Section;
 ///
 /// #[in_section(DATA_SECTION)]

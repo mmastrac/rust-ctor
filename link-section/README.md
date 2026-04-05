@@ -19,7 +19,7 @@ be defined without a pre-defined name.
 ```rust
 use link_section::{in_section, section};
 
-#[section(code)]
+#[section]
 pub static CODE_SECTION: link_section::Section;
 
 #[in_section(CODE_SECTION)]
