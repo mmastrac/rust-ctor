@@ -6,7 +6,7 @@ edition = "2021"
 description = "proc-macro support for the dtor crate"
 license.workspace = true
 repository.workspace = true
-readme.workspace = true
+readme = "README.md"
 
 [features]
 default = []
