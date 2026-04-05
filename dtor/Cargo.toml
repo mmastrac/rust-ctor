@@ -6,7 +6,7 @@ edition = "2021"
 description = "__attribute__((destructor)) for Rust"
 license.workspace = true
 repository.workspace = true
-readme.workspace = true
+readme = "README.md"
 categories = ["no-std"]
 rust-version = "1.60"
 
