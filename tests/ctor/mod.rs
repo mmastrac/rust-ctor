@@ -2,7 +2,9 @@ use clitest_lib::clitest;
 
 // Does not work on apple platforms
 #[cfg(not(target_vendor = "apple"))]
-clitest!(crt_static, r#"
+clitest!(
+    crt_static,
+    r#"
 set RUSTFLAGS "-C target-feature=+crt-static";
 cd "ctor/crt-static";
 defer {
@@ -18,9 +20,12 @@ $ cargo build --quiet --target $TARGET
 $ cargo run --quiet --target $TARGET
 ! +crt-static
 ! main
-"#);
+"#
+);
 
-clitest!(edition_2018, r#"
+clitest!(
+    edition_2018,
+    r#"
 set RUSTFLAGS "";
 cd "ctor/edition-2018";
 defer {
@@ -31,9 +36,12 @@ $ cargo build --quiet
 $ cargo run --quiet
 ! foo
 ! main
-"#);
+"#
+);
 
-clitest!(edition_2021, r#"
+clitest!(
+    edition_2021,
+    r#"
 set RUSTFLAGS "";
 cd "ctor/edition-2021";
 defer {
@@ -44,9 +52,12 @@ $ cargo build --quiet
 $ cargo run --quiet
 ! foo
 ! main
-"#);
+"#
+);
 
-clitest!(edition_2024, r#"
+clitest!(
+    edition_2024,
+    r#"
 set RUSTFLAGS "";
 cd "ctor/edition-2024";
 defer {
@@ -57,9 +68,12 @@ $ cargo build --quiet
 $ cargo run --quiet
 ! foo
 ! main
-"#);
+"#
+);
 
-clitest!(no_std, r#"
+clitest!(
+    no_std,
+    r#"
 set RUSTFLAGS "";
 cd "ctor/no-std";
 defer {
@@ -67,9 +81,12 @@ defer {
 }
 $ cargo build --quiet
 *
-"#);
+"#
+);
 
-clitest!(system_no_crt_static, r#"
+clitest!(
+    system_no_crt_static,
+    r#"
 set RUSTFLAGS "-C target-feature=-crt-static";
 set CARGO_TARGET_DIR "target/system_no_crt_static";
 cd "ctor/system";
@@ -90,11 +107,14 @@ unordered {
     ! --- dtor lib
 }
 ! - dtor bin
-"#);
+"#
+);
 
 // Only Windows supports +crt-static w/dylibs
 #[cfg(windows)]
-clitest!(system_crt_static, r#"
+clitest!(
+    system_crt_static,
+    r#"
 set RUSTFLAGS "-C target-feature=+crt-static";
 set CARGO_TARGET_DIR "target/system_crt_static";
 cd "ctor/system";
@@ -106,9 +126,11 @@ $ rustc -vV
 *
 ! host: %{DATA:target}
 *
-$ cargo build --lib --examples --quiet --target $TARGET
+$ cargo build --lib --examples --quiet
 *
-$ cargo run --example dylib_load --quiet --target $TARGET
+$ find $CARGO_TARGET_DIR
+*
+$ cargo run --example dylib_load --quiet
 ! + ctor bin
 ! ++ main start
 unordered {
@@ -120,9 +142,12 @@ unordered {
     ! --- dtor lib
 }
 ! - dtor bin
-"#);
+"#
+);
 
-clitest!(warn_unsafe, r#"
+clitest!(
+    warn_unsafe,
+    r#"
 set RUSTFLAGS "";
 set CARGO_TARGET_DIR "target/warn_yes";
 cd "ctor/warn-unsafe";
@@ -139,7 +164,12 @@ ignore {
 !           Use of #[ctor] without `unsafe fn` is deprecated. As code execution before main
 !          is unsupported by most Rust runtime functions, these functions must be marked
 !          `unsafe`.
+if TARGET_OS == "windows" {
+!  --> src\main.rs:4:1
+}
+if TARGET_OS != "windows" {
 !  --> src/main.rs:4:1
+}
 !   |
 ! 4 | #[ctor]
 !   | ^^^^^^^
@@ -149,9 +179,12 @@ ignore {
 ! 
 ! warning: `warn-unsafe` (bin "warn-unsafe") generated 1 warning
 !     Finished `dev` profile %{DATA}
-"#);
+"#
+);
 
-clitest!(warn_unsafe_disabled, r#"
+clitest!(
+    warn_unsafe_disabled,
+    r#"
 set RUSTFLAGS "";
 set CARGO_TARGET_DIR "target/warn_no";
 cd "ctor/warn-unsafe";
@@ -164,4 +197,5 @@ reject {
 }
 *
 !     Finished `dev` profile %{DATA}
-"#);
+"#
+);

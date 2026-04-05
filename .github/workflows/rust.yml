@@ -107,4 +107,5 @@ jobs:
           ${{ env.CACHE_KEY }}-${{ runner.os }}-cargo-${{ matrix.rust-toolchain }}-
 
     - name: Run ${{ matrix.job }}
+      shell: bash
       run: ".github/jobs/${{ matrix.job }}.sh"
