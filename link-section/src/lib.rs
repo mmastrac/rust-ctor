@@ -228,6 +228,7 @@ pub mod __support {
                     $(#[$meta])*
                     #[used]
                     #[link_section = __]
+                    #[allow(non_upper_case_globals)]
                     $vis static $ident_fn: <$section_ty as $crate::__support::SectionItemType>::Item =
                         {
                             fn $ident_fn($($args)*) $(-> $ret)? $body
