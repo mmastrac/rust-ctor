@@ -20,5 +20,5 @@ INSERT AFTER .data;
     fs::write(&script, ld).unwrap();
 
     println!("cargo::rerun-if-changed=build.rs");
-    println!("cargo::rustc-link-arg-bins=-Wl,-T,{}", script.display());
+    println!("cargo::rustc-link-arg=-Wl,-T,{}", script.display());
 }
