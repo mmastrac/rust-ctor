@@ -9,6 +9,7 @@ pub mod __support {
     pub use crate::__section_parse as section_parse;
 
     pub use link_section_proc_macro::hash;
+    pub use link_section_proc_macro::ident_concat;
 
     #[cfg(target_vendor = "apple")]
     #[macro_export]
@@ -45,7 +46,39 @@ pub mod __support {
         };
     }
 
-    #[cfg(all(not(target_vendor = "apple"), not(target_vendor = "pc")))]
+    #[cfg(target_family = "wasm")]
+    #[macro_export]
+    #[doc(hidden)]
+    macro_rules! __section_name {
+        ($pattern:tt data $($rest:tt)*) => {
+            $crate::__support::section_name!(__ $pattern symbol ".data" $($rest)*);
+        };
+        ($pattern:tt code $($rest:tt)*) => {
+            $crate::__support::section_name!(__ $pattern symbol ".text" $($rest)*);
+        };
+        ($pattern:tt $unknown_section:ident $($rest:tt)*) => {
+            const _: () = {
+                compile_error!("Unknown section type: `{}`", stringify!($unknown_section));
+            };
+        };
+
+        (__ $pattern:tt symbol $section_prefix:literal bare $name:ident) => {
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".link_section.") () $name);
+        };
+        (__ $pattern:tt symbol $section_prefix:literal section $name:ident) => {
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".link_section.") () $name);
+        };
+
+        (__ $pattern:tt hash $prefix:tt $suffix:tt $name:ident) => {
+            $crate::__support::hash!($pattern $name $prefix $suffix 6 16 "_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
+        };
+    }
+
+    #[cfg(all(
+        not(target_vendor = "apple"),
+        not(target_vendor = "pc"),
+        not(target_family = "wasm")
+    ))]
     #[macro_export]
     #[doc(hidden)]
     macro_rules! __section_name {
@@ -141,6 +174,32 @@ pub mod __support {
 
             $(#[$meta])*
             #[used]
+            #[cfg(target_family = "wasm")]
+            $vis static $ident: $crate::__support::Section< $ty, $generic_ty > = {
+                static __START: ::core::sync::atomic::AtomicPtr::<::core::marker::PhantomData<$generic_ty>> = unsafe {
+                    ::core::sync::atomic::AtomicPtr::<::core::marker::PhantomData<$generic_ty>>::new(::core::ptr::null_mut())
+                };
+                static __END: ::core::sync::atomic::AtomicPtr::<::core::marker::PhantomData<$generic_ty>> = unsafe {
+                    ::core::sync::atomic::AtomicPtr::<::core::marker::PhantomData<$generic_ty>>::new(::core::ptr::null_mut())
+                };
+
+                $crate::__support::ident_concat!((#[no_mangle]pub extern "C" fn) (register_link_section_ $ident) ((data_ptr: *const u8, data_len: usize) {
+                    unsafe {
+                        __START.store(data_ptr as *mut ::core::marker::PhantomData<$generic_ty>, ::core::sync::atomic::Ordering::Relaxed);
+                        __END.store(data_ptr.add(data_len) as *mut ::core::marker::PhantomData<$generic_ty>, ::core::sync::atomic::Ordering::Relaxed);
+                    }
+                }));
+
+                $crate::__support::Section::new(
+                    stringify!($ident),
+                    &__START,
+                    &__END,
+                )
+            };
+
+            $(#[$meta])*
+            #[used]
+            #[cfg(not(target_family = "wasm"))]
             $vis static $ident: $crate::__support::Section< $ty, $generic_ty > = $crate::__support::Section::new(
                 {
                     $crate::__support::section_name!(
@@ -271,7 +330,7 @@ pub mod __support {
     }
 
     #[repr(C)]
-    pub struct Section<T: sealed::FromRawSection, S> {
+    pub struct Section<T: sealed::FromRawSection, S: 'static> {
         name: &'static str,
         start: SectionPtr<S>,
         end: SectionPtr<S>,
@@ -323,13 +382,17 @@ pub mod __support {
 
     /// On Apple platforms, the linker provides a pointer to the start and end
     /// of the section regardless of the section's name.
-    #[cfg(not(target_vendor = "pc"))]
+    #[cfg(all(not(target_vendor = "pc"), not(target_family = "wasm")))]
     pub type SectionPtr<T> = *const ::core::marker::PhantomData<T>;
     /// On LLVM/GCC/MSVC platforms, we cannot use start/end symbols for sections
     /// without C-compatible names, so instead we drop a [T; 0] at the start and
     /// end of the section.
     #[cfg(target_vendor = "pc")]
     pub type SectionPtr<T> = *const [T; 0];
+    /// On WASM, we use an atomic pointer to the start and end of the section.
+    #[cfg(target_family = "wasm")]
+    pub type SectionPtr<T> =
+        &'static ::core::sync::atomic::AtomicPtr<::core::marker::PhantomData<T>>;
 
     mod sealed {
         pub trait FromRawSection {}
@@ -373,6 +436,37 @@ pub struct Section {
     end: __support::SectionPtr<()>,
 }
 
+#[cfg(target_family = "wasm")]
+impl Section {
+    /// The start address of the section.
+    pub fn start_ptr(&self) -> *const () {
+        let ptr = self.start.load(::core::sync::atomic::Ordering::Relaxed) as *const ();
+        if ptr.is_null() {
+            panic!(
+                "Section {} was not initialized by the host environment",
+                self.name
+            );
+        }
+        ptr
+    }
+    /// The end address of the section.
+    pub fn end_ptr(&self) -> *const () {
+        let ptr = self.end.load(::core::sync::atomic::Ordering::Relaxed) as *const ();
+        if ptr.is_null() {
+            panic!(
+                "Section {} was not initialized by the host environment",
+                self.name
+            );
+        }
+        ptr
+    }
+    /// The byte length of the section.
+    pub fn byte_len(&self) -> usize {
+        unsafe { (self.end_ptr() as *const u8).offset_from(self.start_ptr() as *const u8) as usize }
+    }
+}
+
+#[cfg(not(target_family = "wasm"))]
 impl Section {
     /// The start address of the section.
     pub const fn start_ptr(&self) -> *const () {
@@ -384,7 +478,7 @@ impl Section {
     }
     /// The byte length of the section.
     pub const fn byte_len(&self) -> usize {
-        unsafe { (self.end as *const u8).offset_from(self.start as *const u8) as usize }
+        unsafe { (self.end_ptr() as *const u8).offset_from(self.start_ptr() as *const u8) as usize }
     }
 }
 
@@ -405,14 +499,84 @@ unsafe impl Send for Section {}
 /// A typed link section that can be used to store any sized type. The
 /// underlying data is enumerable.
 #[repr(C)]
-pub struct TypedSection<T> {
+pub struct TypedSection<T: 'static> {
     name: &'static str,
     start: __support::SectionPtr<T>,
     end: __support::SectionPtr<T>,
     _phantom: ::core::marker::PhantomData<T>,
 }
 
-impl<T> TypedSection<T> {
+#[cfg(target_family = "wasm")]
+impl<T: 'static> TypedSection<T> {
+    /// The stride of the typed section.
+    pub const fn stride(&self) -> usize {
+        // Compute the size required for C to store two instances of T side-by-side.
+        // TODO: Can we just use align_of/size_of?
+        #[repr(C)]
+        struct Sizer<T> {
+            t1: T,
+            t2: T,
+            t3: T,
+        }
+
+        let sizer = ::core::mem::MaybeUninit::<Sizer<T>>::uninit();
+        let ptr: *const Sizer<T> = sizer.as_ptr();
+        let start = ptr as *const u8;
+        let end = unsafe { ::core::ptr::addr_of!((*ptr).t3) } as *const u8;
+        unsafe { end.offset_from(start) as usize / 2 }
+    }
+
+    /// The start address of the section.
+    pub fn start_ptr(&self) -> *const T {
+        let ptr = self.start.load(::core::sync::atomic::Ordering::Relaxed) as *const T;
+        if ptr.is_null() {
+            panic!(
+                "TypedSection {} was not initialized by the host environment",
+                self.name
+            );
+        }
+        ptr
+    }
+
+    /// The end address of the section.
+    pub fn end_ptr(&self) -> *const T {
+        let ptr = self.end.load(::core::sync::atomic::Ordering::Relaxed) as *const T;
+        if ptr.is_null() {
+            panic!(
+                "TypedSection {} was not initialized by the host environment",
+                self.name
+            );
+        }
+        ptr
+    }
+
+    /// The byte length of the section.
+    pub fn byte_len(&self) -> usize {
+        unsafe { (self.end_ptr() as *const u8).offset_from(self.start_ptr() as *const u8) as usize }
+    }
+
+    /// The number of elements in the section.
+    pub fn len(&self) -> usize {
+        self.byte_len() / self.stride()
+    }
+
+    /// True if the section is empty.
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    /// The section as a slice.
+    pub fn as_slice(&self) -> &[T] {
+        if self.is_empty() {
+            &[]
+        } else {
+            unsafe { ::core::slice::from_raw_parts(self.start_ptr(), self.len()) }
+        }
+    }
+}
+
+#[cfg(not(target_family = "wasm"))]
+impl<T: 'static> TypedSection<T> {
     /// The stride of the typed section.
     pub const fn stride(&self) -> usize {
         // Compute the size required for C to store two instances of T side-by-side.
@@ -443,7 +607,7 @@ impl<T> TypedSection<T> {
 
     /// The byte length of the section.
     pub const fn byte_len(&self) -> usize {
-        unsafe { (self.end as *const u8).offset_from(self.start as *const u8) as usize }
+        unsafe { (self.end_ptr() as *const u8).offset_from(self.start_ptr() as *const u8) as usize }
     }
 
     /// The number of elements in the section.

@@ -82,11 +82,41 @@ fn decode_literal_strings(name: &str, item: TokenTree) -> String {
     output
 }
 
+/// Concatenate two identifiers.
+#[proc_macro]
+pub fn ident_concat(item: TokenStream) -> TokenStream {
+    let mut item = item.into_iter();
+    let Some(TokenTree::Group(pre_group)) = item.next() else {
+        panic!("pre_group: Expected a group");
+    };
+    let Some(TokenTree::Group(name_group)) = item.next() else {
+        panic!("name_group: Expected a group");
+    };
+    let Some(TokenTree::Group(post_group)) = item.next() else {
+        panic!("post_group: Expected a group");
+    };
+
+    let mut item = name_group.stream().into_iter();
+    let Some(TokenTree::Ident(ident)) = item.next() else {
+        panic!("ident: Expected an identifier");
+    };
+    let Some(TokenTree::Ident(ident2)) = item.next() else {
+        panic!("ident2: Expected an identifier");
+    };
+
+    let mut output = pre_group.stream();
+    output.extend([TokenTree::Ident(Ident::new(
+        &format!("{ident}{ident2}"),
+        Span::call_site(),
+    ))]);
+    output.extend(post_group.stream());
+    output
+}
+
 /// If the input string is longer than the max length, replace the tail end of
 /// the string with the hash of the string.
 ///
 /// hash!(output input (prefix) hash_length max_length valid_section_chars)
-#[allow(missing_docs)]
 #[proc_macro]
 pub fn hash(item: TokenStream) -> TokenStream {
     let mut item = item.into_iter();
