@@ -12,6 +12,7 @@ $ cargo build --quiet
 *
 $ cargo run --quiet
 ! LINK_SECTION: Section { name: "%{DATA}LINK_SECTION%{DATA}", start: %{BASE16NUM}, end: %{BASE16NUM}, byte_len: 40 }
+! link_section_function
 ! TYPED_LINK_SECTION: TypedSection { name: "%{DATA}TYPED_LINK%{DATA}", start: %{BASE16NUM}, end: %{BASE16NUM}, len: 2, stride: 4 }
 ! address of TYPED_LINK_SECTION[0]: %{BASE16NUM}
 ! address of TYPED_LINK_SECTION[1]: %{BASE16NUM}

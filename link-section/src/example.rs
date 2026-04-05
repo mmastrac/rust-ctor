@@ -68,6 +68,7 @@ pub static DEBUGGABLE_FUNCTION: fn() = {
 /// Dumps the various sections.
 pub fn main() {
     eprintln!("LINK_SECTION: {:?}", LINK_SECTION);
+    link_section_function();
     eprintln!("TYPED_LINK_SECTION: {:?}", TYPED_LINK_SECTION);
     eprintln!("CODE_SECTION: {:?}", FN_ARRAY);
     eprintln!("{:?}", FN_ARRAY.as_slice());

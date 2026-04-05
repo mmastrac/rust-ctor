@@ -2,6 +2,18 @@
 
 A crate for defining link sections in Rust.
 
+## Platform Support
+
+| Platform                 | Support                                         |
+| ------------------------ | ----------------------------------------------- |
+| Linux                    | ✅ Supported, uses orphan section handling (§1) |
+| macOS                    | ✅ Fully supported                              |
+| Windows                  | ✅ Fully supported                              |
+| Other LLVM/GCC platforms | ✅ Supported, uses orphan section handling (§1) |
+
+(§1) Orphan section handling is a feature of the linker that allows sections to
+be defined without a pre-defined name.
+
 ## Usage
 
 ```rust
