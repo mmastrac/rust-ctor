@@ -235,7 +235,7 @@ pub mod __support {
         };
         ($ident:ident generic $section_ty:ty, ($(#[$meta:meta])* $vis:vis static $ident_static:ident : $ty:ty = $value:expr;)) => {
             $crate::__support::section_name!(
-                ($(#[$meta])* #[no_mangle] #[link_section = __] #[used]$vis static $ident_static: <$section_ty as $crate::__support::SectionItemType>::Item = $value;)
+                ($(#[$meta])* #[link_section = __] #[used] $vis static $ident_static: <$section_ty as $crate::__support::SectionItemType>::Item = $value;)
                 data section $ident
             );
         };
@@ -260,7 +260,7 @@ pub mod __support {
         };
         ($ident:ident no_generic $section_ty:ty, ($(#[$meta:meta])* $item:item)) => {
             $crate::__support::section_name!(
-                ($(#[$meta])* #[no_mangle] #[link_section = __] #[used]$item)
+                ($(#[$meta])* #[link_section = __] #[used] $item)
                 data section $ident
             );
         };
