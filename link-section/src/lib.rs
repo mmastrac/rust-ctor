@@ -79,7 +79,7 @@ pub mod __support {
             $crate::__support::section_name!(__ $pattern hash ("__start_" $section_prefix "_link_section_") () $name);
         };
         (__ $pattern:tt symbol $section_prefix:literal end $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ("__end_" $section_prefix "_link_section_") () $name);
+            $crate::__support::section_name!(__ $pattern hash ("__stop_" $section_prefix "_link_section_") () $name);
         };
 
         (__ $pattern:tt hash $prefix:tt $suffix:tt $name:ident) => {
