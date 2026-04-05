@@ -195,7 +195,7 @@ pub mod __support {
                         (
                             #[link_section = __]
                             #[used]
-                            static __END: [$generic_ty; 0] = [];
+                            static __END: ([$generic_ty; 0], u8) = ([], 0);
                         )
                         $section end $ident
                     );
