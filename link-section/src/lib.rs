@@ -74,7 +74,11 @@ pub mod __support {
         };
     }
 
-    #[cfg(all(not(target_vendor = "apple"), not(target_vendor = "pc"), not(target_family = "wasm")))]
+    #[cfg(all(
+        not(target_vendor = "apple"),
+        not(target_vendor = "pc"),
+        not(target_family = "wasm")
+    ))]
     #[macro_export]
     #[doc(hidden)]
     macro_rules! __section_name {
@@ -179,7 +183,7 @@ pub mod __support {
                     ::core::sync::atomic::AtomicPtr::<::core::marker::PhantomData<$generic_ty>>::new(::core::ptr::null_mut())
                 };
 
-                $crate::__support::ident_concat!((pub extern "C" fn) (register_link_section_ $ident) ((data_ptr: *const u8, data_len: usize) {
+                $crate::__support::ident_concat!((#[no_mangle]pub extern "C" fn) (register_link_section_ $ident) ((data_ptr: *const u8, data_len: usize) {
                     unsafe {
                         __START.store(data_ptr as *mut ::core::marker::PhantomData<$generic_ty>, ::core::sync::atomic::Ordering::Relaxed);
                         __END.store(data_ptr.add(data_len) as *mut ::core::marker::PhantomData<$generic_ty>, ::core::sync::atomic::Ordering::Relaxed);
