@@ -14,7 +14,7 @@ name = "link-section-proc-macro"
 version = "0.0.4"
 
 [[package]]
-name = "tests"
+name = "tests-link-section-wasm"
 version = "0.1.0"
 dependencies = [
  "link-section",
