@@ -3,7 +3,7 @@
 use link_section::{in_section, section};
 
 /// An untyped link section with `code` linkage.
-#[section(code)]
+#[section]
 pub static LINK_SECTION: link_section::Section;
 
 /// A function in the `LINK_SECTION` section.
@@ -13,7 +13,7 @@ pub fn link_section_function() {
 }
 
 /// A typed link section with `data` linkage.
-#[section(data)]
+#[section]
 pub static TYPED_LINK_SECTION: link_section::TypedSection<u32>;
 
 /// A `u32` in the `TYPED_LINK_SECTION` section.
@@ -25,7 +25,7 @@ pub static LINKED_U32: u32 = 1;
 pub static LINKED_U32_2: u32 = 2;
 
 /// A function pointerarray in the `data` section.
-#[section(data)]
+#[section]
 pub static FN_ARRAY: link_section::TypedSection<fn()>;
 
 /// A function in the `FN_ARRAY` section.
@@ -45,7 +45,7 @@ pub fn linked_function_2() {
 pub static OTHER_FN: fn() = link_section_function;
 
 /// A debuggable section in the `data` section.
-#[section(data)]
+#[section]
 pub static DEBUGGABLES: link_section::TypedSection<&'static (dyn ::core::fmt::Debug + Sync)>;
 
 /// A debuggable in the `DEBUGGABLES` section.
