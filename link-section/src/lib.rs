@@ -68,16 +68,16 @@ pub mod __support {
             $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") () $name);
         };
         (__ $pattern:tt symbol $section_prefix:literal section $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") () $name);
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") (".2") $name);
         };
         (__ $pattern:tt symbol $section_prefix:literal fn_body $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") () $name);
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") (".4") $name);
         };
         (__ $pattern:tt symbol $section_prefix:literal start $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ("__start_" $section_prefix ".") () $name);
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") (".1") $name);
         };
         (__ $pattern:tt symbol $section_prefix:literal end $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ("__stop_" $section_prefix ".") () $name);
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") (".3") $name);
         };
 
         (__ $pattern:tt hash $prefix:tt $suffix:tt $name:ident) => {
@@ -157,15 +157,22 @@ pub mod __support {
                     section_name()
                 },
                 {
+                    #[cfg(target_vendor = "apple")]
                     $crate::__support::section_name!(
                         (
-                            #[cfg(target_vendor = "apple")]
                             extern "C" {
                                 #[link_name = __] static __START: $crate::__support::SectionPtr<$generic_ty>;
                             }
-                            #[cfg(not(target_vendor = "apple"))]
+                        )
+                        $section start $ident
+                    );
+
+                    #[cfg(not(target_vendor = "apple"))]
+                    $crate::__support::section_name!(
+                        (
                             #[link_section = __]
-                            static __START: $crate::__support::SectionPtr<$generic_ty>;
+                            #[used]
+                            static __START: [$generic_ty; 0] = [];
                         )
                         $section start $ident
                     );
@@ -173,15 +180,22 @@ pub mod __support {
                     unsafe { &raw const __START as $crate::__support::SectionPtr<$generic_ty> }
                 },
                 {
+                    #[cfg(target_vendor = "apple")]
                     $crate::__support::section_name!(
                         (
-                            #[cfg(target_vendor = "apple")]
                             extern "C" {
                                 #[link_name = __] static __END: $crate::__support::SectionPtr<$generic_ty>;
                             }
-                            #[cfg(not(target_vendor = "apple"))]
+                        )
+                        $section end $ident
+                    );
+
+                    #[cfg(not(target_vendor = "apple"))]
+                    $crate::__support::section_name!(
+                        (
                             #[link_section = __]
-                            static __END: $crate::__support::SectionPtr<$generic_ty>;
+                            #[used]
+                            static __END: [$generic_ty; 0] = [];
                         )
                         $section end $ident
                     );
@@ -303,8 +317,13 @@ pub mod __support {
     unsafe impl<T: sealed::FromRawSection, S> Sync for Section<T, S> {}
     unsafe impl<T: sealed::FromRawSection, S> Send for Section<T, S> {}
 
+    /// On Apple platforms, the linker provides a pointer to the start and end
+    /// of the section regardless of the section's name.
     #[cfg(target_vendor = "apple")]
     pub type SectionPtr<T> = *const ::core::marker::PhantomData<T>;
+    /// On LLVM/GCC/MSVC platforms, we cannot use start/end symbols for sections
+    /// without C-compatible names, so instead we drop a [T; 0] at the start and
+    /// end of the section.
     #[cfg(not(target_vendor = "apple"))]
     pub type SectionPtr<T> = *const [T; 0];
 

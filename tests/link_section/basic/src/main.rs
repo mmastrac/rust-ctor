@@ -9,7 +9,7 @@ pub static LINK_SECTION: link_section::Section;
 /// A function in the `LINK_SECTION` section.
 #[in_section(LINK_SECTION)]
 pub fn link_section_function() {
-    println!("link_section_function");
+    eprintln!("link_section_function");
 }
 
 /// A typed link section with `data` linkage.
