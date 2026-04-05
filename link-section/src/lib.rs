@@ -172,7 +172,7 @@ pub mod __support {
                         (
                             #[link_section = __]
                             #[used]
-                            static __END: ([$generic_ty; 0], u8) = ([], 1);
+                            static __START: ([$generic_ty; 0], u8) = ([], 1);
                         )
                         $section start $ident
                     );
