@@ -65,19 +65,19 @@ pub mod __support {
         };
 
         (__ $pattern:tt symbol $section_prefix:literal bare $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") () $name);
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".link_section.") () $name);
         };
         (__ $pattern:tt symbol $section_prefix:literal section $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") (".1") $name);
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".link_section.") (".1") $name);
         };
         (__ $pattern:tt symbol $section_prefix:literal fn_body $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") (".3") $name);
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".link_section.") (".3") $name);
         };
         (__ $pattern:tt symbol $section_prefix:literal start $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") (".0") $name);
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".link_section.") (".0") $name);
         };
         (__ $pattern:tt symbol $section_prefix:literal end $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".") (".2") $name);
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".link_section.") (".2") $name);
         };
 
         (__ $pattern:tt hash $prefix:tt $suffix:tt $name:ident) => {
