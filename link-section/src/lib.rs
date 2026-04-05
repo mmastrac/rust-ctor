@@ -243,6 +243,7 @@ pub mod __support {
                 (
                     $(#[$meta])*
                     #[link_section = __]
+                    #[used]
                     #[allow(non_upper_case_globals)]
                     $vis static $ident_fn: fn($($args)*) $(-> $ret)? =
                         {
