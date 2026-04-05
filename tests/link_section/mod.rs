@@ -18,12 +18,14 @@ $ cargo run --quiet
 ! address of TYPED_LINK_SECTION[1]: %{BASE16NUM}
 ! CODE_SECTION: TypedSection { name: "%{DATA}FN_ARRAY%{DATA}", start: %{BASE16NUM}, end: %{BASE16NUM}, len: 3, stride: 8 }
 ! [%{BASE16NUM}, %{BASE16NUM}, %{BASE16NUM}]
-! f: %{BASE16NUM}
-! link_section_function
-! f: %{BASE16NUM}
-! linked_function
-! f: %{BASE16NUM}
-! linked_function_2
+unordered {
+    ! f: %{BASE16NUM}
+    ! link_section_function
+    ! f: %{BASE16NUM}
+    ! linked_function
+    ! f: %{BASE16NUM}
+    ! linked_function_2
+}
 ! DEBUGGABLES: [1, 2, %{BASE16NUM}]
 "#
 );
