@@ -53,10 +53,10 @@ pub mod __support {
     #[doc(hidden)]
     macro_rules! __section_name {
         ($pattern:tt data $($rest:tt)*) => {
-            $crate::__support::section_name!(__ $pattern symbol ".data" $($rest)*);
+            $crate::__support::section_name!(__ $pattern symbol "_data" $($rest)*);
         };
         ($pattern:tt code $($rest:tt)*) => {
-            $crate::__support::section_name!(__ $pattern symbol ".text" $($rest)*);
+            $crate::__support::section_name!(__ $pattern symbol "_text" $($rest)*);
         };
         ($pattern:tt $unknown_section:ident $($rest:tt)*) => {
             const _: () = {
@@ -64,20 +64,22 @@ pub mod __support {
             };
         };
 
+        // Ideally we'd use .data and .text, but we cannot guarantee name
+        // sorting of sections in the linker script
         (__ $pattern:tt symbol $section_prefix:literal bare $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".link_section.") () $name);
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix "_link_section_") () $name);
         };
         (__ $pattern:tt symbol $section_prefix:literal section $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".link_section.") (".1") $name);
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix "_link_section_") () $name);
         };
         (__ $pattern:tt symbol $section_prefix:literal fn_body $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".link_section.") (".3") $name);
+            $crate::__support::section_name!(__ $pattern hash ($section_prefix "_link_section_") ("_code") $name);
         };
         (__ $pattern:tt symbol $section_prefix:literal start $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".link_section.") (".0") $name);
+            $crate::__support::section_name!(__ $pattern hash ("__start_" $section_prefix "_link_section_") () $name);
         };
         (__ $pattern:tt symbol $section_prefix:literal end $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".link_section.") (".2") $name);
+            $crate::__support::section_name!(__ $pattern hash ("__end_" $section_prefix "_link_section_") () $name);
         };
 
         (__ $pattern:tt hash $prefix:tt $suffix:tt $name:ident) => {
@@ -157,7 +159,7 @@ pub mod __support {
                     section_name()
                 },
                 {
-                    #[cfg(target_vendor = "apple")]
+                    #[cfg(not(target_vendor = "pc"))]
                     $crate::__support::section_name!(
                         (
                             extern "C" {
@@ -167,7 +169,7 @@ pub mod __support {
                         $section start $ident
                     );
 
-                    #[cfg(not(target_vendor = "apple"))]
+                    #[cfg(target_vendor = "pc")]
                     $crate::__support::section_name!(
                         (
                             #[link_section = __]
@@ -180,7 +182,7 @@ pub mod __support {
                     unsafe { &raw const __START as $crate::__support::SectionPtr<$generic_ty> }
                 },
                 {
-                    #[cfg(target_vendor = "apple")]
+                    #[cfg(not(target_vendor = "pc"))]
                     $crate::__support::section_name!(
                         (
                             extern "C" {
@@ -190,12 +192,12 @@ pub mod __support {
                         $section end $ident
                     );
 
-                    #[cfg(not(target_vendor = "apple"))]
+                    #[cfg(target_vendor = "pc")]
                     $crate::__support::section_name!(
                         (
                             #[link_section = __]
                             #[used]
-                            static __END: ([$generic_ty; 0], u8) = ([], 0);
+                            static __END: [$generic_ty; 0] = [];
                         )
                         $section end $ident
                     );
@@ -319,12 +321,12 @@ pub mod __support {
 
     /// On Apple platforms, the linker provides a pointer to the start and end
     /// of the section regardless of the section's name.
-    #[cfg(target_vendor = "apple")]
+    #[cfg(not(target_vendor = "pc"))]
     pub type SectionPtr<T> = *const ::core::marker::PhantomData<T>;
     /// On LLVM/GCC/MSVC platforms, we cannot use start/end symbols for sections
     /// without C-compatible names, so instead we drop a [T; 0] at the start and
     /// end of the section.
-    #[cfg(not(target_vendor = "apple"))]
+    #[cfg(target_vendor = "pc")]
     pub type SectionPtr<T> = *const [T; 0];
 
     mod sealed {
