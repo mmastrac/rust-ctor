@@ -8,6 +8,7 @@ version = "0.9.0"
 dependencies = [
  "ctor-proc-macro",
  "dtor",
+ "link-section",
 ]
 
 [[package]]
@@ -21,6 +22,7 @@ name = "dtor"
 version = "0.4.0"
 dependencies = [
  "dtor-proc-macro",
+ "link-section",
 ]
 
 [[package]]
@@ -28,6 +30,10 @@ name = "dtor-proc-macro"
 version = "0.0.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f678cf4a922c215c63e0de95eb1ff08a958a81d47e485cf9da1e27bf6305cfa5"
+
+[[package]]
+name = "link-section"
+version = "0.0.6"
 
 [[package]]
 name = "tests-wasm"

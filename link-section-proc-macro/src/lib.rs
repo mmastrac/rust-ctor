@@ -75,8 +75,11 @@ fn decode_literal_strings(name: &str, item: TokenTree) -> String {
                 output.push_str(&decode_literal_strings(name, token));
             }
         }
+        TokenTree::Punct(_) => {
+            // Ignore punctuation
+        }
         _ => {
-            panic!("{}: Expected a literal string or group", name);
+            panic!("{}: Expected a literal string or group, got `{item}`", name);
         }
     }
     output

@@ -44,7 +44,7 @@ pub mod __support {
                         $crate::__support::hash!($pattern $name ($__prefix) ($__suffix) $__hash_length $__max_length $__valid_section_chars);
                     };
                 )*
-                ($pattern:tt $unknown_section:ident $unknown_type:ident) => {
+                ($pattern:tt $unknown_section:ident $unknown_type:ident $name:ident) => {
                     const _: () = {
                         compile_error!("Unknown section type: `{}`/`{}`", stringify!($unknown_section), stringify!($unknown_type));
                     };
