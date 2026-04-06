@@ -103,7 +103,7 @@ fn expect_literal(name: &str, item: TokenTree) -> Literal {
             expect_literal(name, tokens.into_iter().next().unwrap())
         }
         token => {
-            panic!("{}: Expected a literal, got `{}`", name, token.to_string());
+            panic!("{}: Expected a literal, got `{token}`", name);
         }
     }
 }
@@ -111,7 +111,7 @@ fn expect_literal(name: &str, item: TokenTree) -> Literal {
 fn expect_numeric_literal(name: &str, item: TokenTree) -> usize {
     let literal = expect_literal(name, item).to_string();
     let Ok(literal) = literal.parse::<usize>() else {
-        panic!("{}: Expected a literal integer, got {}", name, literal);
+        panic!("{}: Expected a literal integer, got `{literal}`", name);
     };
     literal
 }
