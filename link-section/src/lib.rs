@@ -186,7 +186,12 @@ pub mod __support {
                 }));
 
                 $crate::__support::Section::new(
-                    stringify!($ident),
+                    {
+                        let name = $crate::__section_name!(
+                            raw data bare $ident
+                        );
+                        name
+                    },
                     &__START,
                     &__END,
                 )
