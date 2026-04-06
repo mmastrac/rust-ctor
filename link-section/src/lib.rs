@@ -38,7 +38,7 @@ pub mod __support {
             macro_rules! __section_name {
                 $(
                     (raw $__section $__type $name:ident) => {
-                        concat!($__prefix, stringify!($name), $__suffix);
+                        concat!(concat! $__prefix, stringify!($name), concat! $__suffix);
                     };
                     ($pattern:tt $__section $__type $name:ident) => {
                         $crate::__support::hash!($pattern $name ($__prefix) ($__suffix) $__hash_length $__max_length $__valid_section_chars);
@@ -80,12 +80,12 @@ pub mod __support {
     #[cfg(target_vendor = "apple")]
     def_section_name! {
         {
-            data bare => "__DATA," __ "";
-            code bare => "__TEXT," __ "";
-            data section => "__DATA," __ ",regular,no_dead_strip";
-            code section => "__TEXT," __ ",regular,no_dead_strip";
-            data start => "\x01section$start$__DATA$" __ "";
-            data end => "\x01section$end$__DATA$" __ "";
+            data bare => ("__DATA,") __ ();
+            code bare => ("__TEXT,") __ ();
+            data section => ("__DATA,") __ (",regular,no_dead_strip");
+            code section => ("__TEXT,") __ (",regular,no_dead_strip");
+            data start => ("\x01section$start$__DATA$") __ ();
+            data end => ("\x01section$end$__DATA$") __ ();
         }
         MAX_LENGTH = 16;
         HASH_LENGTH = 6;
@@ -95,10 +95,10 @@ pub mod __support {
     #[cfg(target_family = "wasm")]
     def_section_name! {
         {
-            data bare => (".data" ".link_section.") __ ();
-            data section => (".data" ".link_section.") __ ();
-            code bare => (".text" ".link_section.") __ ();
-            code section => (".text" ".link_section.") __ ();
+            data bare => (".data", ".link_section.") __ ();
+            data section => (".data", ".link_section.") __ ();
+            code bare => (".text", ".link_section.") __ ();
+            code section => (".text", ".link_section.") __ ();
         }
         MAX_LENGTH = 16;
         HASH_LENGTH = 6;
@@ -112,14 +112,14 @@ pub mod __support {
     ))]
     def_section_name! {
         {
-            data bare => ("_data" "_link_section_") __ ();
-            data section => ("_data" "_link_section_") __ ();
-            data start => ("__start_" "_data" "_link_section_") __ ();
-            data end => ("__stop_" "_data" "_link_section_") __ ();
-            code bare => ("_text" "_link_section_") __ ();
-            code section => ("_text" "_link_section_") __ ();
-            code start => ("__start_" "_text" "_link_section_") __ ();
-            code end => ("__stop_" "_text" "_link_section_") __ ();
+            data bare => ("_data", "_link_section_") __ ();
+            data section => ("_data", "_link_section_") __ ();
+            data start => ("__start_", "_data", "_link_section_") __ ();
+            data end => ("__stop_", "_data", "_link_section_") __ ();
+            code bare => ("_text", "_link_section_") __ ();
+            code section => ("_text", "_link_section_") __ ();
+            code start => ("__start_", "_text", "_link_section_") __ ();
+            code end => ("__stop_", "_text", "_link_section_") __ ();
         }
         MAX_LENGTH = 64;
         HASH_LENGTH = 10;
@@ -129,14 +129,14 @@ pub mod __support {
     #[cfg(target_vendor = "pc")]
     def_section_name! {
         {
-            data bare => (".data" "$") __ ();
-            data section => (".data" "$") __ ("$b");
-            data start => (".data" "$") __ ("$a");
-            data end => (".data" "$") __ ("$c");
-            code bare => (".text" "$") __ ();
-            code section => (".text" "$") __ ("$b");
-            code start => (".text" "$") __ ("$a");
-            code end => (".text" "$") __ ("$c");
+            data bare => (".data", "$") __ ();
+            data section => (".data", "$") __ ("$b");
+            data start => (".data", "$") __ ("$a");
+            data end => (".data", "$") __ ("$c");
+            code bare => (".text", "$") __ ();
+            code section => (".text", "$") __ ("$b");
+            code start => (".text", "$") __ ("$a");
+            code end => (".text", "$") __ ("$c");
         }
         MAX_LENGTH = 64;
         HASH_LENGTH = 10;
