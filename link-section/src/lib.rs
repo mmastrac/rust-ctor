@@ -197,9 +197,10 @@ pub mod __support {
             #[cfg(not(target_family = "wasm"))]
             $vis static $ident: $crate::__support::Section< $ty, $generic_ty > = $crate::__support::Section::new(
                 {
-                    $crate::__section_name!(
+                    let name = $crate::__section_name!(
                         raw data bare $ident
-                    )
+                    );
+                    name
                 },
                 {
                     #[cfg(not(target_vendor = "pc"))]
