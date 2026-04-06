@@ -28,6 +28,14 @@ pub mod __support {
     pub use crate::__if_has_feature as if_has_feature;
     pub use crate::__if_unsafe as if_unsafe;
     pub use crate::__unify_features as unify_features;
+
+    /// Define a link section when using the priority parameter on Apple
+    /// targets.
+    #[cfg(all(feature = "priority", target_vendor = "apple"))]
+    link_section::declarative::section!(
+        #[section]
+        pub static CTOR: link_section::TypedSection<(fn(), u16)>;
+    );
 }
 
 /// Parse a `#[ctor]`-annotated item as if it were a proc-macro.
@@ -184,6 +192,8 @@ declare_features!(
         proc_macro "proc_macro" = __include_proc_macro_feature;
         /// Do not warn when a ctor or dtor is missing the `unsafe` keyword.
         no_warn_on_missing_unsafe "no_warn_on_missing_unsafe" = __include_no_warn_on_missing_unsafe_feature;
+        /// Enable support for the priority parameter.
+        priority "priority" = __include_priority_feature;
     ];
 
     /// Attributes.
@@ -600,14 +610,6 @@ macro_rules! __ctor_link_section {
 #[macro_export]
 macro_rules! __ctor_link_section_attr {
     (array, $features:tt, $used:meta, ($($priority:tt)*), $item:item) => {
-        $crate::__support::if_has_feature!((priority(p)), $features, {
-            #[cfg(target_vendor="apple")]
-            const _: () = {
-                #[deprecated(note = "The priority parameter is not supported on target_vendor = \"apple\"")]
-                const fn ctor_priority_unsupported() {}
-                ctor_priority_unsupported();
-            };
-        }, {});
         $crate::__support::if_has_feature!((link_section(c)), $features, {
             #[allow(unsafe_code)]
             #[$used]

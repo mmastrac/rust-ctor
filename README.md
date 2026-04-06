@@ -2,11 +2,11 @@
 
 ![Build Status](https://github.com/mmastrac/rust-ctor/actions/workflows/rust.yml/badge.svg)
 
-| crate          | docs                                                                                 | version                                                                                   |
-|----------------|----------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
-| `ctor`         | [![docs.rs](https://docs.rs/ctor/badge.svg)](https://docs.rs/ctor)                     | [![crates.io](https://img.shields.io/crates/v/ctor.svg)](https://crates.io/crates/ctor)     |
-| `dtor`         | [![docs.rs](https://docs.rs/dtor/badge.svg)](https://docs.rs/dtor)                     | [![crates.io](https://img.shields.io/crates/v/dtor.svg)](https://crates.io/crates/dtor)     |
-| `link-section` | [![docs.rs](https://docs.rs/link-section/badge.svg)](https://docs.rs/link-section)     | [![crates.io](https://img.shields.io/crates/v/link-section.svg)](https://crates.io/crates/link-section) |
+| crate          | docs                                                                               | version                                                                                                 |
+| -------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `ctor`         | [![docs.rs](https://docs.rs/ctor/badge.svg)](https://docs.rs/ctor)                 | [![crates.io](https://img.shields.io/crates/v/ctor.svg)](https://crates.io/crates/ctor)                 |
+| `dtor`         | [![docs.rs](https://docs.rs/dtor/badge.svg)](https://docs.rs/dtor)                 | [![crates.io](https://img.shields.io/crates/v/dtor.svg)](https://crates.io/crates/dtor)                 |
+| `link-section` | [![docs.rs](https://docs.rs/link-section/badge.svg)](https://docs.rs/link-section) | [![crates.io](https://img.shields.io/crates/v/link-section.svg)](https://crates.io/crates/link-section) |
 
 Module initialization/teardown functions for Rust (like
 `__attribute__((constructor))` in C/C++) for Linux, OSX, FreeBSD, NetBSD,
@@ -45,6 +45,7 @@ will run at executable or library startup/shutdown respectively.
 | `proc_macro`                | Enable support for the proc macro. Required for `#[ctor]` and `#[dtor]` macros, but not for `ctor!` and `dtor!` forms. | Yes     |
 | `dtor`                      | Include `#[dtor]` support in the `ctor` crate.                                                                         | Yes     |
 | `no_warn_on_missing_unsafe` | Do not warn when a ctor or dtor is missing the `unsafe` keyword.                                                       | Yes     |
+| `priority`                  | Enable support for the priority parameter.                                                                             | Yes     |
 | `used_linker`               | Enable support for `#[used(linker)]` (nightly only).                                                                   | No      |
 
 ## Warnings

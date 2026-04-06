@@ -85,6 +85,31 @@ $ cargo build --quiet
 );
 
 clitest!(
+    priority,
+    r#"
+set RUSTFLAGS "";
+cd "ctor/priority";
+defer {
+    $ cargo clean --quiet
+}
+$ cargo build --quiet
+*
+$ cargo run --quiet
+! 1
+! 2
+! 3
+! 4
+! 5
+! 6
+! 7
+! 8
+! 9
+! 10
+! main
+"#
+);
+
+clitest!(
     system_no_crt_static,
     r#"
 set RUSTFLAGS "-C target-feature=-crt-static";

@@ -11,14 +11,16 @@ categories = ["no-std"]
 rust-version = "1.60"
 
 [features]
-default = ["std", "proc_macro", "no_warn_on_missing_unsafe"]
+default = ["std", "proc_macro", "no_warn_on_missing_unsafe", "priority"]
 std = []
 proc_macro = ["dep:dtor-proc-macro"]
 used_linker = []
 no_warn_on_missing_unsafe = []
+priority = []
 
 [dependencies]
 dtor-proc-macro = { version = "=0.0.6", optional = true }
+link-section = { path = "../link-section", version = "=0.0.6", default-features = false }
 
 [dev-dependencies]
 libc-print = "0.1"

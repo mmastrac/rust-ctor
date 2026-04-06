@@ -178,6 +178,7 @@ dependencies = [
  "ctor-proc-macro",
  "dtor",
  "libc-print",
+ "link-section",
 ]
 
 [[package]]
@@ -258,6 +259,7 @@ version = "0.4.0"
 dependencies = [
  "dtor-proc-macro",
  "libc-print",
+ "link-section",
 ]
 
 [[package]]
@@ -457,14 +459,14 @@ dependencies = [
 
 [[package]]
 name = "link-section"
-version = "0.0.5"
+version = "0.0.6"
 dependencies = [
  "link-section-proc-macro",
 ]
 
 [[package]]
 name = "link-section-proc-macro"
-version = "0.0.5"
+version = "0.0.6"
 
 [[package]]
 name = "linux-raw-sys"

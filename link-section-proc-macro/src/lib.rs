@@ -82,6 +82,37 @@ fn decode_literal_strings(name: &str, item: TokenTree) -> String {
     output
 }
 
+fn expect_literal(name: &str, item: TokenTree) -> Literal {
+    match item {
+        TokenTree::Literal(literal) => literal,
+        TokenTree::Group(group) => {
+            if group.delimiter() != Delimiter::None {
+                panic!(
+                    "{}: Expected a single literal, got `{:?}` group",
+                    name,
+                    group.delimiter()
+                );
+            }
+            let tokens = group.stream().into_iter().collect::<Vec<_>>();
+            if tokens.len() != 1 {
+                panic!("{}: Expected a single literal, got `{}`", name, tokens.len());
+            }
+            expect_literal(name, tokens.into_iter().next().unwrap())
+        }
+        token => {
+            panic!("{}: Expected a literal, got `{}`", name, token.to_string());
+        }
+    }
+}
+
+fn expect_numeric_literal(name: &str, item: TokenTree) -> usize {
+    let literal = expect_literal(name, item).to_string();
+    let Ok(literal) = literal.parse::<usize>() else {
+        panic!("{}: Expected a literal integer, got {}", name, literal);
+    };
+    literal
+}
+
 /// Concatenate two identifiers.
 #[proc_macro]
 pub fn ident_concat(item: TokenStream) -> TokenStream {
@@ -141,24 +172,14 @@ pub fn hash(item: TokenStream) -> TokenStream {
     };
     let suffix = decode_literal_strings("suffix", suffix_group);
 
-    let Some(TokenTree::Literal(hash_length)) = item.next() else {
-        panic!("hash_length: Expected a literal integer");
-    };
-    let Ok(hash_length) = hash_length.to_string().parse::<usize>() else {
-        panic!("hash_length: Expected a literal integer");
-    };
+    let hash_length = expect_numeric_literal("hash_length", item.next().expect("hash_length: Missing argument"));
+    let max_length = expect_numeric_literal("max_length", item.next().expect("max_length: Missing argument"));
 
-    let Some(TokenTree::Literal(max_length)) = item.next() else {
-        panic!("max_length: Expected a literal integer");
-    };
-    let Ok(max_length) = max_length.to_string().parse::<usize>() else {
-        panic!("max_length: Expected a literal integer");
-    };
-
-    // Valid section chars: "..."
-    let Some(TokenTree::Literal(valid_section_chars)) = item.next() else {
-        panic!("valid_section_chars: Expected a literal string");
-    };
+    let valid_section_chars = expect_literal(
+        "valid_section_chars",
+        item.next()
+            .expect("valid_section_chars: Missing argument"),
+    );
     let valid_section_chars =
         decode_literal_string("valid_section_chars", valid_section_chars).into_bytes();
 

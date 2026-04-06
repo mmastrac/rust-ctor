@@ -10,6 +10,7 @@ std = []
 used_linker = []
 proc_macro = []
 no_warn_on_missing_unsafe = []
+priority = []
 
 [dev-dependencies]
 macrotest = "1"
