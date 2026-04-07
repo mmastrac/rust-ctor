@@ -1,6 +1,13 @@
 #![doc = include_str!("../README.md")]
 #![allow(unsafe_code)]
 
+
+/// Declarative forms of the `#[section]` and `#[in_section(...)]` macros.
+///
+/// The declarative forms wrap and parse a proc_macro-like syntax like so, and
+/// are identical in expansion to the undecorated procedural macros. The
+/// declarative forms support the same attribute parameters as the procedural
+/// macros.
 pub mod declarative {
     pub use crate::__in_section_parse as in_section;
     pub use crate::__section_parse as section;

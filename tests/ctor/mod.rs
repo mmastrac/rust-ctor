@@ -96,6 +96,7 @@ $ cargo build --quiet
 *
 $ cargo run --quiet
 ! 1
+! 10
 ! 2
 ! 3
 ! 4
@@ -104,7 +105,6 @@ $ cargo run --quiet
 ! 7
 ! 8
 ! 9
-! 10
 ! main
 "#
 );
