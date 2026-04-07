@@ -1,6 +1,6 @@
 [package]
 name = "link-section"
-version = "0.0.5"
+version = "0.0.7"
 authors.workspace = true
 edition = "2021"
 description = "Low-level link-section macro support for Rust"
@@ -14,7 +14,7 @@ default = ["proc_macro"]
 proc_macro = ["dep:link-section-proc-macro"]
 
 [dependencies]
-link-section-proc-macro = { path = "../link-section-proc-macro", version = "=0.0.5", optional = true }
+link-section-proc-macro = { workspace = true, optional = true }
 
 [dev-dependencies]
 

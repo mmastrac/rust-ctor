@@ -52,6 +52,14 @@ unsafe fn ctor() {
     let f = ctor;
 }
 
+#[ctor(priority = 1)]
+#[allow(unsafe_code)]
+unsafe fn ctor_priority_one() {
+    libc_println!("ctor_priority_one");
+    // We can still reference the function itself
+    let f = ctor_priority_one;
+}
+
 #[ctor]
 #[allow(unsafe_code)]
 unsafe fn ctor_unsafe() {

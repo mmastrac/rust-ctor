@@ -7,13 +7,13 @@ static STATIC_CTOR: STATIC_CTOR::Static<HashMap<u32, &'static str>> = STATIC_CTO
         #[used]
         #[allow(non_upper_case_globals, non_snake_case)]
         #[doc(hidden)]
-        static f: extern "C" fn() -> ::shared::__support::CtorRetType = {
+        static __CTOR_FUNCTION: extern "C" fn() -> ::shared::__support::CtorRetType = {
             #[allow(non_snake_case)]
-            extern "C" fn f() -> ::shared::__support::CtorRetType {
+            extern "C" fn __CTOR_FUNCTION_INNER() -> ::shared::__support::CtorRetType {
                 _ = &*STATIC_CTOR;
                 ::core::default::Default::default()
             }
-            f
+            __CTOR_FUNCTION_INNER
         };
         ::std::sync::OnceLock::new()
     },

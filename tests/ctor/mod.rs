@@ -85,6 +85,31 @@ $ cargo build --quiet
 );
 
 clitest!(
+    priority,
+    r#"
+set RUSTFLAGS "";
+cd "ctor/priority";
+defer {
+    $ cargo clean --quiet
+}
+$ cargo build --quiet
+*
+$ cargo run --quiet
+! 1
+! 2
+! 3
+! 4
+! 5
+! 6
+! 7
+! 8
+! 9
+! 10
+! main
+"#
+);
+
+clitest!(
     system_no_crt_static,
     r#"
 set RUSTFLAGS "-C target-feature=-crt-static";
@@ -158,6 +183,7 @@ $ cargo build
 ignore {
     !    Compiling %{DATA}
     !     Blocking waiting for file lock on package cache
+    !     Blocking waiting for file lock on shared package cache
 }
 ! warning: use of deprecated function `foo::ctor_without_unsafe_is_deprecated`: ctor deprecation note:
 !          

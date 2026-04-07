@@ -74,7 +74,7 @@ pub fn main() {
     eprintln!("address of TYPED_LINK_SECTION[1]: {:p}", &LINKED_U32_2);
     eprintln!("CODE_SECTION: {:?}", FN_ARRAY);
     eprintln!("{:?}", FN_ARRAY.as_slice());
-    for f in &FN_ARRAY {
+    for f in FN_ARRAY {
         eprintln!("f: {:?}", f);
         f();
     }

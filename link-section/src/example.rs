@@ -72,7 +72,7 @@ pub fn main() {
     eprintln!("TYPED_LINK_SECTION: {:?}", TYPED_LINK_SECTION);
     eprintln!("CODE_SECTION: {:?}", FN_ARRAY);
     eprintln!("{:?}", FN_ARRAY.as_slice());
-    for f in &FN_ARRAY {
+    for f in FN_ARRAY {
         eprintln!("f: {:?}", f);
         f();
     }

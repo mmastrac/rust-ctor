@@ -1,77 +1,114 @@
 #![doc = include_str!("../README.md")]
 #![allow(unsafe_code)]
 
+/// Declarative forms of the `#[section]` and `#[in_section(...)]` macros.
+///
+/// The declarative forms wrap and parse a proc_macro-like syntax like so, and
+/// are identical in expansion to the undecorated procedural macros. The
+/// declarative forms support the same attribute parameters as the procedural
+/// macros.
+pub mod declarative {
+    pub use crate::__in_section_parse as in_section;
+    pub use crate::__section_parse as section;
+}
+
 #[doc(hidden)]
 pub mod __support {
+    pub use crate::__add_section_link_attribute as add_section_link_attribute;
+    pub use crate::__def_section_name as def_section_name;
     pub use crate::__in_section_crate as in_section_crate;
     pub use crate::__in_section_parse as in_section_parse;
-    pub use crate::__section_name as section_name;
     pub use crate::__section_parse as section_parse;
 
+    #[cfg(feature = "proc_macro")]
     pub use link_section_proc_macro::hash;
+    #[cfg(feature = "proc_macro")]
     pub use link_section_proc_macro::ident_concat;
 
-    #[cfg(target_vendor = "apple")]
+    /// Declares the section_name macro.
     #[macro_export]
     #[doc(hidden)]
-    macro_rules! __section_name {
-        ($pattern:tt data $($rest:tt)*) => {
-            $crate::__support::section_name!(__ $pattern symbol "__DATA" $($rest)*);
-        };
-        ($pattern:tt code $($rest:tt)*) => {
-            $crate::__support::section_name!(__ $pattern symbol "__TEXT" $($rest)*);
-        };
-        ($pattern:tt $unknown_section:ident $($rest:tt)*) => {
-            const _: () = {
-                compile_error!("Unknown section type: `{}`", stringify!($unknown_section));
-            };
-        };
+    macro_rules! __def_section_name {
+        (
+            {$(
+                $__section:ident $__type:ident => $__prefix:tt __ $__suffix:tt;
+            )*}
 
-        (__ $pattern:tt symbol $section_prefix:literal bare $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix ",") () $name);
-        };
-        (__ $pattern:tt symbol $section_prefix:literal section $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix ",") (",regular,no_dead_strip") $name);
-        };
-        (__ $pattern:tt symbol $section_prefix:literal start $name:ident) => {
-            // \x01: "do not mangle" (ref https://github.com/rust-lang/rust-bindgen/issues/2935)
-            $crate::__support::section_name!(__ $pattern hash ("\x01section$start$" $section_prefix "$") () $name);
-        };
-        (__ $pattern:tt symbol $section_prefix:literal end $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ("\x01section$end$" $section_prefix "$") ()$name);
-        };
-
-        (__ $pattern:tt hash $prefix:tt $suffix:tt $name:ident) => {
-            $crate::__support::hash!($pattern $name $prefix $suffix 6 16 "_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
+            MAX_LENGTH = $__max_length:literal;
+            HASH_LENGTH = $__hash_length:literal;
+            VALID_SECTION_CHARS = $__valid_section_chars:literal;
+        ) => {
+            /// Internal macro for generating a section name.
+            #[macro_export]
+            #[doc(hidden)]
+            macro_rules! __section_name {
+                $(
+                    (raw $__section $__type $name:ident) => {
+                        concat!(concat! $__prefix, stringify!($name), concat! $__suffix);
+                    };
+                    ($pattern:tt $__section $__type $name:ident) => {
+                        $crate::__support::hash!($pattern $name ($__prefix) ($__suffix) $__hash_length $__max_length $__valid_section_chars);
+                    };
+                )*
+                ($pattern:tt $unknown_section:ident $unknown_type:ident $name:ident) => {
+                    const _: () = {
+                        compile_error!("Unknown section type: `{}`/`{}`", stringify!($unknown_section), stringify!($unknown_type));
+                    };
+                };
+            }
         };
     }
 
-    #[cfg(target_family = "wasm")]
-    #[macro_export]
+    #[cfg(feature = "proc_macro")]
     #[doc(hidden)]
-    macro_rules! __section_name {
-        ($pattern:tt data $($rest:tt)*) => {
-            $crate::__support::section_name!(__ $pattern symbol ".data" $($rest)*);
-        };
-        ($pattern:tt code $($rest:tt)*) => {
-            $crate::__support::section_name!(__ $pattern symbol ".text" $($rest)*);
-        };
-        ($pattern:tt $unknown_section:ident $($rest:tt)*) => {
-            const _: () = {
-                compile_error!("Unknown section type: `{}`", stringify!($unknown_section));
-            };
-        };
+    #[macro_export]
+    macro_rules! __add_section_link_attribute(
+        ($section:ident $type:ident $name:ident #[$attr:ident = __] $item:item) => {
+            $crate::__section_name!(
+                (#[$attr = __] #[allow(unsafe_code)] $item)
+                $section $type $name
+            );
+        }
+    );
 
-        (__ $pattern:tt symbol $section_prefix:literal bare $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".link_section.") () $name);
-        };
-        (__ $pattern:tt symbol $section_prefix:literal section $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix ".link_section.") () $name);
-        };
+    #[cfg(not(feature = "proc_macro"))]
+    #[doc(hidden)]
+    #[macro_export]
+    macro_rules! __add_section_link_attribute(
+        ($section:ident $type:ident $name:ident #[$attr:ident = __] $item:item) => {
+            #[$attr = $crate::__section_name!(
+                raw $section $type $name
+            )] $item
+        }
+    );
 
-        (__ $pattern:tt hash $prefix:tt $suffix:tt $name:ident) => {
-            $crate::__support::hash!($pattern $name $prefix $suffix 6 16 "_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
-        };
+    // \x01: "do not mangle" (ref https://github.com/rust-lang/rust-bindgen/issues/2935)
+    #[cfg(target_vendor = "apple")]
+    def_section_name! {
+        {
+            data bare => ("__DATA,") __ ();
+            code bare => ("__TEXT,") __ ();
+            data section => ("__DATA,") __ (",regular,no_dead_strip");
+            code section => ("__TEXT,") __ (",regular,no_dead_strip");
+            data start => ("\x01section$start$__DATA$") __ ();
+            data end => ("\x01section$end$__DATA$") __ ();
+        }
+        MAX_LENGTH = 16;
+        HASH_LENGTH = 6;
+        VALID_SECTION_CHARS = "_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    }
+
+    #[cfg(target_family = "wasm")]
+    def_section_name! {
+        {
+            data bare => (".data", ".link_section.") __ ();
+            data section => (".data", ".link_section.") __ ();
+            code bare => (".text", ".link_section.") __ ();
+            code section => (".text", ".link_section.") __ ();
+        }
+        MAX_LENGTH = 16;
+        HASH_LENGTH = 6;
+        VALID_SECTION_CHARS = "_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     }
 
     #[cfg(all(
@@ -79,73 +116,37 @@ pub mod __support {
         not(target_vendor = "pc"),
         not(target_family = "wasm")
     ))]
-    #[macro_export]
-    #[doc(hidden)]
-    macro_rules! __section_name {
-        ($pattern:tt data $($rest:tt)*) => {
-            $crate::__support::section_name!(__ $pattern symbol "_data" $($rest)*);
-        };
-        ($pattern:tt code $($rest:tt)*) => {
-            $crate::__support::section_name!(__ $pattern symbol "_text" $($rest)*);
-        };
-        ($pattern:tt $unknown_section:ident $($rest:tt)*) => {
-            const _: () = {
-                compile_error!("Unknown section type: `{}`", stringify!($unknown_section));
-            };
-        };
-
-        // Ideally we'd use .data and .text, but we cannot guarantee name
-        // sorting of sections in the linker script
-        (__ $pattern:tt symbol $section_prefix:literal bare $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix "_link_section_") () $name);
-        };
-        (__ $pattern:tt symbol $section_prefix:literal section $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix "_link_section_") () $name);
-        };
-        (__ $pattern:tt symbol $section_prefix:literal start $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ("__start_" $section_prefix "_link_section_") () $name);
-        };
-        (__ $pattern:tt symbol $section_prefix:literal end $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ("__stop_" $section_prefix "_link_section_") () $name);
-        };
-
-        (__ $pattern:tt hash $prefix:tt $suffix:tt $name:ident) => {
-            $crate::__support::hash!($pattern $name $prefix $suffix 10 64 "_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
-        };
+    def_section_name! {
+        {
+            data bare => ("_data", "_link_section_") __ ();
+            data section => ("_data", "_link_section_") __ ();
+            data start => ("__start_", "_data", "_link_section_") __ ();
+            data end => ("__stop_", "_data", "_link_section_") __ ();
+            code bare => ("_text", "_link_section_") __ ();
+            code section => ("_text", "_link_section_") __ ();
+            code start => ("__start_", "_text", "_link_section_") __ ();
+            code end => ("__stop_", "_text", "_link_section_") __ ();
+        }
+        MAX_LENGTH = 64;
+        HASH_LENGTH = 10;
+        VALID_SECTION_CHARS = "_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     }
 
     #[cfg(target_vendor = "pc")]
-    #[macro_export]
-    #[doc(hidden)]
-    macro_rules! __section_name {
-        ($pattern:tt data $($rest:tt)*) => {
-            $crate::__support::section_name!(__ $pattern symbol ".data" $($rest)*);
-        };
-        ($pattern:tt code $($rest:tt)*) => {
-            $crate::__support::section_name!(__ $pattern symbol ".text" $($rest)*);
-        };
-        ($pattern:tt $unknown_section:ident $($rest:tt)*) => {
-            const _: () = {
-                compile_error!("Unknown section type: `{}`", stringify!($unknown_section));
-            };
-        };
-
-        (__ $pattern:tt symbol $section_prefix:literal bare $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix "$") () $name);
-        };
-        (__ $pattern:tt symbol $section_prefix:literal section $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix "$") ("$b") $name);
-        };
-        (__ $pattern:tt symbol $section_prefix:literal start $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix "$") ("$a") $name);
-        };
-        (__ $pattern:tt symbol $section_prefix:literal end $name:ident) => {
-            $crate::__support::section_name!(__ $pattern hash ($section_prefix "$") ("$c") $name);
-        };
-
-        (__ $pattern:tt hash $prefix:tt $suffix:tt $name:ident) => {
-            $crate::__support::hash!($pattern $name $prefix $suffix 10 64 "_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
-        };
+    def_section_name! {
+        {
+            data bare => (".data", "$") __ ();
+            data section => (".data", "$") __ ("$b");
+            data start => (".data", "$") __ ("$a");
+            data end => (".data", "$") __ ("$c");
+            code bare => (".text", "$") __ ();
+            code section => (".text", "$") __ ("$b");
+            code start => (".text", "$") __ ("$a");
+            code end => (".text", "$") __ ("$c");
+        }
+        MAX_LENGTH = 64;
+        HASH_LENGTH = 10;
+        VALID_SECTION_CHARS = "_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     }
 
     /// Define a link section.
@@ -154,109 +155,151 @@ pub mod __support {
     macro_rules! __section_parse {
         // Has a generic (note that $generic eats the trailing semicolon)
         (#[section] $(#[$meta:meta])* $vis:vis static $ident:ident : $(:: $path_prefix:ident ::)? $($path:ident)::* < $($generic:tt)*) => {
-            $crate::__section_parse!(#[section] $(#[$meta])* $vis static $ident: ( $(:: $path_prefix ::)? $($path)::* < $($generic)*) ( $($generic)* ) generic);
+            $crate::__section_parse!(@parsed #[section] $(#[$meta])* $vis static $ident: ( $(:: $path_prefix ::)? $($path)::* < $($generic)*) ( $($generic)* ) __in_section_helper_macro_generic);
         };
         // No generic
         (#[section] $(#[$meta:meta])* $vis:vis static $ident:ident : $(:: $path_prefix:ident ::)? $($path:ident)::* ;) => {
-            $crate::__section_parse!(#[section] $(#[$meta])* $vis static $ident: ( $(:: $path_prefix ::)? $($path)::* ;) ( () > ; ) no_generic);
+            $crate::__section_parse!(@parsed #[section] $(#[$meta])* $vis static $ident: ( $(:: $path_prefix ::)? $($path)::* ;) ( () > ; ) __in_section_helper_macro_no_generic);
         };
         // Both end up here...
-        (#[section] $(#[$meta:meta])* $vis:vis static $ident:ident : ($ty:ty ;) ( $generic_ty:ty > ; ) $generic:ident) => {
-            /// Internal macro for parsing the section.
-            macro_rules! $ident {
-                (v=0 (item=$item:tt $rest:tt)) => {
-                    $crate::__support::in_section_crate!($ident $generic $ty, $item);
-                };
-                (v=$v:literal $rest:tt) => {
-                    const _: () = { compile_error!(concat!("link-section: Unsupported version: `", stringify!($v), "`")); };
-                };
+        (@parsed #[section] $(#[$meta:meta])* $vis:vis static $ident:ident : ($ty:ty ;) ( $generic_ty:ty > ; ) $generic_macro:ident) => {
+            /// Internal macro for parsing the section. This is exported with
+            /// the same name as the type below.
+            #[doc(hidden)]
+            $vis use $crate::$generic_macro as $ident;
+
+            $crate::__section_parse!(@generate #[section] $(#[$meta])* $vis static $ident: $ty, $generic_ty, $generic_macro);
+        };
+        (@generate #[section] $(#[$meta:meta])* $vis:vis static $ident:ident : $ty:ty, $generic_ty:ty, __in_section_helper_macro_generic) => {
+            $crate::__section_parse!(@generate #[section] $(#[$meta])* $vis static $ident: $ty, $generic_ty, __base_case__);
+
+            impl ::core::iter::IntoIterator for $ident {
+                type Item = &'static $generic_ty;
+                type IntoIter = ::core::slice::Iter<'static, $generic_ty>;
+                fn into_iter(self) -> Self::IntoIter {
+                    $ident.as_slice().iter()
+                }
+            }
+        };
+        (@generate #[section] $(#[$meta:meta])* $vis:vis static $ident:ident : $ty:ty, $generic_ty:ty, $generic_macro:ident) => {
+            $(#[$meta])*
+            #[allow(non_camel_case_types)]
+            $vis struct $ident;
+
+            impl $crate::__support::SectionFactory for $ident {
+                type SectionType = $crate::__support::Section< $ty, $generic_ty >;
+                type ItemType = $generic_ty;
             }
 
-            $(#[$meta])*
-            #[used]
-            #[cfg(target_family = "wasm")]
-            $vis static $ident: $crate::__support::Section< $ty, $generic_ty > = {
-                static __START: ::core::sync::atomic::AtomicPtr::<::core::marker::PhantomData<$generic_ty>> = unsafe {
-                    ::core::sync::atomic::AtomicPtr::<::core::marker::PhantomData<$generic_ty>>::new(::core::ptr::null_mut())
-                };
-                static __END: ::core::sync::atomic::AtomicPtr::<::core::marker::PhantomData<$generic_ty>> = unsafe {
-                    ::core::sync::atomic::AtomicPtr::<::core::marker::PhantomData<$generic_ty>>::new(::core::ptr::null_mut())
-                };
+            impl $crate::__support::SectionItemType for $ident {
+                type Item = $generic_ty;
+            }
 
-                $crate::__support::ident_concat!((#[no_mangle]pub extern "C" fn) (register_link_section_ $ident) ((data_ptr: *const u8, data_len: usize) {
-                    unsafe {
-                        __START.store(data_ptr as *mut ::core::marker::PhantomData<$generic_ty>, ::core::sync::atomic::Ordering::Relaxed);
-                        __END.store(data_ptr.add(data_len) as *mut ::core::marker::PhantomData<$generic_ty>, ::core::sync::atomic::Ordering::Relaxed);
-                    }
-                }));
+            impl ::core::fmt::Debug for $ident {
+                fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                    ::core::ops::Deref::deref(self).fmt(f)
+                }
+            }
 
-                $crate::__support::Section::new(
-                    stringify!($ident),
-                    &__START,
-                    &__END,
-                )
-            };
+            impl ::core::ops::Deref for $ident {
+                type Target = $ty;
+                fn deref(&self) -> &Self::Target {
+                    // Disable link sections for miri (`extern static `␁section$start$__DATA$CTOR` is not supported by Miri`)
+                    #[cfg(miri)]
+                    static SECTION: $crate::__support::Section< $ty, $generic_ty > = {
+                        $crate::__support::Section::new(
+                            {
+                                let name = $crate::__section_name!(
+                                    raw data bare $ident
+                                );
+                                name
+                            },
+                            std::ptr::null_mut(),
+                            std::ptr::null_mut(),
+                        )
+                    };
 
-            $(#[$meta])*
-            #[used]
-            #[cfg(not(target_family = "wasm"))]
-            $vis static $ident: $crate::__support::Section< $ty, $generic_ty > = $crate::__support::Section::new(
-                {
-                    $crate::__support::section_name!(
-                        (const fn section_name() -> &'static str { __ })
-                        data bare $ident
-                    );
+                    #[cfg(all(not(miri), target_family = "wasm"))]
+                    static SECTION: $crate::__support::Section< $ty, $generic_ty > = {
+                        static __START: ::core::sync::atomic::AtomicPtr::<::core::marker::PhantomData<$generic_ty>> = unsafe {
+                            ::core::sync::atomic::AtomicPtr::<::core::marker::PhantomData<$generic_ty>>::new(::core::ptr::null_mut())
+                        };
+                        static __END: ::core::sync::atomic::AtomicPtr::<::core::marker::PhantomData<$generic_ty>> = unsafe {
+                            ::core::sync::atomic::AtomicPtr::<::core::marker::PhantomData<$generic_ty>>::new(::core::ptr::null_mut())
+                        };
 
-                    section_name()
-                },
-                {
-                    #[cfg(not(target_vendor = "pc"))]
-                    $crate::__support::section_name!(
-                        (
-                            extern "C" {
-                                #[link_name = __] static __START: $crate::__support::SectionPtr<$generic_ty>;
+                        $crate::__support::ident_concat!((#[no_mangle]pub extern "C" fn) (register_link_section_ $ident) ((data_ptr: *const u8, data_len: usize) {
+                            unsafe {
+                                __START.store(data_ptr as *mut ::core::marker::PhantomData<$generic_ty>, ::core::sync::atomic::Ordering::Relaxed);
+                                __END.store(data_ptr.add(data_len) as *mut ::core::marker::PhantomData<$generic_ty>, ::core::sync::atomic::Ordering::Relaxed);
                             }
-                        )
-                        data start $ident
-                    );
+                        }));
 
-                    // Windows always sorts, so we can use alphabetical order
-                    #[cfg(target_vendor = "pc")]
-                    $crate::__support::section_name!(
-                        (
-                            #[link_section = __]
-                            #[used]
-                            static __START: [$generic_ty; 0] = [];
+                        $crate::__support::Section::new(
+                            {
+                                let name = $crate::__section_name!(
+                                    raw data bare $ident
+                                );
+                                name
+                            },
+                            &__START,
+                            &__END,
                         )
-                        data start $ident
-                    );
+                    };
 
-                    unsafe { &raw const __START as $crate::__support::SectionPtr<$generic_ty> }
-                },
-                {
-                    #[cfg(not(target_vendor = "pc"))]
-                    $crate::__support::section_name!(
-                        (
+                    #[cfg(all(not(miri), not(target_family = "wasm")))]
+                    static SECTION: $crate::__support::Section< $ty, $generic_ty > = $crate::__support::Section::new(
+                        {
+                            let name = $crate::__section_name!(
+                                raw data bare $ident
+                            );
+                            name
+                        },
+                        {
+                            #[cfg(not(target_vendor = "pc"))]
                             extern "C" {
-                                #[link_name = __] static __END: $crate::__support::SectionPtr<$generic_ty>;
+                                $crate::__support::add_section_link_attribute!(
+                                    data start $ident
+                                    #[link_name = __]
+                                    static __START: $crate::__support::SectionPtr<$generic_ty>;
+                                );
                             }
-                        )
-                        data end $ident
+
+                            // Windows always sorts, so we can use alphabetical order
+                            #[cfg(target_vendor = "pc")]
+                            $crate::__support::add_section_link_attribute!(
+                                data start $ident
+                                #[link_section = __]
+                                static __START: [$generic_ty; 0] = [];
+                            );
+
+                            unsafe { &raw const __START as $crate::__support::SectionPtr<$generic_ty> }
+                        },
+                        {
+                            #[cfg(not(target_vendor = "pc"))]
+                            extern "C" {
+                                $crate::__support::add_section_link_attribute!(
+                                    data end $ident
+                                    #[link_name = __]
+                                    static __END: $crate::__support::SectionPtr<$generic_ty>;
+                                );
+                            }
+
+                            #[cfg(target_vendor = "pc")]
+                            $crate::__support::add_section_link_attribute!(
+                                data end $ident
+                                #[link_section = __]
+                                static __END: [$generic_ty; 0] = [];
+                            );
+
+                            unsafe { &raw const __END as $crate::__support::SectionPtr<$generic_ty> }
+                        },
                     );
 
-                    #[cfg(target_vendor = "pc")]
-                    $crate::__support::section_name!(
-                        (
-                            #[link_section = __]
-                            #[used]
-                            static __END: [$generic_ty; 0] = [];
-                        )
-                        data end $ident
-                    );
+                    &SECTION
+                }
+            }
 
-                    unsafe { &raw const __END as $crate::__support::SectionPtr<$generic_ty> }
-                },
-            );
         };
     }
 
@@ -264,10 +307,61 @@ pub mod __support {
     #[macro_export]
     #[doc(hidden)]
     macro_rules! __in_section_parse {
-        (#[in_section($name:path)] $($item:tt)*) => {
-            $name ! (
-                v=0 (item=($($item)*) ())
+        // Needs to handle:
+        //  <name>
+        //  :: <name>
+        //  <path> :: <name>
+        //  :: <path> :: <name>
+        //  etc...
+        (#[in_section( $($path:tt)* )] $($item:tt)*) => {
+            $crate::__support::in_section_parse!(path=[$($path)*] #[in_section($($path)*)] $($item)*);
+        };
+        (path=[$orig_path:path] #[in_section($name:ident)] $($item:tt)*) => {
+            $orig_path ! (
+                v=0 (name=$name (path=[$orig_path] (item=($($item)*) ())))
             );
+        };
+        (path=[$orig_path:path] #[in_section(:: $($path:ident)::*)] $($item:tt)*) => {
+            $crate::__support::in_section_parse!(path=[$orig_path] #[in_section($($path)::*)] $($item)*);
+        };
+        (path=[$orig_path:path] #[in_section($prefix:ident :: $($path:ident)::*)] $($item:tt)*) => {
+            $crate::__support::in_section_parse!(path=[$orig_path] #[in_section($($path)::*)] $($item)*);
+        };
+    }
+
+    #[macro_export]
+    #[doc(hidden)]
+    macro_rules! __in_section_helper_macro_generic {
+        (v=0 (name=$ident:ident (path=[$path:path] (item=$item:tt $rest:tt)))) => {
+            $crate::__support::in_section_crate!($ident, $path, generic, $item);
+        };
+        (v=$v:literal $rest:tt) => {
+            const _: () = {
+                compile_error!(concat!(
+                    "link-section: Unsupported version: `",
+                    stringify!($v),
+                    "`: ",
+                    stringify!($rest)
+                ));
+            };
+        };
+    }
+
+    #[macro_export]
+    #[doc(hidden)]
+    macro_rules! __in_section_helper_macro_no_generic {
+        (v=0 (name=$ident:ident (path=[$path:path] (item=$item:tt $rest:tt)))) => {
+            $crate::__support::in_section_crate!($ident, $path, no_generic, $item);
+        };
+        (v=$v:literal $rest:tt) => {
+            const _: () = {
+                compile_error!(concat!(
+                    "link-section: Unsupported version: `",
+                    stringify!($v),
+                    "`: ",
+                    stringify!($rest)
+                ));
+            };
         };
     }
 
@@ -275,58 +369,70 @@ pub mod __support {
     #[doc(hidden)]
     #[allow(unknown_lints, edition_2024_expr_fragment_specifier)]
     macro_rules! __in_section_crate {
-        ($ident:ident generic $section_ty:ty, ($(#[$meta:meta])* $vis:vis fn $ident_fn:ident($($args:tt)*) $(-> $ret:ty)? $body:block)) => {
-            $crate::__support::section_name!(
-                (
-                    // Split the function into a static item and a function pointer
-                    $(#[$meta])*
-                    #[used]
+        ($ident:ident, $path:path, generic, ($(#[$meta:meta])* $vis:vis fn $ident_fn:ident($($args:tt)*) $(-> $ret:ty)? $body:block)) => {
+            $crate::__add_section_link_attribute!(
+                data section $ident
+                #[link_section = __]
+                // Split the function into a static item and a function pointer
+                $(#[$meta])*
+                #[used]
+                #[allow(non_upper_case_globals)]
+                $vis static $ident_fn: <$path as $crate::__support::SectionItemType>::Item =
+                    {
+                        fn $ident_fn($($args)*) $(-> $ret)? $body
+                        $ident_fn as _
+                    };
+            );
+        };
+        ($ident:ident, $path:path, generic, ($(#[$meta:meta])* $vis:vis static _ : $ty:ty = $value:expr;)) => {
+            const _: () = {
+                $crate::__add_section_link_attribute!(
+                    data section $ident
                     #[link_section = __]
-                    #[allow(non_upper_case_globals)]
-                    $vis static $ident_fn: <$section_ty as $crate::__support::SectionItemType>::Item =
-                        {
-                            fn $ident_fn($($args)*) $(-> $ret)? $body
-                            $ident_fn as <$section_ty as $crate::__support::SectionItemType>::Item
-                        };
-                )
+                    $(#[$meta])* #[used] $vis static ANONYMOUS: <$path as $crate::__support::SectionItemType>::Item = $value;
+                );
+            };
+        };
+        ($ident:ident, $path:path, generic, ($(#[$meta:meta])* $vis:vis static $ident_static:ident : $ty:ty = $value:expr;)) => {
+            $crate::__add_section_link_attribute!(
                 data section $ident
+                #[link_section = __]
+                $(#[$meta])* #[used] $vis static $ident_static: <$path as $crate::__support::SectionItemType>::Item = $value;
             );
         };
-        ($ident:ident generic $section_ty:ty, ($(#[$meta:meta])* $vis:vis static $ident_static:ident : $ty:ty = $value:expr;)) => {
-            $crate::__support::section_name!(
-                ($(#[$meta])* #[link_section = __] #[used] $vis static $ident_static: <$section_ty as $crate::__support::SectionItemType>::Item = $value;)
+        ($ident:ident, $path:path, no_generic, ($(#[$meta:meta])* $vis:vis fn $ident_fn:ident($($args:tt)*) $(-> $ret:ty)? $body:block)) => {
+            $crate::__add_section_link_attribute!(
                 data section $ident
+                #[link_section = __]
+                $(#[$meta])*
+                #[used]
+                #[allow(non_upper_case_globals)]
+                $vis static $ident_fn: fn($($args)*) $(-> $ret)? =
+                    {
+                        $crate::__section_name!(
+                            (#[link_section = __] fn $ident_fn($($args)*) $(-> $ret)? $body)
+                            code section $ident
+                        );
+                        $ident_fn
+                    };
             );
         };
-        ($ident:ident no_generic $section_ty:ty, ($(#[$meta:meta])* $vis:vis fn $ident_fn:ident($($args:tt)*) $(-> $ret:ty)? $body:block)) => {
-            $crate::__support::section_name!(
-                (
-                    $(#[$meta])*
-                    #[link_section = __]
-                    #[used]
-                    #[allow(non_upper_case_globals)]
-                    $vis static $ident_fn: fn($($args)*) $(-> $ret)? =
-                        {
-                            $crate::__support::section_name!(
-                                (#[link_section = __] fn $ident_fn($($args)*) $(-> $ret)? $body)
-                                code section $ident
-                            );
-                            $ident_fn
-                        };
-                )
+        ($ident:ident, $path:path, no_generic, ($(#[$meta:meta])* $item:item)) => {
+            $crate::__add_section_link_attribute!(
                 data section $ident
-            );
-        };
-        ($ident:ident no_generic $section_ty:ty, ($(#[$meta:meta])* $item:item)) => {
-            $crate::__support::section_name!(
-                ($(#[$meta])* #[link_section = __] #[used] $item)
-                data section $ident
+                #[link_section = __]
+                $(#[$meta])* #[used] $item
             );
         };
     }
 
     pub trait SectionItemType {
         type Item;
+    }
+
+    pub trait SectionFactory {
+        type SectionType;
+        type ItemType;
     }
 
     #[repr(C)]
@@ -417,6 +523,7 @@ pub mod __support {
 ///     println!("data_function");
 /// }
 /// ```
+#[cfg(feature = "proc_macro")]
 pub use ::link_section_proc_macro::section;
 
 /// Place an item into a link section.
@@ -425,6 +532,7 @@ pub use ::link_section_proc_macro::section;
 ///
 /// As a special case, since function declarations by themselves are not sized,
 /// functions in typed sections are split and stored as function pointers.
+#[cfg(feature = "proc_macro")]
 pub use ::link_section_proc_macro::in_section;
 
 /// An untyped link section that can be used to store any type. The underlying
@@ -510,20 +618,11 @@ pub struct TypedSection<T: 'static> {
 impl<T: 'static> TypedSection<T> {
     /// The stride of the typed section.
     pub const fn stride(&self) -> usize {
-        // Compute the size required for C to store two instances of T side-by-side.
-        // TODO: Can we just use align_of/size_of?
-        #[repr(C)]
-        struct Sizer<T> {
-            t1: T,
-            t2: T,
-            t3: T,
-        }
-
-        let sizer = ::core::mem::MaybeUninit::<Sizer<T>>::uninit();
-        let ptr: *const Sizer<T> = sizer.as_ptr();
-        let start = ptr as *const u8;
-        let end = unsafe { ::core::ptr::addr_of!((*ptr).t3) } as *const u8;
-        unsafe { end.offset_from(start) as usize / 2 }
+        assert!(
+            ::core::mem::size_of::<T>() > 0
+                && ::core::mem::size_of::<T>() * 2 == ::core::mem::size_of::<[T; 2]>()
+        );
+        ::core::mem::size_of::<T>()
     }
 
     /// The start address of the section.
@@ -579,20 +678,11 @@ impl<T: 'static> TypedSection<T> {
 impl<T: 'static> TypedSection<T> {
     /// The stride of the typed section.
     pub const fn stride(&self) -> usize {
-        // Compute the size required for C to store two instances of T side-by-side.
-        // TODO: Can we just use align_of/size_of?
-        #[repr(C)]
-        struct Sizer<T> {
-            t1: T,
-            t2: T,
-            t3: T,
-        }
-
-        let sizer = ::core::mem::MaybeUninit::<Sizer<T>>::uninit();
-        let ptr: *const Sizer<T> = sizer.as_ptr();
-        let start = ptr as *const u8;
-        let end = unsafe { ::core::ptr::addr_of!((*ptr).t3) } as *const u8;
-        unsafe { end.offset_from(start) as usize / 2 }
+        assert!(
+            ::core::mem::size_of::<T>() > 0
+                && ::core::mem::size_of::<T>() * 2 == ::core::mem::size_of::<[T; 2]>()
+        );
+        ::core::mem::size_of::<T>()
     }
 
     /// The start address of the section.
@@ -626,6 +716,21 @@ impl<T: 'static> TypedSection<T> {
             &[]
         } else {
             unsafe { ::core::slice::from_raw_parts(self.start_ptr(), self.len()) }
+        }
+    }
+
+    /// The section as a mutable slice.
+    ///
+    /// # Safety
+    ///
+    /// This cannot be safely used and is _absolutely unsound_ if any other
+    /// slices are live.
+    #[allow(clippy::mut_from_ref)]
+    pub unsafe fn as_mut_slice(&self) -> &mut [T] {
+        if self.is_empty() {
+            &mut []
+        } else {
+            unsafe { ::core::slice::from_raw_parts_mut(self.start_ptr() as *mut T, self.len()) }
         }
     }
 }

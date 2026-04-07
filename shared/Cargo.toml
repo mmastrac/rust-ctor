@@ -5,11 +5,15 @@ edition = "2018"
 publish = false
 
 [features]
-default = ["std"]
+default = ["std", "priority"]
 std = []
 used_linker = []
 proc_macro = []
 no_warn_on_missing_unsafe = []
+priority = []
+
+[dependencies]
+link-section = { workspace = true, default-features = false }
 
 [dev-dependencies]
 macrotest = "1"
