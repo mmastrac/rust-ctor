@@ -569,7 +569,7 @@ macro_rules! __ctor_call {
             static _: (fn(), u16) = ({ fn ctor() { $($block)+ }; ctor }, $priority);
         );
         #[cfg(not(target_vendor = "apple"))]
-        $crate::__support::ctor_call!(@next [features=$features, { $($block)+ }], $priority);
+        $crate::__support::ctor_call!(@next [features=$features, { $($block)+ }], (".", $priority));
     };
     (@next [features=$features:tt, { $($block:tt)+ }], $priority:tt) => {
         $crate::__support::ctor_link_section!(
