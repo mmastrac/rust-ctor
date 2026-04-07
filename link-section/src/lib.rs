@@ -735,6 +735,19 @@ impl<T: 'static> TypedSection<T> {
     }
 }
 
+// Non-const, shared functions
+impl<T: 'static> TypedSection<T> {
+    /// The offset of the item in the section, if it is in the section.
+    pub fn offset_of(&self, item: &T) -> Option<usize> {
+        let ptr = item as *const T;
+        if ptr < self.start_ptr() || ptr >= self.end_ptr() {
+            None
+        } else {
+            Some(unsafe { ptr.offset_from(self.start_ptr()) as usize })
+        }
+    }
+}
+
 impl<'a, T> ::core::iter::IntoIterator for &'a TypedSection<T> {
     type Item = &'a T;
     type IntoIter = ::core::slice::Iter<'a, T>;

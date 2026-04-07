@@ -70,13 +70,16 @@ pub fn main() {
     eprintln!("LINK_SECTION: {:?}", LINK_SECTION);
     link_section_function();
     eprintln!("TYPED_LINK_SECTION: {:?}", TYPED_LINK_SECTION);
-    eprintln!("address of TYPED_LINK_SECTION[0]: {:p}", &LINKED_U32);
-    eprintln!("address of TYPED_LINK_SECTION[1]: {:p}", &LINKED_U32_2);
+    assert!(TYPED_LINK_SECTION.offset_of(&LINKED_U32).is_some());
+    assert!(TYPED_LINK_SECTION.offset_of(&LINKED_U32_2).is_some());
+    let random_u32 = 1234567890;
+    assert!(TYPED_LINK_SECTION.offset_of(&random_u32).is_none());
     eprintln!("CODE_SECTION: {:?}", FN_ARRAY);
     eprintln!("{:?}", FN_ARRAY.as_slice());
     for f in FN_ARRAY {
         eprintln!("f: {:?}", f);
         f();
+        assert!(FN_ARRAY.offset_of(f).is_some());
     }
     eprintln!("DEBUGGABLES: {:?}", DEBUGGABLES.as_slice());
 }
