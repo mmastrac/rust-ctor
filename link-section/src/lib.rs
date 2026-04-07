@@ -65,7 +65,7 @@ pub mod __support {
     macro_rules! __add_section_link_attribute(
         ($section:ident $type:ident $name:ident #[$attr:ident = __] $item:item) => {
             $crate::__section_name!(
-                (#[$attr = __] $item)
+                (#[$attr = __] #[allow(unsafe_code)] $item)
                 $section $type $name
             );
         }
