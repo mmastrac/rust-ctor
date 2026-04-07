@@ -25,10 +25,12 @@ authors = ["Matt Mastracci <matthew@mastracci.com>"]
 license = "Apache-2.0 OR MIT"
 repository = "https://github.com/mmastrac/rust-ctor"
 
-[patch.crates-io]
+[workspace.dependencies]
 ctor = { path = "ctor" }
 dtor = { path = "dtor" }
-dtor-proc-macro = { path = "dtor-proc-macro" }
-ctor-proc-macro = { path = "ctor-proc-macro" }
-link-section = { path = "link-section" }
-link-section-proc-macro = { path = "link-section-proc-macro" }
+link-section = { path = "link-section", version = "=0.0.7" }
+
+# Bump all these together
+dtor-proc-macro = { path = "dtor-proc-macro", version = "=0.0.10" }
+ctor-proc-macro = { path = "ctor-proc-macro", version = "=0.0.10" }
+link-section-proc-macro = { path = "link-section-proc-macro", version = "=0.0.10" }

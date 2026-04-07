@@ -31,9 +31,9 @@ used_linker = ["dtor?/used_linker"]
 no_warn_on_missing_unsafe = ["dtor?/no_warn_on_missing_unsafe"]
 
 [dependencies]
-ctor-proc-macro = { version = "=0.0.7", optional = true }
-dtor = { path = "../dtor", version = "0.4.0", default-features = false, optional = true }
-link-section = { path = "../link-section", version = "=0.0.6", optional = true, default-features = false }
+ctor-proc-macro = { workspace = true, optional = true }
+dtor = { workspace = true, default-features = false, optional = true }
+link-section = { workspace = true, optional = true, default-features = false }
 
 [dev-dependencies]
 libc-print = "0.1"

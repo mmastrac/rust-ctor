@@ -13,7 +13,7 @@ no_warn_on_missing_unsafe = []
 priority = []
 
 [dependencies]
-link-section = { path = "../link-section", version = "=0.0.6", default-features = false }
+link-section = { workspace = true, default-features = false }
 
 [dev-dependencies]
 macrotest = "1"

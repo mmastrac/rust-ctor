@@ -173,10 +173,20 @@ dependencies = [
 
 [[package]]
 name = "ctor"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "352d39c2f7bef1d6ad73db6f5160efcaed66d94ef8c6c573a8410c00bf909a98"
+dependencies = [
+ "ctor-proc-macro 0.0.7",
+ "dtor 0.3.0",
+]
+
+[[package]]
+name = "ctor"
 version = "0.9.0"
 dependencies = [
- "ctor-proc-macro",
- "dtor",
+ "ctor-proc-macro 0.0.10",
+ "dtor 0.4.0",
  "libc-print",
  "link-section",
 ]
@@ -184,6 +194,12 @@ dependencies = [
 [[package]]
 name = "ctor-proc-macro"
 version = "0.0.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "52560adf09603e58c9a7ee1fe1dcb95a16927b17c127f0ac02d6e768a0e25bc1"
+
+[[package]]
+name = "ctor-proc-macro"
+version = "0.0.10"
 
 [[package]]
 name = "derive-io"
@@ -255,9 +271,18 @@ dependencies = [
 
 [[package]]
 name = "dtor"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f1057d6c64987086ff8ed0fd3fbf377a6b7d205cc7715868cd401705f715cbe4"
+dependencies = [
+ "dtor-proc-macro 0.0.6",
+]
+
+[[package]]
+name = "dtor"
 version = "0.4.0"
 dependencies = [
- "dtor-proc-macro",
+ "dtor-proc-macro 0.0.10",
  "libc-print",
  "link-section",
 ]
@@ -265,6 +290,12 @@ dependencies = [
 [[package]]
 name = "dtor-proc-macro"
 version = "0.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f678cf4a922c215c63e0de95eb1ff08a958a81d47e485cf9da1e27bf6305cfa5"
+
+[[package]]
+name = "dtor-proc-macro"
+version = "0.0.10"
 
 [[package]]
 name = "dunce"
@@ -459,14 +490,14 @@ dependencies = [
 
 [[package]]
 name = "link-section"
-version = "0.0.6"
+version = "0.0.7"
 dependencies = [
  "link-section-proc-macro",
 ]
 
 [[package]]
 name = "link-section-proc-macro"
-version = "0.0.6"
+version = "0.0.10"
 
 [[package]]
 name = "linux-raw-sys"
@@ -750,7 +781,7 @@ dependencies = [
 name = "shared"
 version = "0.1.0"
 dependencies = [
- "ctor",
+ "ctor 0.8.0",
  "link-section",
  "macrotest",
  "trybuild",
