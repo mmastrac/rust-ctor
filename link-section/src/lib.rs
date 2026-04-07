@@ -1,7 +1,6 @@
 #![doc = include_str!("../README.md")]
 #![allow(unsafe_code)]
 
-
 /// Declarative forms of the `#[section]` and `#[in_section(...)]` macros.
 ///
 /// The declarative forms wrap and parse a proc_macro-like syntax like so, and

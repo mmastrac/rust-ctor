@@ -3,7 +3,7 @@
 
 use ctor::ctor;
 
-#[ctor(unsafe, priority = 1)]
+#[ctor(unsafe, priority = 01)]
 unsafe fn priority_1() {
     println!("1");
 }
