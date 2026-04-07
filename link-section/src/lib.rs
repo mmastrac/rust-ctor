@@ -722,8 +722,13 @@ impl<T: 'static> TypedSection<T> {
         }
     }
 
-    /// The section as a mutable slice. This cannot be safely used and is
-    /// absolutely unsound if any other slices are live.
+    /// The section as a mutable slice.
+    /// 
+    /// # Safety
+    /// 
+    /// This cannot be safely used and is _absolutely unsound_ if any other
+    /// slices are live.
+    #[allow(clippy::mut_from_ref)]
     pub unsafe fn as_mut_slice(&self) -> &mut [T] {
         if self.is_empty() {
             &mut []
