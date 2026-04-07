@@ -29,7 +29,7 @@ version = "0.0.10"
 
 [[package]]
 name = "link-section"
-version = "0.0.7"
+version = "0.0.8"
 
 [[package]]
 name = "tests-edition-2024"
