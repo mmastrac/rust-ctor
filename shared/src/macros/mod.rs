@@ -36,20 +36,24 @@ pub mod __support {
     /// Define a link section when using the priority parameter on Apple
     /// targets.
     #[cfg(all(feature = "priority", target_vendor = "apple"))]
-    link_section::declarative::section!(
-        #[section]
-        pub static CTOR: link_section::TypedSection<(fn(), u16)>;
-    );
+    mod explicit_ctor {
+        link_section::declarative::section!(
+            #[section]
+            pub static CTOR: link_section::TypedSection<(fn(), u16)>;
+        );
 
-    #[cfg(all(feature = "priority", target_vendor = "apple"))]
-    ctor_call!(features = [], {
-        unsafe {
-            CTOR.as_mut_slice().sort_unstable_by_key(|(_, priority)| *priority);
-        }
-        for (ctor, _) in CTOR {
-            ctor();
-        }
-    });
+        ctor_call!(features = [], {
+            // SAFETY: The CTOR section is only accessed in this function, and
+            // this function is only ever called once.
+            #[allow(unsafe_code)]
+            unsafe {
+                CTOR.as_mut_slice().sort_unstable_by_key(|(_, priority)| *priority);
+            }
+            for (ctor, _) in CTOR {
+                ctor();
+            }
+        });
+    }
 }
 
 /// Parse a `#[ctor]`-annotated item as if it were a proc-macro.
