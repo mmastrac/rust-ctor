@@ -620,7 +620,7 @@ impl<T: 'static> TypedSection<T> {
     pub const fn stride(&self) -> usize {
         assert!(
             ::core::mem::size_of::<T>() > 0
-                && ::core::mem::size_of::<T>() * 2 == ::core::mem::align_of::<[T; 2]>()
+                && ::core::mem::size_of::<T>() * 2 == ::core::mem::size_of::<[T; 2]>()
         );
         ::core::mem::size_of::<T>()
     }
@@ -680,7 +680,7 @@ impl<T: 'static> TypedSection<T> {
     pub const fn stride(&self) -> usize {
         assert!(
             ::core::mem::size_of::<T>() > 0
-                && ::core::mem::size_of::<T>() * 2 == ::core::mem::align_of::<[T; 2]>()
+                && ::core::mem::size_of::<T>() * 2 == ::core::mem::size_of::<[T; 2]>()
         );
         ::core::mem::size_of::<T>()
     }
