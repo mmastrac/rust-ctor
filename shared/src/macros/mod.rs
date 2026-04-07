@@ -701,7 +701,7 @@ macro_rules! __ctor_link_section_attr {
     };
 }
 
-#[cfg(any(target_os = "windows", target_vendor = "apple"))]
+#[cfg(target_vendor = "apple")]
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __priority_to_literal {
@@ -710,7 +710,7 @@ macro_rules! __priority_to_literal {
     };
 }
 
-#[cfg(not(any(target_os = "windows", target_vendor = "apple")))]
+#[cfg(not(target_vendor = "apple"))]
 #[doc(hidden)]
 #[macro_export]
 macro_rules! __priority_to_literal {
