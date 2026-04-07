@@ -91,7 +91,8 @@ pub mod declarative {
 ///  - `anonymous`: Do not give the constructor a name in the generated code
 ///    (allows for multiple constructors with the same name).
 ///  - `priority = N`: The priority of the constructor. Higher-N-priority
-///    constructors are run last. This is not supported on all platforms.
+///    constructors are run last. `N` must be between 0 and 999 for ordering
+///    guarantees (N >= 1000 ordering is platform-defined).
 ///
 /// # Examples
 ///
