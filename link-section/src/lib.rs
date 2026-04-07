@@ -269,7 +269,7 @@ pub mod __support {
                             #[cfg(target_vendor = "pc")]
                             $crate::__support::add_section_link_attribute!(
                                 data start $ident
-                                #[link_name = __]
+                                #[link_section = __]
                                 static __START: [$generic_ty; 0] = [];
                             );
 
@@ -288,7 +288,7 @@ pub mod __support {
                             #[cfg(target_vendor = "pc")]
                             $crate::__support::add_section_link_attribute!(
                                 data end $ident
-                                #[link_name = __]
+                                #[link_section = __]
                                 static __END: [$generic_ty; 0] = [];
                             );
 
