@@ -204,7 +204,22 @@ pub mod __support {
             impl ::core::ops::Deref for $ident {
                 type Target = $ty;
                 fn deref(&self) -> &Self::Target {
-                    #[cfg(target_family = "wasm")]
+                    // Disable link sections for miri (`extern static `␁section$start$__DATA$CTOR` is not supported by Miri`)
+                    #[cfg(miri)]
+                    static SECTION: $crate::__support::Section< $ty, $generic_ty > = {
+                        $crate::__support::Section::new(
+                            {
+                                let name = $crate::__section_name!(
+                                    raw data bare $ident
+                                );
+                                name
+                            },
+                            std::ptr::null_mut(),
+                            std::ptr::null_mut(),
+                        )
+                    };
+
+                    #[cfg(all(not(miri), target_family = "wasm"))]
                     static SECTION: $crate::__support::Section< $ty, $generic_ty > = {
                         static __START: ::core::sync::atomic::AtomicPtr::<::core::marker::PhantomData<$generic_ty>> = unsafe {
                             ::core::sync::atomic::AtomicPtr::<::core::marker::PhantomData<$generic_ty>>::new(::core::ptr::null_mut())
@@ -232,7 +247,7 @@ pub mod __support {
                         )
                     };
 
-                    #[cfg(not(target_family = "wasm"))]
+                    #[cfg(all(not(miri), not(target_family = "wasm")))]
                     static SECTION: $crate::__support::Section< $ty, $generic_ty > = $crate::__support::Section::new(
                         {
                             let name = $crate::__section_name!(
