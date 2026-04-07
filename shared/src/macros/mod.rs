@@ -28,6 +28,7 @@ pub mod __support {
     pub use crate::__if_has_feature as if_has_feature;
     pub use crate::__if_unsafe as if_unsafe;
     pub use crate::__unify_features as unify_features;
+    pub use ::link_section;
 
     /// Define a link section when using the priority parameter on Apple
     /// targets.
@@ -478,6 +479,8 @@ macro_rules! __dtor_entry {
         };
     };
     (named, features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=fn $ident:ident() $block:block) => {
+
+
         $(#[$fnmeta])*
         #[allow(unused)]
         $($vis)* $($unsafe)? fn $ident() {
@@ -547,7 +550,19 @@ macro_rules! __ctor_call {
     (features=$features:tt, { $($block:tt)+ } ) => {
         $crate::__support::get_priority!($crate::__support::ctor_call, [features=$features, { $($block)+ }], $features);
     };
+    ([features=$features:tt, { $($block:tt)+ }], ("")) => {
+        $crate::__support::ctor_call!(@next [features=$features, { $($block)+ }], (""));
+    };
     ([features=$features:tt, { $($block:tt)+ }], $priority:tt) => {
+        #[cfg(target_vendor = "apple")]
+        $crate::__support::link_section::declarative::in_section!(
+            #[in_section($crate::__support::CTOR)]
+            static _: (fn(), u16) = (fn() { $($block)+ }, $priority);
+        );
+        #[cfg(not(target_vendor = "apple"))]
+        $crate::__support::ctor_call!(@next [features=$features, { $($block)+ }], $priority);
+    };
+    (@next [features=$features:tt, { $($block:tt)+ }], $priority:tt) => {
         $crate::__support::ctor_link_section!(
             array,
             features=$features,

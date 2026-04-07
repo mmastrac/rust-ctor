@@ -12,6 +12,9 @@ proc_macro = []
 no_warn_on_missing_unsafe = []
 priority = []
 
+[dependencies]
+link-section = { path = "../link-section", version = "=0.0.6", default-features = false }
+
 [dev-dependencies]
 macrotest = "1"
 trybuild = "1"

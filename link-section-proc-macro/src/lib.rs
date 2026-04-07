@@ -98,7 +98,11 @@ fn expect_literal(name: &str, item: TokenTree) -> Literal {
             }
             let tokens = group.stream().into_iter().collect::<Vec<_>>();
             if tokens.len() != 1 {
-                panic!("{}: Expected a single literal, got `{}`", name, tokens.len());
+                panic!(
+                    "{}: Expected a single literal, got `{}`",
+                    name,
+                    tokens.len()
+                );
             }
             expect_literal(name, tokens.into_iter().next().unwrap())
         }
@@ -175,13 +179,18 @@ pub fn hash(item: TokenStream) -> TokenStream {
     };
     let suffix = decode_literal_strings("suffix", suffix_group);
 
-    let hash_length = expect_numeric_literal("hash_length", item.next().expect("hash_length: Missing argument"));
-    let max_length = expect_numeric_literal("max_length", item.next().expect("max_length: Missing argument"));
+    let hash_length = expect_numeric_literal(
+        "hash_length",
+        item.next().expect("hash_length: Missing argument"),
+    );
+    let max_length = expect_numeric_literal(
+        "max_length",
+        item.next().expect("max_length: Missing argument"),
+    );
 
     let valid_section_chars = expect_literal(
         "valid_section_chars",
-        item.next()
-            .expect("valid_section_chars: Missing argument"),
+        item.next().expect("valid_section_chars: Missing argument"),
     );
     let valid_section_chars =
         decode_literal_string("valid_section_chars", valid_section_chars).into_bytes();
