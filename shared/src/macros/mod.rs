@@ -36,13 +36,14 @@ pub mod __support {
     /// Define a link section when using the priority parameter on Apple
     /// targets.
     #[cfg(all(feature = "priority", target_vendor = "apple"))]
-    mod explicit_ctor {
+    #[doc(hidden)]
+    pub mod explicit_ctor {
         link_section::declarative::section!(
             #[section]
             pub static CTOR: link_section::TypedSection<(fn(), u16)>;
         );
 
-        ctor_call!(features = [], {
+        crate::__support::ctor_call!(features = [], {
             // SAFETY: The CTOR section is only accessed in this function, and
             // this function is only ever called once.
             #[allow(unsafe_code)]
@@ -575,7 +576,7 @@ macro_rules! __ctor_call {
     ([features=$features:tt, { $($block:tt)+ }], (".", $priority:literal)) => {
         #[cfg(target_vendor = "apple")]
         $crate::__support::link_section::declarative::in_section!(
-            #[in_section($crate::__support::CTOR)]
+            #[in_section($crate::__support::explicit_ctor::CTOR)]
             static _: (fn(), u16) = ({ fn ctor() { $($block)+ }; ctor }, $priority);
         );
         #[cfg(not(target_vendor = "apple"))]
@@ -690,7 +691,11 @@ macro_rules! __ctor_link_section_attr {
         $item
     };
     ([$( [$cond:meta, ($($literal:tt)*) ] ),+], $item:item) => {
+        #[cfg(not(clippy))]
         $( #[cfg_attr($cond, link_section = $($literal)*)] )+
+        $item
+
+        #[cfg(clippy)]
         $item
     };
 }

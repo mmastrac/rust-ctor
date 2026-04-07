@@ -13,7 +13,7 @@ const _: () = {
             const _: () = {
                 #[link_section = "__DATA,CTOR,regular,no_dead_strip"]
                 #[used]
-                static ANONYMOUS: <::shared::__support::CTOR as ::link_section::__support::SectionItemType>::Item = (
+                static ANONYMOUS: <::shared::__support::explicit_ctor::CTOR as ::link_section::__support::SectionItemType>::Item = (
                     {
                         fn ctor() {
                             unsafe {
