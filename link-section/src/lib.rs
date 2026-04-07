@@ -603,20 +603,11 @@ pub struct TypedSection<T: 'static> {
 impl<T: 'static> TypedSection<T> {
     /// The stride of the typed section.
     pub const fn stride(&self) -> usize {
-        // Compute the size required for C to store two instances of T side-by-side.
-        // TODO: Can we just use align_of/size_of?
-        #[repr(C)]
-        struct Sizer<T> {
-            t1: T,
-            t2: T,
-            t3: T,
-        }
-
-        let sizer = ::core::mem::MaybeUninit::<Sizer<T>>::uninit();
-        let ptr: *const Sizer<T> = sizer.as_ptr();
-        let start = ptr as *const u8;
-        let end = unsafe { ::core::ptr::addr_of!((*ptr).t3) } as *const u8;
-        unsafe { end.offset_from(start) as usize / 2 }
+        assert!(
+            ::core::mem::size_of::<T>() > 0
+                && ::core::mem::size_of::<T>() * 2 == ::core::mem::align_of::<[T; 2]>()
+        );
+        ::core::mem::size_of::<T>()
     }
 
     /// The start address of the section.
@@ -672,20 +663,11 @@ impl<T: 'static> TypedSection<T> {
 impl<T: 'static> TypedSection<T> {
     /// The stride of the typed section.
     pub const fn stride(&self) -> usize {
-        // Compute the size required for C to store two instances of T side-by-side.
-        // TODO: Can we just use align_of/size_of?
-        #[repr(C)]
-        struct Sizer<T> {
-            t1: T,
-            t2: T,
-            t3: T,
-        }
-
-        let sizer = ::core::mem::MaybeUninit::<Sizer<T>>::uninit();
-        let ptr: *const Sizer<T> = sizer.as_ptr();
-        let start = ptr as *const u8;
-        let end = unsafe { ::core::ptr::addr_of!((*ptr).t3) } as *const u8;
-        unsafe { end.offset_from(start) as usize / 2 }
+        assert!(
+            ::core::mem::size_of::<T>() > 0
+                && ::core::mem::size_of::<T>() * 2 == ::core::mem::align_of::<[T; 2]>()
+        );
+        ::core::mem::size_of::<T>()
     }
 
     /// The start address of the section.
@@ -723,9 +705,9 @@ impl<T: 'static> TypedSection<T> {
     }
 
     /// The section as a mutable slice.
-    /// 
+    ///
     /// # Safety
-    /// 
+    ///
     /// This cannot be safely used and is _absolutely unsound_ if any other
     /// slices are live.
     #[allow(clippy::mut_from_ref)]
