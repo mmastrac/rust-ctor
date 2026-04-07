@@ -5,7 +5,7 @@ edition = "2018"
 publish = false
 
 [features]
-default = ["std"]
+default = ["std", "priority"]
 std = []
 used_linker = []
 proc_macro = []

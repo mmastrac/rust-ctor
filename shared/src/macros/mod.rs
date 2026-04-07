@@ -28,6 +28,8 @@ pub mod __support {
     pub use crate::__if_has_feature as if_has_feature;
     pub use crate::__if_unsafe as if_unsafe;
     pub use crate::__unify_features as unify_features;
+
+    #[cfg(all(feature = "priority", target_vendor = "apple"))]
     pub use ::link_section;
 
     /// Define a link section when using the priority parameter on Apple
@@ -37,6 +39,13 @@ pub mod __support {
         #[section]
         pub static CTOR: link_section::TypedSection<(fn(), u16)>;
     );
+
+    #[cfg(all(feature = "priority", target_vendor = "apple"))]
+    ctor_call!(features = [], {
+        for (ctor, _) in CTOR {
+            ctor();
+        }
+    });
 }
 
 /// Parse a `#[ctor]`-annotated item as if it were a proc-macro.
@@ -380,8 +389,8 @@ macro_rules! __ctor_entry {
 
             #[cfg(target_family = "wasm")]
             {
-                static __CTOR__INITILIZED: ::core::sync::atomic::AtomicBool = ::core::sync::atomic::AtomicBool::new(false);
-                if __CTOR__INITILIZED.swap(true, ::core::sync::atomic::Ordering::Relaxed) {
+                static __CTOR__INITIALIZED: ::core::sync::atomic::AtomicBool = ::core::sync::atomic::AtomicBool::new(false);
+                if __CTOR__INITIALIZED.swap(true, ::core::sync::atomic::Ordering::Relaxed) {
                     return;
                 }
             }
@@ -553,11 +562,11 @@ macro_rules! __ctor_call {
     ([features=$features:tt, { $($block:tt)+ }], ("")) => {
         $crate::__support::ctor_call!(@next [features=$features, { $($block)+ }], (""));
     };
-    ([features=$features:tt, { $($block:tt)+ }], $priority:tt) => {
+    ([features=$features:tt, { $($block:tt)+ }], (".", $priority:literal)) => {
         #[cfg(target_vendor = "apple")]
         $crate::__support::link_section::declarative::in_section!(
             #[in_section($crate::__support::CTOR)]
-            static _: (fn(), u16) = (fn() { $($block)+ }, $priority);
+            static _: (fn(), u16) = ({ fn ctor() { $($block)+ }; ctor }, $priority);
         );
         #[cfg(not(target_vendor = "apple"))]
         $crate::__support::ctor_call!(@next [features=$features, { $($block)+ }], $priority);
@@ -570,7 +579,7 @@ macro_rules! __ctor_call {
 
             #[allow(non_upper_case_globals, non_snake_case)]
             #[doc(hidden)]
-            static f: /*unsafe*/ extern "C" fn() -> $crate::__support::CtorRetType =
+            static __CTOR_FUNCTION: /*unsafe*/ extern "C" fn() -> $crate::__support::CtorRetType =
             {
                 $crate::__support::ctor_link_section!(
                     startup,
@@ -578,13 +587,13 @@ macro_rules! __ctor_call {
                     (""),
 
                     #[allow(non_snake_case)]
-                    /*unsafe*/ extern "C" fn f() -> $crate::__support::CtorRetType {
+                    /*unsafe*/ extern "C" fn __CTOR_FUNCTION_INNER() -> $crate::__support::CtorRetType {
                         $($block)+;
                         ::core::default::Default::default()
                     }
                 );
 
-                f
+                __CTOR_FUNCTION_INNER
             };
         );
     }

@@ -10,25 +10,19 @@ fn foo() {
         #[allow(unused)]
         static UNSAFE_WARNING: () = ctor_without_unsafe_is_deprecated();
         const _: () = {
-            #[deprecated(
-                note = "The priority parameter is not supported on target_vendor = \"apple\""
-            )]
-            const fn ctor_priority_unsupported() {}
-            ctor_priority_unsupported();
-        };
-        #[link_section = "__DATA,__mod_init_func,mod_init_funcs"]
-        #[used]
-        #[allow(non_upper_case_globals, non_snake_case)]
-        #[doc(hidden)]
-        static f: extern "C" fn() -> ::shared::__support::CtorRetType = {
-            #[allow(non_snake_case)]
-            extern "C" fn f() -> ::shared::__support::CtorRetType {
-                unsafe {
-                    foo();
-                };
-                ::core::default::Default::default()
-            }
-            f
+            #[link_section = "__DATA,CTOR,regular,no_dead_strip"]
+            #[used]
+            static ANONYMOUS: <::shared::__support::CTOR as ::link_section::__support::SectionItemType>::Item = (
+                {
+                    fn ctor() {
+                        unsafe {
+                            foo();
+                        }
+                    }
+                    ctor
+                },
+                1,
+            );
         };
     }
     {

@@ -296,15 +296,15 @@ pub mod __support {
             $crate::__support::in_section_parse!(path=[$($path)*] #[in_section($($path)*)] $($item)*);
         };
         (path=[$orig_path:path] #[in_section($name:ident)] $($item:tt)*) => {
-            $name ! (
+            $orig_path ! (
                 v=0 (name=$name (path=[$orig_path] (item=($($item)*) ())))
             );
         };
         (path=[$orig_path:path] #[in_section(:: $($path:ident)::*)] $($item:tt)*) => {
-            $crate::__support::in_section_parse!(path=$orig_path #[in_section($($path)::*)] $($item)*);
+            $crate::__support::in_section_parse!(path=[$orig_path] #[in_section($($path)::*)] $($item)*);
         };
         (path=[$orig_path:path] #[in_section($prefix:ident :: $($path:ident)::*)] $($item:tt)*) => {
-            $crate::__support::in_section_parse!(path=$orig_path #[in_section($($path)::*)] $($item)*);
+            $crate::__support::in_section_parse!(path=[$orig_path] #[in_section($($path)::*)] $($item)*);
         };
     }
 
@@ -349,51 +349,58 @@ pub mod __support {
     #[allow(unknown_lints, edition_2024_expr_fragment_specifier)]
     macro_rules! __in_section_crate {
         ($ident:ident, $path:path, generic, ($(#[$meta:meta])* $vis:vis fn $ident_fn:ident($($args:tt)*) $(-> $ret:ty)? $body:block)) => {
-            $crate::__section_name!(
-                (
-                    // Split the function into a static item and a function pointer
-                    $(#[$meta])*
-                    #[used]
-                    #[link_section = __]
-                    #[allow(non_upper_case_globals)]
-                    $vis static $ident_fn: <$path as $crate::__support::SectionItemType>::Item =
-                        {
-                            fn $ident_fn($($args)*) $(-> $ret)? $body
-                            $ident_fn as _
-                        };
-                )
+            $crate::__add_section_link_attribute!(
                 data section $ident
+                #[link_section = __]
+                // Split the function into a static item and a function pointer
+                $(#[$meta])*
+                #[used]
+                #[allow(non_upper_case_globals)]
+                $vis static $ident_fn: <$path as $crate::__support::SectionItemType>::Item =
+                    {
+                        fn $ident_fn($($args)*) $(-> $ret)? $body
+                        $ident_fn as _
+                    };
             );
         };
+        ($ident:ident, $path:path, generic, ($(#[$meta:meta])* $vis:vis static _ : $ty:ty = $value:expr;)) => {
+            const _: () = {
+                $crate::__add_section_link_attribute!(
+                    data section $ident
+                    #[link_section = __]
+                    $(#[$meta])* #[used] $vis static ANONYMOUS: <$path as $crate::__support::SectionItemType>::Item = $value;
+                );
+            };
+        };
         ($ident:ident, $path:path, generic, ($(#[$meta:meta])* $vis:vis static $ident_static:ident : $ty:ty = $value:expr;)) => {
-            $crate::__section_name!(
-                ($(#[$meta])* #[link_section = __] #[used] $vis static $ident_static: <$path as $crate::__support::SectionItemType>::Item = $value;)
+            $crate::__add_section_link_attribute!(
                 data section $ident
+                #[link_section = __]
+                $(#[$meta])* #[used] $vis static $ident_static: <$path as $crate::__support::SectionItemType>::Item = $value;
             );
         };
         ($ident:ident, $path:path, no_generic, ($(#[$meta:meta])* $vis:vis fn $ident_fn:ident($($args:tt)*) $(-> $ret:ty)? $body:block)) => {
-            $crate::__section_name!(
-                (
-                    $(#[$meta])*
-                    #[link_section = __]
-                    #[used]
-                    #[allow(non_upper_case_globals)]
-                    $vis static $ident_fn: fn($($args)*) $(-> $ret)? =
-                        {
-                            $crate::__section_name!(
-                                (#[link_section = __] fn $ident_fn($($args)*) $(-> $ret)? $body)
-                                code section $ident
-                            );
-                            $ident_fn
-                        };
-                )
+            $crate::__add_section_link_attribute!(
                 data section $ident
+                #[link_section = __]
+                $(#[$meta])*
+                #[used]
+                #[allow(non_upper_case_globals)]
+                $vis static $ident_fn: fn($($args)*) $(-> $ret)? =
+                    {
+                        $crate::__section_name!(
+                            (#[link_section = __] fn $ident_fn($($args)*) $(-> $ret)? $body)
+                            code section $ident
+                        );
+                        $ident_fn
+                    };
             );
         };
         ($ident:ident, $path:path, no_generic, ($(#[$meta:meta])* $item:item)) => {
-            $crate::__section_name!(
-                ($(#[$meta])* #[link_section = __] #[used] $item)
+            $crate::__add_section_link_attribute!(
                 data section $ident
+                #[link_section = __]
+                $(#[$meta])* #[used] $item
             );
         };
     }
