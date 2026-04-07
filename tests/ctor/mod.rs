@@ -96,7 +96,6 @@ $ cargo build --quiet
 *
 $ cargo run --quiet
 ! 1
-! 10
 ! 2
 ! 3
 ! 4
@@ -105,6 +104,7 @@ $ cargo run --quiet
 ! 7
 ! 8
 ! 9
+! 10
 ! main
 "#
 );
@@ -183,6 +183,7 @@ $ cargo build
 ignore {
     !    Compiling %{DATA}
     !     Blocking waiting for file lock on package cache
+    !     Blocking waiting for file lock on shared package cache
 }
 ! warning: use of deprecated function `foo::ctor_without_unsafe_is_deprecated`: ctor deprecation note:
 !          

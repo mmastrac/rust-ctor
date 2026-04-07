@@ -43,6 +43,9 @@ pub mod __support {
 
     #[cfg(all(feature = "priority", target_vendor = "apple"))]
     ctor_call!(features = [], {
+        unsafe {
+            CTOR.as_mut_slice().sort_unstable_by_key(|(_, priority)| *priority);
+        }
         for (ctor, _) in CTOR {
             ctor();
         }

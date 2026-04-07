@@ -721,6 +721,16 @@ impl<T: 'static> TypedSection<T> {
             unsafe { ::core::slice::from_raw_parts(self.start_ptr(), self.len()) }
         }
     }
+
+    /// The section as a mutable slice. This cannot be safely used and is
+    /// absolutely unsound if any other slices are live.
+    pub unsafe fn as_mut_slice(&self) -> &mut [T] {
+        if self.is_empty() {
+            &mut []
+        } else {
+            unsafe { ::core::slice::from_raw_parts_mut(self.start_ptr() as *mut T, self.len()) }
+        }
+    }
 }
 
 impl<'a, T> ::core::iter::IntoIterator for &'a TypedSection<T> {
