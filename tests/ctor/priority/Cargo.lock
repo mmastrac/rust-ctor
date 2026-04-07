@@ -13,9 +13,7 @@ dependencies = [
 
 [[package]]
 name = "ctor-proc-macro"
-version = "0.0.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "52560adf09603e58c9a7ee1fe1dcb95a16927b17c127f0ac02d6e768a0e25bc1"
+version = "0.0.10"
 
 [[package]]
 name = "dtor"
@@ -27,13 +25,11 @@ dependencies = [
 
 [[package]]
 name = "dtor-proc-macro"
-version = "0.0.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f678cf4a922c215c63e0de95eb1ff08a958a81d47e485cf9da1e27bf6305cfa5"
+version = "0.0.10"
 
 [[package]]
 name = "link-section"
-version = "0.0.6"
+version = "0.0.7"
 
 [[package]]
 name = "priority"
