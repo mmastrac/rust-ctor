@@ -135,16 +135,14 @@ pub fn ident_concat(item: TokenStream) -> TokenStream {
     };
 
     let mut item = name_group.stream().into_iter();
-    let Some(TokenTree::Ident(ident)) = item.next() else {
-        panic!("ident: Expected an identifier");
-    };
-    let Some(TokenTree::Ident(ident2)) = item.next() else {
-        panic!("ident2: Expected an identifier");
-    };
+    let mut name = String::new();
+    while let Some(TokenTree::Ident(ident)) = item.next() {
+        name.push_str(&ident.to_string());
+    }
 
     let mut output = pre_group.stream();
     output.extend([TokenTree::Ident(Ident::new(
-        &format!("{ident}{ident2}"),
+        &name,
         Span::call_site(),
     ))]);
     output.extend(post_group.stream());
