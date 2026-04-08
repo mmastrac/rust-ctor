@@ -80,6 +80,7 @@ pub fn main() {
     assert!(TYPED_LINK_SECTION.offset_of(&LINKED_U32).is_some());
     assert!(TYPED_LINK_SECTION.offset_of(&LINKED_U32_2).is_some());
     eprintln!("AUX_LINK_SECTION: {:?}", AUX_LINK_SECTION);
+    assert!(AUX_LINK_SECTION.len() == 1);
     let random_u32 = 1234567890;
     assert!(TYPED_LINK_SECTION.offset_of(&random_u32).is_none());
     eprintln!("CODE_SECTION: {:?}", FN_ARRAY);
