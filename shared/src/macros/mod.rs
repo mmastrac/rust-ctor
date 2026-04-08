@@ -534,12 +534,53 @@ macro_rules! __dtor_entry {
         $crate::__support::if_has_feature!(anonymous, $features, {
             $crate::__support::dtor_entry!(unnamed, features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=$($unsafe)?, item=fn $ident() $block);
         }, {
+            // AIX requires special handling
+            #[cfg(target_os = "aix")]
+            $crate::__support::dtor_entry!(aix, features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=$($unsafe)?, item=fn $ident() $block);
+            
+            #[cfg(not(target_os = "aix"))]
             $crate::__support::dtor_entry!(named, features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=$($unsafe)?, item=fn $ident() $block);
         });
     };
     (unnamed, features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=fn $ident:ident() $block:block) => {
         const _: () = {
+            #[cfg(target_os = "aix")]
+            $crate::__support::dtor_entry!(aix, features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=$($unsafe)?, item=fn $ident() $block);
+            
+            #[cfg(not(target_os = "aix"))]
             $crate::__support::dtor_entry!(named, features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=$($unsafe)?, item=fn $ident() $block);
+        };
+    };
+    (aix, features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=fn $ident:ident() $block:block) => {
+        $(#[$fnmeta])*
+        #[allow(unused)]
+        $($vis)* $($unsafe)? fn $ident() $block
+
+        // AIX-specific destructor wrapper using __sterm naming convention
+        // The function name must start with __sterm80000000_ for AIX to recognize it as a destructor
+        // We wrap in a const block to create a unique namespace and avoid module name collisions
+        // We use line!() and column!() to generate a unique export name for each destructor
+        const _: () = {
+            #[unsafe(no_mangle)]
+            #[export_name = concat!("__sterm80000000_", module_path!(), "_", stringify!($ident), "_L", line!(), "C", column!())]
+            extern "C" fn aix_dtor_wrapper() {
+                #[allow(unsafe_code)]
+                {
+                    $crate::__support::if_unsafe!($($unsafe)?, {}, {
+                        $crate::__support::if_has_feature!( __no_warn_on_missing_unsafe, $features, {
+                            #[deprecated="dtor deprecation note:\n\n \
+                            Use of #[dtor] without `unsafe fn` is deprecated. As code execution after main\n\
+                            is unsupported by most Rust runtime functions, these functions must be marked\n\
+                            `unsafe`."]
+                                const fn dtor_without_unsafe_is_deprecated() {}
+                                #[allow(unused)]
+                                static UNSAFE_WARNING: () = dtor_without_unsafe_is_deprecated();
+                        }, {});
+                    });
+
+                    unsafe { $ident(); }
+                }
+            }
         };
     };
     (named, features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], unsafe=$($unsafe:ident)?, item=fn $ident:ident() $block:block) => {
