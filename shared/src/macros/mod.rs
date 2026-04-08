@@ -236,6 +236,7 @@ declare_features!(
 
 /// Expands all of the crate features into the features list.
 #[macro_export]
+#[doc(hidden)]
 macro_rules! __features_expand_all {
     // Entry
     (next=$next:path, $args:tt, $($macro:tt)*) => {
