@@ -226,11 +226,6 @@ pub mod __support {
             #[allow(non_camel_case_types)]
             $vis struct $ident;
 
-            impl $crate::__support::SectionFactory for $ident {
-                type SectionType = $crate::__support::Section< $ty, $generic_ty >;
-                type ItemType = $generic_ty;
-            }
-
             impl $crate::__support::SectionItemType for $ident {
                 type Item = $generic_ty;
             }
@@ -241,37 +236,42 @@ pub mod __support {
                 }
             }
 
-            $crate::__section_parse!(@deref #[section $($args)*] $(#[$meta])* $vis static $ident: $ty, $generic_ty, __base_case__);
-        };
-        (@deref #[section] $(#[$meta:meta])* $vis:vis static $ident:ident : $ty:ty, $generic_ty:ty, __base_case__) => {
             impl ::core::ops::Deref for $ident {
                 type Target = $ty;
                 fn deref(&self) -> &Self::Target {
-                    static SECTION: $crate::__support::Section< $ty, $generic_ty > = {
+                    self.const_deref()
+                }
+            }
+
+            $crate::__section_parse!(@deref #[section $($args)*] $(#[$meta])* $vis static $ident: $ty, $generic_ty, __base_case__);
+        };
+        (@deref #[section] $(#[$meta:meta])* $vis:vis static $ident:ident : $ty:ty, $generic_ty:ty, __base_case__) => {
+            impl $ident {
+                /// Get a `const` reference to the underlying section. In
+                /// non-const contexts, `deref` is sufficient.
+                pub const fn const_deref(&self) -> &$ty {
+                    static SECTION: $ty = {
                         let section = $crate::__support::get_section!(name=$ident, type=$generic_ty, aux=);
                         let name = $crate::__section_name!(
                             raw data bare $ident
                         );
-                        $crate::__support::Section::new(
-                            name, section.0, section.1
-                        )
+                        unsafe { <$ty>::new(name, section.0, section.1) }
                     };
                     &SECTION
                 }
             }
         };
         (@deref #[section(aux=$aux:ident)] $(#[$meta:meta])* $vis:vis static $ident:ident : $ty:ty, $generic_ty:ty, __base_case__) => {
-            impl ::core::ops::Deref for $ident {
-                type Target = $ty;
-                fn deref(&self) -> &Self::Target {
-                    static SECTION: $crate::__support::Section< $ty, $generic_ty > = {
+            impl $ident {
+                /// Get a `const` reference to the underlying section. In
+                /// non-const contexts, `deref` is sufficient.
+                pub const fn const_deref(&self) -> &$ty {
+                    static SECTION: $ty = {
                         let section = $crate::__support::get_section!(name=$ident, type=$generic_ty, aux=$aux);
                         let name = $crate::__section_name!(
                             raw data bare $ident $aux
                         );
-                        $crate::__support::Section::new(
-                            name, section.0, section.1
-                        )
+                        unsafe { <$ty>::new(name, section.0, section.1) }
                     };
                     &SECTION
                 }
@@ -509,61 +509,9 @@ pub mod __support {
         type Item;
     }
 
-    pub trait SectionFactory {
-        type SectionType;
-        type ItemType;
-    }
-
-    #[repr(C)]
-    pub struct Section<T: sealed::FromRawSection, S: 'static> {
-        name: &'static str,
-        start: SectionPtr<S>,
-        end: SectionPtr<S>,
-        _t: ::core::marker::PhantomData<T>,
-    }
-
     impl<T> SectionItemType for super::TypedSection<T> {
         type Item = T;
     }
-
-    impl<T: sealed::FromRawSection, S> Section<T, S> {
-        pub const fn new(name: &'static str, start: SectionPtr<S>, end: SectionPtr<S>) -> Self {
-            Self {
-                name,
-                start,
-                end,
-                _t: ::core::marker::PhantomData,
-            }
-        }
-    }
-
-    impl<'a, T: sealed::FromRawSection, S> ::core::iter::IntoIterator for &'a Section<T, S>
-    where
-        for<'b> &'b T: ::core::iter::IntoIterator,
-    {
-        type Item = <&'a T as ::core::iter::IntoIterator>::Item;
-        type IntoIter = <&'a T as ::core::iter::IntoIterator>::IntoIter;
-        fn into_iter(self) -> Self::IntoIter {
-            ::core::ops::Deref::deref(self).into_iter()
-        }
-    }
-
-    impl<T: sealed::FromRawSection, S> ::core::ops::Deref for Section<T, S> {
-        type Target = T;
-        fn deref(&self) -> &Self::Target {
-            // SAFETY: all sections are repr(C)
-            unsafe { ::core::mem::transmute(self) }
-        }
-    }
-
-    impl<T: sealed::FromRawSection + ::core::fmt::Debug, S> ::core::fmt::Debug for Section<T, S> {
-        fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-            ::core::fmt::Debug::fmt(::core::ops::Deref::deref(self), f)
-        }
-    }
-
-    unsafe impl<T: sealed::FromRawSection, S> Sync for Section<T, S> {}
-    unsafe impl<T: sealed::FromRawSection, S> Send for Section<T, S> {}
 
     /// On Apple platforms, the linker provides a pointer to the start and end
     /// of the section regardless of the section's name.
@@ -578,14 +526,6 @@ pub mod __support {
     #[cfg(target_family = "wasm")]
     pub type SectionPtr<T> =
         &'static ::core::sync::atomic::AtomicPtr<::core::marker::PhantomData<T>>;
-
-    mod sealed {
-        pub trait FromRawSection {}
-
-        impl FromRawSection for crate::Section {}
-
-        impl<T> FromRawSection for crate::TypedSection<T> {}
-    }
 }
 
 /// Define a link section.
@@ -621,6 +561,17 @@ pub struct Section {
     name: &'static str,
     start: __support::SectionPtr<()>,
     end: __support::SectionPtr<()>,
+}
+
+impl Section {
+    #[doc(hidden)]
+    pub const unsafe fn new(
+        name: &'static str,
+        start: __support::SectionPtr<()>,
+        end: __support::SectionPtr<()>,
+    ) -> Self {
+        Self { name, start, end }
+    }
 }
 
 #[cfg(target_family = "wasm")]
@@ -783,6 +734,20 @@ impl<T: 'static> TypedSection<T> {
 
 // Non-const, shared functions (or functions that don't depend on the pointers)
 impl<T: 'static> TypedSection<T> {
+    #[doc(hidden)]
+    pub const unsafe fn new(
+        name: &'static str,
+        start: __support::SectionPtr<T>,
+        end: __support::SectionPtr<T>,
+    ) -> Self {
+        Self {
+            name,
+            start,
+            end,
+            _phantom: ::core::marker::PhantomData,
+        }
+    }
+
     /// The stride of the typed section.
     pub const fn stride(&self) -> usize {
         assert!(
