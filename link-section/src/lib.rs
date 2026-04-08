@@ -34,7 +34,7 @@ pub mod __support {
             {$(
                 $__section:ident $__type:ident => $__prefix:tt __ $__suffix:tt;
             )*}
-
+            AUXILIARY = $__aux_sep:literal;
             MAX_LENGTH = $__max_length:literal;
             HASH_LENGTH = $__hash_length:literal;
             VALID_SECTION_CHARS = $__valid_section_chars:literal;
@@ -48,7 +48,7 @@ pub mod __support {
                         concat!(concat! $__prefix, stringify!($name), concat! $__suffix);
                     };
                     (raw $__section $__type $aux:ident $name:ident) => {
-                        concat!(concat! $__prefix, stringify!($name), stringify!($aux), concat! $__suffix);
+                        concat!(concat! $__prefix, stringify!($name), $__aux_sep, stringify!($aux), concat! $__suffix);
                     };
                     ($pattern:tt $__section $__type $name:ident) => {
                         $crate::__support::hash!($pattern ($__prefix) $name ($__suffix) $__hash_length $__max_length $__valid_section_chars);
@@ -100,6 +100,7 @@ pub mod __support {
             data start =>   ("\x01section$start$__DATA$") __ ();
             data end =>     ("\x01section$end$__DATA$") __ ();
         }
+        AUXILIARY = "_";
         MAX_LENGTH = 16;
         HASH_LENGTH = 6;
         VALID_SECTION_CHARS = "_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -113,6 +114,7 @@ pub mod __support {
             code bare =>    (".text", ".link_section.") __ ();
             code section => (".text", ".link_section.") __ ();
         }
+        AUXILIARY = ".";
         MAX_LENGTH = 16;
         HASH_LENGTH = 6;
         VALID_SECTION_CHARS = "_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -134,6 +136,7 @@ pub mod __support {
             code start =>   ("__start_", "_text", "_link_section_") __ ();
             code end =>     ("__stop_", "_text", "_link_section_") __ ();
         }
+        AUXILIARY = "_";
         MAX_LENGTH = 64;
         HASH_LENGTH = 10;
         VALID_SECTION_CHARS = "_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -151,6 +154,7 @@ pub mod __support {
             code start =>   (".text", "$") __ ("$a");
             code end =>     (".text", "$") __ ("$c");
         }
+        AUXILIARY = "$d$";
         MAX_LENGTH = 64;
         HASH_LENGTH = 10;
         VALID_SECTION_CHARS = "_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
