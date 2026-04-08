@@ -29,3 +29,17 @@ unordered {
 ! DEBUGGABLES: [1, 2, %{BASE16NUM}]
 "#
 );
+
+clitest!(
+    no_default_features,
+    r#"
+set RUSTFLAGS "";
+cd "link_section/no-default-features";
+defer {
+    $ cargo clean --quiet
+}
+$ cargo run --quiet
+! link-section-no-default-features:in-section
+! link-section-no-default-features:main
+"#
+);

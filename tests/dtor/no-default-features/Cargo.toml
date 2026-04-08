@@ -1,0 +1,10 @@
+[package]
+name = "tests-dtor-no-default-features"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+dtor = { path = "../../../dtor", default-features = false }
+
+[workspace]

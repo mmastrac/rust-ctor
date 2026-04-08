@@ -1,0 +1,10 @@
+[package]
+name = "tests-link-section-no-default-features"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+link-section = { path = "../../../link-section", default-features = false }
+
+[workspace]
