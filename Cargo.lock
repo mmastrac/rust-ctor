@@ -489,14 +489,14 @@ dependencies = [
 
 [[package]]
 name = "link-section"
-version = "0.0.8"
+version = "0.0.9"
 dependencies = [
  "link-section-proc-macro",
 ]
 
 [[package]]
 name = "link-section-proc-macro"
-version = "0.0.10"
+version = "0.0.11"
 
 [[package]]
 name = "linux-raw-sys"
