@@ -1,6 +1,6 @@
 [package]
 name = "link-section"
-version = "0.0.8"
+version = "0.0.9"
 authors.workspace = true
 edition = "2021"
 description = "Low-level link-section macro support for Rust"
@@ -19,5 +19,5 @@ link-section-proc-macro = { workspace = true, optional = true }
 [dev-dependencies]
 
 [[example]]
-name = "example"
+name = "link-section-example"
 path = "src/example.rs"

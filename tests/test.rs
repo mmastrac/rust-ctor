@@ -4,6 +4,10 @@
 #[cfg(test)]
 mod ctor;
 
+/// `dtor` tests
+#[cfg(test)]
+mod dtor;
+
 /// `link-section` tests
 #[cfg(test)]
 mod link_section;

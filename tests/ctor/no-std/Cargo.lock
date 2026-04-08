@@ -16,19 +16,14 @@ version = "0.0.10"
 
 [[package]]
 name = "dtor"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
  "dtor-proc-macro",
- "link-section",
 ]
 
 [[package]]
 name = "dtor-proc-macro"
 version = "0.0.10"
-
-[[package]]
-name = "link-section"
-version = "0.0.8"
 
 [[package]]
 name = "tests-no-std"

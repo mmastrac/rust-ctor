@@ -24,6 +24,14 @@ pub static LINKED_U32: u32 = 1;
 #[in_section(TYPED_LINK_SECTION)]
 pub static LINKED_U32_2: u32 = 2;
 
+/// Create an aux link section for `TYPED_LINK_SECTION`.
+#[section(aux = TYPED_LINK_SECTION)]
+pub static AUX_LINK_SECTION: link_section::TypedSection<u32>;
+
+/// An auxiliary section item.
+#[in_section(AUX_LINK_SECTION)]
+pub static AUX_LINKED_U32: u32 = 3;
+
 /// A function pointerarray in the `data` section.
 #[section]
 pub static FN_ARRAY: link_section::TypedSection<fn()>;
@@ -72,6 +80,8 @@ pub fn main() {
     eprintln!("TYPED_LINK_SECTION: {:?}", TYPED_LINK_SECTION);
     assert!(TYPED_LINK_SECTION.offset_of(&LINKED_U32).is_some());
     assert!(TYPED_LINK_SECTION.offset_of(&LINKED_U32_2).is_some());
+    eprintln!("AUX_LINK_SECTION: {:?}", AUX_LINK_SECTION);
+    assert!(AUX_LINK_SECTION.len() == 1);
     let random_u32 = 1234567890;
     assert!(TYPED_LINK_SECTION.offset_of(&random_u32).is_none());
     eprintln!("CODE_SECTION: {:?}", FN_ARRAY);

@@ -16,6 +16,7 @@ $ cargo run --quiet
 ! TYPED_LINK_SECTION: TypedSection { name: "%{DATA}TYPED_LINK%{DATA}", start: %{BASE16NUM}, end: %{BASE16NUM}, len: 2, stride: 4 }
 ! address of TYPED_LINK_SECTION[0]: %{BASE16NUM}
 ! address of TYPED_LINK_SECTION[1]: %{BASE16NUM}
+! aux: 1234
 ! CODE_SECTION: TypedSection { name: "%{DATA}FN_ARRAY%{DATA}", start: %{BASE16NUM}, end: %{BASE16NUM}, len: 3, stride: 8 }
 ! [%{BASE16NUM}, %{BASE16NUM}, %{BASE16NUM}]
 unordered {
@@ -27,5 +28,19 @@ unordered {
     ! linked_function_2
 }
 ! DEBUGGABLES: [1, 2, %{BASE16NUM}]
+"#
+);
+
+clitest!(
+    no_default_features,
+    r#"
+set RUSTFLAGS "";
+cd "link_section/no-default-features";
+defer {
+    $ cargo clean --quiet
+}
+$ cargo run --quiet
+! link-section-no-default-features:in-section
+! link-section-no-default-features:main
 "#
 );

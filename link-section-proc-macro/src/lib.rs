@@ -78,8 +78,8 @@ fn decode_literal_strings(name: &str, item: TokenTree) -> String {
         TokenTree::Punct(_) => {
             // Ignore punctuation
         }
-        _ => {
-            panic!("{}: Expected a literal string or group, got `{item}`", name);
+        TokenTree::Ident(ident) => {
+            output.push_str(&ident.to_string());
         }
     }
     output
@@ -154,7 +154,7 @@ pub fn ident_concat(item: TokenStream) -> TokenStream {
 /// If the input string is longer than the max length, replace the tail end of
 /// the string with the hash of the string.
 ///
-/// hash!(output input (prefix) hash_length max_length valid_section_chars)
+/// hash!(output (prefix) (name) (suffix) hash_length max_length valid_section_chars)
 #[proc_macro]
 pub fn hash(item: TokenStream) -> TokenStream {
     let mut item = item.into_iter();
@@ -164,15 +164,15 @@ pub fn hash(item: TokenStream) -> TokenStream {
     };
     let group = group.stream();
 
-    let Some(TokenTree::Ident(literal)) = item.next() else {
-        panic!("input: Expected an identifier");
-    };
-    let literal = literal.to_string();
-
     let Some(prefix_group) = item.next() else {
         panic!("prefix: Expected a group");
     };
     let prefix = decode_literal_strings("prefix", prefix_group);
+
+    let Some(input_group) = item.next() else {
+        panic!("input: Expected an identifier");
+    };
+    let literal = decode_literal_strings("input", input_group);
 
     let Some(suffix_group) = item.next() else {
         panic!("suffix: Expected a group");

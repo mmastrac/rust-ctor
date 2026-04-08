@@ -225,3 +225,17 @@ reject {
 !     Finished `dev` profile %{DATA}
 "#
 );
+
+clitest!(
+    no_default_features,
+    r#"
+set RUSTFLAGS "";
+cd "ctor/no-default-features";
+defer {
+    $ cargo clean --quiet
+}
+$ cargo run --quiet
+! ctor-no-default-features:ctor
+! ctor-no-default-features:main
+"#
+);

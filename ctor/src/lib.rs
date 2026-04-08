@@ -248,5 +248,5 @@ pub use ctor_proc_macro::ctor;
 ///
 /// See [`::dtor`] for more details.
 #[doc(inline)]
-#[cfg(feature = "dtor")]
-pub use dtor::__dtor_from_ctor as dtor;
+#[cfg(all(feature = "dtor", feature = "proc_macro"))]
+pub use dtor::__dtor_from_ctor as dtor; // note: this is the dtor proc macro that looks in ctor
