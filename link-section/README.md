@@ -35,6 +35,58 @@ function) is required to register each section with the runtime. As a
 consequence, the functions available on the `Section` and `TypedSection` types
 are not `const`.
 
+## Platform Details
+
+Each platform has a slightly different implementation of section control.
+
+### Linux and other LLVM/GCC platforms
+
+ - Has start/end symbols: ✅ (C-compatible names only)
+ - Supports linker sorting: ❌
+
+On Linux and other LLVM/GCC platforms, the linker supports orphan sections,
+which allow sections to be defined without a pre-defined name. These sections
+are emitted as if they were r/w `.data`. For sections with C-compatible names,
+the linker will emit start/end symbols for the section.
+
+Orphan sections are not sorted via numeric suffix (e.g.: `SECTION.1`,
+`SECTION.2`, etc.) with the default linker script.
+
+### macOS
+
+ - Has start/end symbols: ✅
+ - Supports linker sorting: ❌
+
+On macOS, sections are configured via `__DATA` or `__TEXT` prefix and option
+suffixes (`regular`, `no_dead_strip`, etc.). The linker emits start and stop
+symbols, but Rust requires a (somewhat-stable) `\x01` prefix to avoid mangling
+the section name. macOS does not support ordering in the linker.
+
+### Windows
+
+ - Has start/end symbols: ❌
+ - Supports linker sorting: ✅
+ 
+On Windows, the linker does not emit start/end symbols, but all sections with a
+common prefix are automatically sorted by suffix, allowing us to use suffixes to
+control placement of start/stop symbols that we emit.
+
+See [this blog
+post](https://devblogs.microsoft.com/oldnewthing/20181107-00/?p=100155) and
+[this blog
+post](https://devblogs.microsoft.com/oldnewthing/20181108-00/?p=100165) for more
+details about the alphabetical sorting rule.
+
+### WASM
+
+ - Has start/end symbols: ❌
+ - Supports linker sorting: ❌
+
+On WASM platforms, Rust emits data into custom sections which do not support
+ordering, and are stored out-of-band. The host environment is responsible for
+registering this out-of-band section with this library as this data is not
+accessible by the WASM runtime.
+
 ## Typed Sections
 
 Typed sections provide a section where all items are of a specific, sized type.

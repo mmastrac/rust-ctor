@@ -24,6 +24,13 @@ pub static LINKED_U32: u32 = 1;
 #[in_section(TYPED_LINK_SECTION)]
 pub static LINKED_U32_2: u32 = 2;
 
+/// Create an aux link section for `TYPED_LINK_SECTION`.
+#[section(aux = TYPED_LINK_SECTION)]
+pub static AUX_LINK_SECTION: link_section::TypedSection<u32>;
+
+#[in_section(AUX_LINK_SECTION)]
+pub static AUX_LINKED_U32: u32 = 3;
+
 /// A function pointerarray in the `data` section.
 #[section]
 pub static FN_ARRAY: link_section::TypedSection<fn()>;
