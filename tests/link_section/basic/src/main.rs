@@ -28,6 +28,7 @@ pub static LINKED_U32_2: u32 = 2;
 #[section(aux = TYPED_LINK_SECTION)]
 pub static AUX_LINK_SECTION: link_section::TypedSection<u32>;
 
+/// An auxiliary section item.
 #[in_section(AUX_LINK_SECTION)]
 pub static AUX_LINKED_U32: u32 = 3;
 
