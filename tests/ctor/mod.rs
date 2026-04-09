@@ -202,8 +202,26 @@ if TARGET_OS != "windows" {
 !   |
 !   = note: `#[warn(deprecated)]` on by default
 !   = note: this warning originates in the macro `$crate::__support::ctor_entry` which comes from the expansion of the attribute macro `ctor` (in Nightly builds, run with -Z macro-backtrace for more info)
+!
+! warning: use of deprecated function `FOO::ctor_without_unsafe_is_deprecated`: ctor deprecation note:
+!          
+!           Use of #[ctor] without `unsafe fn` is deprecated. As code execution before main
+!          is unsupported by most Rust runtime functions, these functions must be marked
+!          `unsafe`.
+if TARGET_OS == "windows" {
+!  --> src\main.rs:21:1
+}
+if TARGET_OS != "windows" {
+!  --> src/main.rs:21:1
+}
+!   |
+! 4 | #[ctor]
+!   | ^^^^^^^
+!   |
+!   = note: `#[warn(deprecated)]` on by default
+!   = note: this warning originates in the macro `$crate::__support::ctor_entry` which comes from the expansion of the attribute macro `ctor` (in Nightly builds, run with -Z macro-backtrace for more info)
 ! 
-! warning: `warn-unsafe` (bin "warn-unsafe") generated 1 warning
+! warning: `warn-unsafe` (bin "warn-unsafe") generated 2 warnings
 !     Finished `dev` profile %{DATA}
 "#
 );

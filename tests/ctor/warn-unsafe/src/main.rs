@@ -18,5 +18,17 @@ fn bar2() {
     println!("bar2");
 }
 
+#[ctor]
+pub static FOO: u32 = {
+    println!("side-effect");
+    42
+};
+
+#[ctor(unsafe)]
+pub static FOO_UNSAFE: u32 = {
+    println!("side-effect");
+    42
+};
+
 fn main() {
 }
