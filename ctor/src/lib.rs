@@ -81,18 +81,24 @@ pub mod declarative {
 ///
 /// # Attribute parameters
 ///
-///  - `crate_path = ::path::to::ctor::crate`: The path to the `ctor` crate
-///    containing the support macros. If you re-export `ctor` items as part of
-///    your crate, you can use this to redirect the macro's output to the
-///    correct crate.
-///  - `used(linker)`: (Advanced) Mark the function as being used in the link
-///    phase.
+///  - `unsafe`: Removes the requirement to mark the function as `unsafe`
+///    (recommended).
 ///  - `link_section = "section"`: The section to place the constructor in.
 ///  - `anonymous`: Do not give the constructor a name in the generated code
-///    (allows for multiple constructors with the same name).
+///    (allows for multiple constructors with the same name). Equivalent to
+///    wrapping the constructor in an anonymous const (ie: `const _ = { ...
+///    };`).
 ///  - `priority = N`: The priority of the constructor. Higher-N-priority
 ///    constructors are run last. `N` must be between 0 and 999 for ordering
-///    guarantees (N >= 1000 ordering is platform-defined).
+///    guarantees (N >= 1000 ordering is platform-defined). Ordering with
+///    respect to constructors without a priority is platform-defined.
+///  - `crate_path = (Advanced) ::path::to::ctor::crate`: The path to the `ctor`
+///    crate containing the support macros. If you re-export `ctor` items as
+///    part of your crate, you can use this to redirect the macro's output to
+///    the correct crate. Using the [`declarative::ctor`] form is preferred over
+///    this parameter.
+///  - `used(linker)`: (Advanced) Mark the function as being used in the link
+///    phase.
 ///
 /// # Examples
 ///
@@ -104,8 +110,8 @@ pub mod declarative {
 /// # use ctor::*;
 /// use libc_print::std_name::println;
 ///
-/// #[ctor]
-/// unsafe fn foo() {
+/// #[ctor(unsafe)]
+/// fn foo() {
 ///   // Using libc_print which is safe in `#[ctor]`
 ///   println!("Hello, world!");
 /// }
@@ -125,8 +131,8 @@ pub mod declarative {
 /// # use std::sync::atomic::{AtomicBool, Ordering};
 /// static INITED: AtomicBool = AtomicBool::new(false);
 ///
-/// #[ctor]
-/// unsafe fn set_inited() {
+/// #[ctor(unsafe)]
+/// fn set_inited() {
 ///   INITED.store(true, Ordering::SeqCst);
 /// }
 /// # }
@@ -140,8 +146,8 @@ pub mod declarative {
 /// # mod test {
 /// # use std::collections::HashMap;
 /// # use ctor::*;
-/// #[ctor]
-/// pub static STATIC_CTOR: HashMap<u32, String> = unsafe {
+/// #[ctor(unsafe)]
+/// pub static STATIC_CTOR: HashMap<u32, String> = {
 ///   let mut m = HashMap::new();
 ///   for i in 0..100 {
 ///     m.insert(i, format!("x*100={}", i*100));
@@ -165,9 +171,8 @@ pub mod declarative {
 /// # extern crate ctor;
 /// # mod test {
 /// # use ctor::*;
-/// #[ctor]
-///
-/// unsafe fn my_init_fn() {
+/// #[ctor(unsafe)]
+/// fn my_init_fn() {
 ///   /* ... */
 /// }
 /// # }
