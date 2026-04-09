@@ -141,7 +141,10 @@ pub fn ident_concat(item: TokenStream) -> TokenStream {
     }
 
     let mut output = pre_group.stream();
-    output.extend([TokenTree::Ident(Ident::new(&name, Span::call_site()))]);
+    output.extend([TokenTree::Ident(Ident::new(
+        &name,
+        Span::call_site(),
+    ))]);
     output.extend(post_group.stream());
     output
 }
