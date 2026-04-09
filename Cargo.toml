@@ -27,9 +27,9 @@ repository = "https://github.com/mmastrac/rust-ctor"
 [workspace.dependencies]
 ctor = { path = "ctor", default-features = false }
 dtor = { path = "dtor", default-features = false }
-link-section = { path = "link-section", version = "=0.0.10", default-features = false }
+link-section = { path = "link-section", version = "=0.0.12", default-features = false }
 
 # Bump all these together
-dtor-proc-macro = { path = "dtor-proc-macro", version = "=0.0.10" }
-ctor-proc-macro = { path = "ctor-proc-macro", version = "=0.0.10" }
-link-section-proc-macro = { path = "link-section-proc-macro", version = "=0.0.11" }
+dtor-proc-macro = { path = "dtor-proc-macro", version = "=0.0.12" }
+ctor-proc-macro = { path = "ctor-proc-macro", version = "=0.0.12" }
+link-section-proc-macro = { path = "link-section-proc-macro", version = "=0.0.12" }

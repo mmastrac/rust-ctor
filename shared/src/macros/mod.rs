@@ -386,9 +386,9 @@ macro_rules! __ctor_entry {
             {
                 $crate::__support::if_unsafe!($($unsafe)?, {}, {
                     $crate::__support::if_has_feature!( no_warn_on_missing_unsafe, $features, {}, {
-                        #[deprecated="ctor deprecation note:\n\n \
-                        Use of #[ctor] without `unsafe fn` is deprecated. As code execution before main\n\
-                        is unsupported by most Rust runtime functions, these functions must be marked\n\
+                        #[deprecated="ctor deprecation note:\n\n\
+                        Use of #[ctor] without `#[ctor(unsafe)]` or `unsafe fn` is deprecated. As code execution\n\
+                        before main is unsupported by most Rust runtime functions, these functions must be marked\n\
                         `unsafe`."]
                             const fn ctor_without_unsafe_is_deprecated() {}
                             #[allow(unused)]
@@ -446,8 +446,8 @@ macro_rules! __ctor_entry {
             mod $ident {
                 $crate::__support::if_unsafe!($($unsafe)?, {}, {
                     $crate::__support::if_has_feature!( no_warn_on_missing_unsafe, $features, {}, {
-                        #[deprecated="ctor deprecation note:\n\n \
-                        Use of #[ctor] without `unsafe { ... }` is deprecated. As code execution before main\n\
+                        #[deprecated="ctor deprecation note:\n\n\
+                        Use of #[ctor] without `#[ctor(unsafe)]` is deprecated. As code execution before main\n\
                         is unsupported by most Rust runtime functions, these functions must be marked\n\
                         `unsafe`."]
                             const fn ctor_without_unsafe_is_deprecated() {}
@@ -510,9 +510,9 @@ macro_rules! __dtor_entry {
             {
                 $crate::__support::if_unsafe!($($unsafe)?, {}, {
                     $crate::__support::if_has_feature!( no_warn_on_missing_unsafe, $features, {}, {
-                        #[deprecated="dtor deprecation note:\n\n \
-                        Use of #[dtor] without `unsafe fn` is deprecated. As code execution after main\n\
-                        is unsupported by most Rust runtime functions, these functions must be marked\n\
+                        #[deprecated="dtor deprecation note:\n\n\
+                        Use of #[dtor] without `#[dtor(unsafe)]` or `unsafe fn` is deprecated. As code execution\n\
+                        before main is unsupported by most Rust runtime functions, these functions must be marked\n\
                         `unsafe`."]
                         const fn dtor_without_unsafe_is_deprecated() {}
                         #[allow(unused)]
