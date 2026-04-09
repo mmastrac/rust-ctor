@@ -27,7 +27,7 @@ jobs:
             rust-toolchain:
               $match:
                 "this.job == 'miri'": nightly
-                "this.job == 'clippy'": nightly
+                "this.job == 'lint'": nightly
                 "this.job == 'build'": [stable, beta, nightly]
                 "this.job == 'build-minimal'": ["1.65"]
                 "true": "stable"
@@ -37,17 +37,17 @@ jobs:
             rust-components:
               $match:
                 "this.job == 'miri'": "miri,rust-src"
-                "this.job == 'clippy'": "clippy"
+                "this.job == 'lint'": "clippy"
             label:
               linux:
                 os: ubuntu-latest
-                job: [build, build-minimal, clippy, test, miri, wasm]
+                job: [build, build-minimal, lint, test, miri, wasm]
               macos:
                 os: macOS-latest
-                job: [clippy, test, miri]
+                job: [lint, test, miri]
               windows:
                 os: windows-latest
-                job: [clippy, test]
+                job: [lint, test]
           config: |
             github: ${{ toJSON(github) }}
 
