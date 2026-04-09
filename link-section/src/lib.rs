@@ -47,14 +47,14 @@ pub mod __support {
                     (raw $__section $__type $name:ident) => {
                         concat!(concat! $__prefix, stringify!($name), concat! $__suffix);
                     };
-                    (raw $__section $__type $aux:ident $name:ident) => {
+                    (raw $__section $__type $name:ident $aux:ident) => {
                         concat!(concat! $__prefix, stringify!($name), $__aux_sep, stringify!($aux), concat! $__suffix);
                     };
                     ($pattern:tt $__section $__type $name:ident) => {
                         $crate::__support::hash!($pattern ($__prefix) $name ($__suffix) $__hash_length $__max_length $__valid_section_chars);
                     };
-                    ($pattern:tt $__section $__type $aux:ident $name:ident) => {
-                        $crate::__support::hash!($pattern ($__prefix) ($name $aux) ($__suffix) $__hash_length $__max_length $__valid_section_chars);
+                    ($pattern:tt $__section $__type $name:ident $aux:ident) => {
+                        $crate::__support::hash!($pattern ($__prefix) ($name $__aux_sep $aux) ($__suffix) $__hash_length $__max_length $__valid_section_chars);
                     };
                 )*
                 ($pattern:tt $unknown_section:ident $unknown_type:ident $name:ident) => {
@@ -269,7 +269,7 @@ pub mod __support {
                     static SECTION: $ty = {
                         let section = $crate::__support::get_section!(name=$ident, type=$generic_ty, aux=$aux);
                         let name = $crate::__section_name!(
-                            raw data bare $ident $aux
+                            raw data bare $aux $ident // swap
                         );
                         unsafe { <$ty>::new(name, section.0, section.1) }
                     };
@@ -380,6 +380,12 @@ pub mod __support {
         //  <path> :: <name>
         //  :: <path> :: <name>
         //  etc...
+        (#[in_section(unsafe, type = $stored_ty:ty, name = $ident:ident $( , aux = $aux:ident)?)] $($item:tt)*) => {
+            $crate::__support::in_section_crate!((type = $stored_ty), $ident, $($aux)?, $ident, ($($item)*));
+        };
+        (#[in_section(unsafe, name = $ident:ident $( , aux = $aux:ident)?)] $($item:tt)*) => {
+            $crate::__support::in_section_crate!(data, $ident, $($aux)?, $ident, ($($item)*));
+        };
         (#[in_section( $($path:tt)* )] $($item:tt)*) => {
             $crate::__support::in_section_parse!(path=[$($path)*] #[in_section($($path)*)] $($item)*);
         };
@@ -400,13 +406,13 @@ pub mod __support {
     #[doc(hidden)]
     macro_rules! __in_section_helper_macro_generic {
         ((v=0 (name=$ident:ident (path=[$path:path] (item=$item:tt $rest:tt))))) => {
-            $crate::__support::in_section_crate!($ident,, $path, generic, $item);
+            $crate::__support::in_section_crate!(section, $ident,, $path, $item);
         };
         ((v=0 (name=$ident:ident (path=[$path:path] (item=$item:tt $rest:tt)))) ((aux=$aux:ident)) )=> {
-            $crate::__support::in_section_crate!($ident, $aux, $path, generic, $item);
+            $crate::__support::in_section_crate!(section, $ident, $aux, $path, $item);
         };
         ((v=0 (name=$ident:ident (path=[$path:path] (item=$item:tt $rest:tt)))) () )=> {
-            $crate::__support::in_section_crate!($ident,, $path, generic, $item);
+            $crate::__support::in_section_crate!(section, $ident,, $path, $item);
         };
         (v=$v:literal $rest:tt) => {
             const _: () = {
@@ -424,13 +430,13 @@ pub mod __support {
     #[doc(hidden)]
     macro_rules! __in_section_helper_macro_no_generic {
         ((v=0 (name=$ident:ident (path=[$path:path] (item=$item:tt $rest:tt))))) => {
-            $crate::__support::in_section_crate!($ident,, $path, no_generic, $item);
+            $crate::__support::in_section_crate!(data, $ident,, $path, $item);
         };
         ((v=0 (name=$ident:ident (path=[$path:path] (item=$item:tt $rest:tt)))) ((aux=$aux:ident)) )=> {
-            $crate::__support::in_section_crate!($ident, $aux, $path, no_generic, $item);
+            $crate::__support::in_section_crate!(data, $ident, $aux, $path, $item);
         };
         ((v=0 (name=$ident:ident (path=[$path:path] (item=$item:tt $rest:tt)))) () )=> {
-            $crate::__support::in_section_crate!($ident,, $path, no_generic, $item);
+            $crate::__support::in_section_crate!(data, $ident,, $path, $item);
         };
         (v=$v:literal $rest:tt) => {
             const _: () = {
@@ -448,55 +454,50 @@ pub mod __support {
     #[doc(hidden)]
     #[allow(unknown_lints, edition_2024_expr_fragment_specifier)]
     macro_rules! __in_section_crate {
-        ($ident:ident, $($aux:ident)?, $path:path, generic, ($(#[$meta:meta])* $vis:vis fn $ident_fn:ident($($args:tt)*) $(-> $ret:ty)? $body:block)) => {
-            $crate::__add_section_link_attribute!(
-                data section $ident $($aux)?
-                #[link_section = __]
-                // Split the function into a static item and a function pointer
-                $(#[$meta])*
-                #[used]
-                #[allow(non_upper_case_globals)]
-                $vis static $ident_fn: <$path as $crate::__support::SectionItemType>::Item =
-                    {
-                        fn $ident_fn($($args)*) $(-> $ret)? $body
-                        $ident_fn as _
-                    };
-            );
+        (@type_select section $path:path, $item_ty:ty) => {
+            <$path as $crate::__support::SectionItemType>::Item
         };
-        ($ident:ident, $($aux:ident)?, $path:path, generic, ($(#[$meta:meta])* $vis:vis static _ : $ty:ty = $value:expr;)) => {
-            const _: () = {
-                $crate::__add_section_link_attribute!(
-                    data section $ident $($aux)?
-                    #[link_section = __]
-                    $(#[$meta])* #[used] $vis static ANONYMOUS: <$path as $crate::__support::SectionItemType>::Item = $value;
-                );
-            };
+        (@type_select data $path:path, $item_ty:ty) => {
+            $item_ty
         };
-        ($ident:ident, $($aux:ident)?, $path:path, generic, ($(#[$meta:meta])* $vis:vis static $ident_static:ident : $ty:ty = $value:expr;)) => {
-            $crate::__add_section_link_attribute!(
-                data section $ident $($aux)?
-                #[link_section = __]
-                $(#[$meta])* #[used] $vis static $ident_static: <$path as $crate::__support::SectionItemType>::Item = $value;
-            );
+        (@type_select (type = $stored_ty:ty) $path:path, $item_ty:ty) => {
+            $stored_ty
         };
-        ($ident:ident, $($aux:ident)?, $path:path, no_generic, ($(#[$meta:meta])* $vis:vis fn $ident_fn:ident($($args:tt)*) $(-> $ret:ty)? $body:block)) => {
+        ($type_source:tt, $ident:ident, $($aux:ident)?, $path:path, ($(#[$meta:meta])* $vis:vis fn $ident_fn:ident($($args:tt)*) $(-> $ret:ty)? $body:block)) => {
             $crate::__add_section_link_attribute!(
                 data section $ident $($aux)?
                 #[link_section = __]
                 $(#[$meta])*
                 #[used]
                 #[allow(non_upper_case_globals)]
-                $vis static $ident_fn: fn($($args)*) $(-> $ret)? =
+                $vis static $ident_fn: $crate::__in_section_crate!(@type_select $type_source $path, fn($($args)*) $(-> $ret)?) =
                     {
-                        $crate::__section_name!(
-                            (#[link_section = __] fn $ident_fn($($args)*) $(-> $ret)? $body)
-                            code section $ident
+                        $crate::__add_section_link_attribute!(
+                            code section $ident $($aux)?
+                            #[link_section = __]
+                            fn $ident_fn($($args)*) $(-> $ret)? $body
                         );
                         $ident_fn
                     };
             );
         };
-        ($ident:ident, $($aux:ident)?, $path:path, no_generic, ($(#[$meta:meta])* $item:item)) => {
+        ($type_source:tt, $ident:ident, $($aux:ident)?, $path:path, ($(#[$meta:meta])* $vis:vis static _ : $ty:ty = $value:expr;)) => {
+            const _: () = {
+                $crate::__add_section_link_attribute!(
+                    data section $ident $($aux)?
+                    #[link_section = __]
+                    $(#[$meta])* #[used] $vis static ANONYMOUS: $crate::__in_section_crate!(@type_select $type_source $path, $ty) = $value;
+                );
+            };
+        };
+        ($type_source:tt, $ident:ident, $($aux:ident)?, $path:path, ($(#[$meta:meta])* $vis:vis static $ident_static:ident : $ty:ty = $value:expr;)) => {
+            $crate::__add_section_link_attribute!(
+                data section $ident $($aux)?
+                #[link_section = __]
+                $(#[$meta])* #[used] $vis static $ident_static: $crate::__in_section_crate!(@type_select $type_source $path, $ty) = $value;
+            );
+        };
+        (data, $ident:ident, $($aux:ident)?, $path:path, ($(#[$meta:meta])* $item:item)) => {
             $crate::__add_section_link_attribute!(
                 data section $ident $($aux)?
                 #[link_section = __]
