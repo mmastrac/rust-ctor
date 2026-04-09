@@ -187,8 +187,8 @@ ignore {
 }
 ! warning: use of deprecated function `foo::ctor_without_unsafe_is_deprecated`: ctor deprecation note:
 !          
-!           Use of #[ctor] without `unsafe fn` is deprecated. As code execution before main
-!          is unsupported by most Rust runtime functions, these functions must be marked
+!          Use of #[ctor] without `#[ctor(unsafe)]` or `unsafe fn` is deprecated. As code execution
+!          before main is unsupported by most Rust runtime functions, these functions must be marked
 !          `unsafe`.
 if TARGET_OS == "windows" {
 !  --> src\main.rs:4:1
@@ -205,21 +205,20 @@ if TARGET_OS != "windows" {
 !
 ! warning: use of deprecated function `FOO::ctor_without_unsafe_is_deprecated`: ctor deprecation note:
 !          
-!           Use of #[ctor] without `unsafe fn` is deprecated. As code execution before main
+!          Use of #[ctor] without `#[ctor(unsafe)]` is deprecated. As code execution before main
 !          is unsupported by most Rust runtime functions, these functions must be marked
 !          `unsafe`.
 if TARGET_OS == "windows" {
-!  --> src\main.rs:21:1
+!   --> src\main.rs:21:1
 }
 if TARGET_OS != "windows" {
-!  --> src/main.rs:21:1
+!   --> src/main.rs:21:1
 }
-!   |
-! 4 | #[ctor]
-!   | ^^^^^^^
-!   |
-!   = note: `#[warn(deprecated)]` on by default
-!   = note: this warning originates in the macro `$crate::__support::ctor_entry` which comes from the expansion of the attribute macro `ctor` (in Nightly builds, run with -Z macro-backtrace for more info)
+!    |
+! 21 | #[ctor]
+!    | ^^^^^^^
+!    |
+!    = note: this warning originates in the macro `$crate::__support::ctor_entry` which comes from the expansion of the attribute macro `ctor` (in Nightly builds, run with -Z macro-backtrace for more info)
 ! 
 ! warning: `warn-unsafe` (bin "warn-unsafe") generated 2 warnings
 !     Finished `dev` profile %{DATA}
