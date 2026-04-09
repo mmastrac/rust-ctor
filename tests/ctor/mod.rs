@@ -184,6 +184,7 @@ ignore {
     !    Compiling %{DATA}
     !     Blocking waiting for file lock on package cache
     !     Blocking waiting for file lock on shared package cache
+    !      Locking %{DATA} to latest compatible version
 }
 ! warning: use of deprecated function `foo::ctor_without_unsafe_is_deprecated`: ctor deprecation note:
 !          
