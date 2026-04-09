@@ -37,7 +37,7 @@ jobs:
             rust-components:
               $match:
                 "this.job == 'miri'": "miri,rust-src"
-                "this.job == 'lint'": "clippy"
+                "this.job == 'lint'": "clippy,rustfmt"
             label:
               linux:
                 os: ubuntu-latest
