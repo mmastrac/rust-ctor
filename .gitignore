@@ -4,3 +4,5 @@
 .DS_Store
 pkg
 
+tests/**/Cargo.lock
+
