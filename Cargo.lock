@@ -185,8 +185,8 @@ dependencies = [
 name = "ctor"
 version = "0.9.0"
 dependencies = [
- "ctor-proc-macro 0.0.10",
- "dtor 0.5.0",
+ "ctor-proc-macro 0.0.12",
+ "dtor 0.6.0",
  "libc-print",
  "link-section",
 ]
@@ -199,7 +199,7 @@ checksum = "52560adf09603e58c9a7ee1fe1dcb95a16927b17c127f0ac02d6e768a0e25bc1"
 
 [[package]]
 name = "ctor-proc-macro"
-version = "0.0.10"
+version = "0.0.12"
 
 [[package]]
 name = "derive-io"
@@ -280,9 +280,9 @@ dependencies = [
 
 [[package]]
 name = "dtor"
-version = "0.5.0"
+version = "0.6.0"
 dependencies = [
- "dtor-proc-macro 0.0.10",
+ "dtor-proc-macro 0.0.12",
  "libc-print",
 ]
 
@@ -294,7 +294,7 @@ checksum = "f678cf4a922c215c63e0de95eb1ff08a958a81d47e485cf9da1e27bf6305cfa5"
 
 [[package]]
 name = "dtor-proc-macro"
-version = "0.0.10"
+version = "0.0.12"
 
 [[package]]
 name = "dunce"
@@ -329,9 +329,9 @@ dependencies = [
 
 [[package]]
 name = "fastrand"
-version = "2.4.0"
+version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a043dc74da1e37d6afe657061213aa6f425f855399a11d3463c6ecccc4dfda1f"
+checksum = "9f1f227452a390804cdb637b74a86990f2a7d7ba4b7d5693aac9b4dd6defd8d6"
 
 [[package]]
 name = "find-msvc-tools"
@@ -489,14 +489,14 @@ dependencies = [
 
 [[package]]
 name = "link-section"
-version = "0.0.10"
+version = "0.0.12"
 dependencies = [
  "link-section-proc-macro",
 ]
 
 [[package]]
 name = "link-section-proc-macro"
-version = "0.0.11"
+version = "0.0.12"
 
 [[package]]
 name = "linux-raw-sys"
