@@ -295,7 +295,7 @@ macro_rules! __unify_features {
     };
     (continue, next=$next_macro:path, meta=[priority = $priority:tt $(, $($meta:tt)* )?], features=[$($features:tt)*], $($rest:tt)*) => {
         // Convert the priority to a literal
-        $crate::__support::priority_to_literal!($crate::__support::unify_features, (@priority next=$next_macro, meta=[$($($meta)*)?], features=[anonymous,$($features)*], $($rest)*), $priority);
+        $crate::__support::priority_to_literal!($crate::__support::unify_features, (@priority next=$next_macro, meta=[$($($meta)*)?], features=[$($features)*], $($rest)*), $priority);
     };
     ((@priority next=$next_macro:path, meta=[$($meta:tt)*], features=[$($features:tt)*], $($rest:tt)*), $priority:tt) => {
         $crate::__support::unify_features!(continue, next=$next_macro, meta=[$($($meta)*)?], features=[(priority=($priority)),$($features)*], $($rest)*);
