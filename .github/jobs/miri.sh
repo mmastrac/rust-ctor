@@ -3,3 +3,4 @@ set -xeuo pipefail
 
 cd tests/ctor/edition-2018
 cargo miri run
+cargo miri test
