@@ -106,8 +106,8 @@ pub mod declarative {
 ///
 /// ```rust
 /// # #![cfg_attr(feature="used_linker", feature(used_with_arg))]
-/// # use ctor::*;
 /// # #[cfg(not(miri))] mod test {
+/// # use ctor::ctor;
 /// use libc_print::std_name::println;
 ///
 /// #[ctor(unsafe)]
