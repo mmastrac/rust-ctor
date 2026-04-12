@@ -206,6 +206,12 @@ pub mod __support {
             $crate::__section_parse!(@parsed #[section $($args)*] $(#[$meta])* $vis static $ident: ( $(:: $path_prefix ::)? $($path)::* ;) ( () > ; ) __in_section_helper_macro_no_generic);
         };
         // Both end up here...
+        (@parsed #[section(aux = $name:ident, no_macro)] $(#[$meta:meta])* $vis:vis static $ident:ident : ($ty:ty ;) ( $generic_ty:ty > ; ) $generic_macro:ident) => {
+            $crate::__section_parse!(@generate #[section(aux = $name)] $(#[$meta])* $vis static $ident: $ty, $generic_ty, $generic_macro);
+        };
+        (@parsed #[section(no_macro)] $(#[$meta:meta])* $vis:vis static $ident:ident : ($ty:ty ;) ( $generic_ty:ty > ; ) $generic_macro:ident) => {
+            $crate::__section_parse!(@generate #[section] $(#[$meta])* $vis static $ident: $ty, $generic_ty, $generic_macro);
+        };
         (@parsed #[section $($args:tt)*] $(#[$meta:meta])* $vis:vis static $ident:ident : ($ty:ty ;) ( $generic_ty:ty > ; ) $generic_macro:ident) => {
             $crate::__declare_macro!($vis $ident $generic_macro ($($args)*));
             $crate::__section_parse!(@generate #[section $($args)*] $(#[$meta])* $vis static $ident: $ty, $generic_ty, $generic_macro);
@@ -530,7 +536,19 @@ pub mod __support {
 }
 
 /// Define a link section.
+/// 
+/// The definition site generates two items: a static section struct that is
+/// used to access the section, and a macro that is used to place items into the
+/// section. The macro is used by the [`in_section`] procedural macro.
 ///
+/// # Attributes
+///
+/// - `no_macro`: Does not generate the submission macro at the definition site.
+///   This will require any associated [`in_section`] invocations to use the raw
+///   name of the section.
+/// - `aux = <name>`: Specifies that this section is an auxiliary section, and
+///   that the section is named `<name>+<aux>`.
+/// 
 /// # Example
 /// ```rust
 /// use link_section::{in_section, section};
@@ -573,6 +591,11 @@ impl Section {
     ) -> Self {
         Self { name, start, end }
     }
+
+    /// The byte length of the section.
+    pub fn byte_len(&self) -> usize {
+        unsafe { (self.end_ptr() as *const u8).offset_from(self.start_ptr() as *const u8) as usize }
+    }
 }
 
 #[cfg(target_family = "wasm")]
@@ -599,25 +622,17 @@ impl Section {
         }
         ptr
     }
-    /// The byte length of the section.
-    pub fn byte_len(&self) -> usize {
-        unsafe { (self.end_ptr() as *const u8).offset_from(self.start_ptr() as *const u8) as usize }
-    }
 }
 
 #[cfg(not(target_family = "wasm"))]
 impl Section {
     /// The start address of the section.
-    pub const fn start_ptr(&self) -> *const () {
+    pub fn start_ptr(&self) -> *const () {
         self.start as *const ()
     }
     /// The end address of the section.
-    pub const fn end_ptr(&self) -> *const () {
+    pub fn end_ptr(&self) -> *const () {
         self.end as *const ()
-    }
-    /// The byte length of the section.
-    pub const fn byte_len(&self) -> usize {
-        unsafe { (self.end_ptr() as *const u8).offset_from(self.start_ptr() as *const u8) as usize }
     }
 }
 
@@ -670,66 +685,18 @@ impl<T: 'static> TypedSection<T> {
         }
         ptr
     }
-
-    /// The byte length of the section.
-    pub fn byte_len(&self) -> usize {
-        unsafe { (self.end_ptr() as *const u8).offset_from(self.start_ptr() as *const u8) as usize }
-    }
-
-    /// The number of elements in the section.
-    pub fn len(&self) -> usize {
-        self.byte_len() / self.stride()
-    }
-
-    /// True if the section is empty.
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
-    /// The section as a slice.
-    pub fn as_slice(&self) -> &[T] {
-        if self.is_empty() {
-            &[]
-        } else {
-            unsafe { ::core::slice::from_raw_parts(self.start_ptr(), self.len()) }
-        }
-    }
 }
 
 #[cfg(not(target_family = "wasm"))]
 impl<T: 'static> TypedSection<T> {
     /// The start address of the section.
-    pub const fn start_ptr(&self) -> *const T {
+    pub fn start_ptr(&self) -> *const T {
         self.start as *const T
     }
 
     /// The end address of the section.
-    pub const fn end_ptr(&self) -> *const T {
+    pub fn end_ptr(&self) -> *const T {
         self.end as *const T
-    }
-
-    /// The byte length of the section.
-    pub const fn byte_len(&self) -> usize {
-        unsafe { (self.end_ptr() as *const u8).offset_from(self.start_ptr() as *const u8) as usize }
-    }
-
-    /// The number of elements in the section.
-    pub const fn len(&self) -> usize {
-        self.byte_len() / self.stride()
-    }
-
-    /// True if the section is empty.
-    pub const fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
-
-    /// The section as a slice.
-    pub const fn as_slice(&self) -> &[T] {
-        if self.is_empty() {
-            &[]
-        } else {
-            unsafe { ::core::slice::from_raw_parts(self.start_ptr(), self.len()) }
-        }
     }
 }
 
@@ -756,6 +723,30 @@ impl<T: 'static> TypedSection<T> {
                 && ::core::mem::size_of::<T>() * 2 == ::core::mem::size_of::<[T; 2]>()
         );
         ::core::mem::size_of::<T>()
+    }
+
+    /// The byte length of the section.
+    pub fn byte_len(&self) -> usize {
+        unsafe { (self.end_ptr() as *const u8).offset_from(self.start_ptr() as *const u8) as usize }
+    }
+
+    /// The number of elements in the section.
+    pub fn len(&self) -> usize {
+        self.byte_len() / self.stride()
+    }
+
+    /// True if the section is empty.
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    /// The section as a slice.
+    pub fn as_slice(&self) -> &[T] {
+        if self.is_empty() {
+            &[]
+        } else {
+            unsafe { ::core::slice::from_raw_parts(self.start_ptr(), self.len()) }
+        }
     }
 
     /// The offset of the item in the section, if it is in the section.
