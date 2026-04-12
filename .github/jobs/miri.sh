@@ -8,5 +8,5 @@ cargo miri run
 cd ../../..
 
 cd tests/link_section/basic
-cargo miri test
+cargo miri run
 cd ../../..
