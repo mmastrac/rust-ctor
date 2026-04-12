@@ -535,7 +535,7 @@ macro_rules! __dtor_entry {
                     ) { unsafe { $ident() } }
                 );
 
-                #[cfg(not(target_vendor = "apple"))]
+                #[cfg(all(not(miri), not(target_vendor = "apple")))]
                 #[inline(always)]
                 unsafe fn do_atexit(cb: unsafe extern fn()) {
                     /*unsafe*/ extern "C" {
@@ -547,7 +547,7 @@ macro_rules! __dtor_entry {
                 }
 
                 // For platforms that have __cxa_atexit, we register the dtor as scoped to dso_handle
-                #[cfg(target_vendor = "apple")]
+                #[cfg(all(not(miri), target_vendor = "apple"))]
                 #[inline(always)]
                 unsafe fn do_atexit(cb: /*unsafe*/ extern "C" fn(_: *const u8)) {
                     /*unsafe*/ extern "C" {
@@ -557,6 +557,11 @@ macro_rules! __dtor_entry {
                     unsafe {
                         __cxa_atexit(cb, ::core::ptr::null(), __dso_handle);
                     }
+                }
+
+                #[cfg(miri)]
+                unsafe fn do_atexit(_cb: unsafe extern fn(#[cfg(target_vendor = "apple")] _: *const u8)) {
+                    // no-op on miri
                 }
             }
 
