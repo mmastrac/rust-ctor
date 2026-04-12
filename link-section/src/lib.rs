@@ -536,7 +536,7 @@ pub mod __support {
 }
 
 /// Define a link section.
-/// 
+///
 /// The definition site generates two items: a static section struct that is
 /// used to access the section, and a macro that is used to place items into the
 /// section. The macro is used by the [`in_section`] procedural macro.
@@ -548,7 +548,7 @@ pub mod __support {
 ///   name of the section.
 /// - `aux = <name>`: Specifies that this section is an auxiliary section, and
 ///   that the section is named `<name>+<aux>`.
-/// 
+///
 /// # Example
 /// ```rust
 /// use link_section::{in_section, section};
