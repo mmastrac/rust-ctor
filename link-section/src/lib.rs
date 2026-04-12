@@ -285,7 +285,7 @@ pub mod __support {
         };
     }
 
-    #[cfg(all(miri, target_vendor = "apple"))]
+    #[cfg(miri)]
     mod section {
         #[doc(hidden)]
         #[macro_export]
@@ -375,7 +375,6 @@ pub mod __support {
     }
 
     #[cfg(all(
-        not(all(miri, target_vendor = "apple")),
         not(target_family = "wasm"),
         not(target_vendor = "pc")
     ))]
