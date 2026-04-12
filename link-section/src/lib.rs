@@ -290,11 +290,9 @@ pub mod __support {
         #[doc(hidden)]
         #[macro_export]
         macro_rules! __get_section {
-            (name=$ident:ident, type=$generic_ty:ty, aux=$($aux:ident)?) => {
-                {
-                    (std::ptr::null_mut(), std::ptr::null_mut())
-                }
-            };
+            (name=$ident:ident, type=$generic_ty:ty, aux=$($aux:ident)?) => {{
+                (std::ptr::null_mut(), std::ptr::null_mut())
+            }};
         }
 
         /// On Apple platforms, the linker provides a pointer to the start and end
@@ -367,10 +365,7 @@ pub mod __support {
         pub type SectionPtr<T> = *const [T; 0];
     }
 
-    #[cfg(all(
-        not(target_family = "wasm"),
-        not(target_vendor = "pc")
-    ))]
+    #[cfg(all(not(target_family = "wasm"), not(target_vendor = "pc")))]
     mod section {
         #[doc(hidden)]
         #[macro_export]
