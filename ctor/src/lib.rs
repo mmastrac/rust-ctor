@@ -34,7 +34,7 @@ pub use macros::features;
 /// macros.
 ///
 /// ```rust
-/// # mod test { use ctor::*; use libc_print::*; #[cfg(all(miri, windows))] use println as libc_println;
+/// # #[cfg(not(miri))] mod test { use ctor::*; use libc_print::*;
 /// ctor::declarative::ctor! {
 ///   #[ctor]
 ///   fn foo() {
@@ -108,6 +108,7 @@ pub mod declarative {
 /// # #![cfg_attr(feature="used_linker", feature(used_with_arg))]
 /// # extern crate ctor;
 /// # use ctor::*;
+/// # #[cfg(not(miri))] mod test {
 /// use libc_print::std_name::println;
 ///
 /// #[ctor(unsafe)]
@@ -118,7 +119,7 @@ pub mod declarative {
 ///
 /// # fn main() {
 /// println!("main()");
-/// # }
+/// # }}
 /// ```
 ///
 /// Make changes to `static` variables:
