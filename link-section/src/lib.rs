@@ -622,10 +622,12 @@ impl Section {
         // Wash away provenance for Miri
         #[cfg(miri)]
         {
-            return unsafe { self.end_ptr() as usize - self.start_ptr() as usize };
+            return self.end_ptr() as usize - self.start_ptr() as usize;
         }
         #[cfg(not(miri))]
-        unsafe { (self.end_ptr() as *const u8).offset_from(self.start_ptr() as *const u8) as usize }
+        unsafe {
+            (self.end_ptr() as *const u8).offset_from(self.start_ptr() as *const u8) as usize
+        }
     }
 }
 
