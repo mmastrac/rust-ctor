@@ -32,7 +32,6 @@ pub use macros::__support;
 ///
 /// ```rust
 /// # #![cfg_attr(feature="used_linker", feature(used_with_arg))]
-/// # extern crate dtor;
 /// # use dtor::dtor;
 /// # fn main() {}
 ///

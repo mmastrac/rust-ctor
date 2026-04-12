@@ -45,7 +45,7 @@ pub use macros::features;
 ///
 /// // ... the above is identical to:
 ///
-/// # mod test_2 { use ctor::*; use libc_print::*;
+/// # #[cfg(not(miri))] mod test_2 { use ctor::*; use libc_print::*;
 /// #[ctor]
 /// fn foo() {
 ///   libc_println!("Hello, world!");
