@@ -723,6 +723,14 @@ impl<T: 'static> TypedSection<T> {
 #[cfg(not(target_family = "wasm"))]
 impl<T: 'static> TypedSection<T> {
     /// The start address of the section.
+    #[cfg(miri)]
+    pub fn start_ptr(&self) -> *const T {
+        // Wash away provenance for Miri
+        self.start_ptr() as usize as *const T
+    }
+
+    /// The start address of the section.
+    #[cfg(not(miri))]
     pub fn start_ptr(&self) -> *const T {
         self.start as *const T
     }
