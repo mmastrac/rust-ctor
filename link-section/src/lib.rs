@@ -353,7 +353,11 @@ pub mod __support {
         }
     }
 
-    #[cfg(all(not(all(miri, target_vendor = "apple")), not(target_family = "wasm"), not(target_vendor = "pc")))]
+    #[cfg(all(
+        not(all(miri, target_vendor = "apple")),
+        not(target_family = "wasm"),
+        not(target_vendor = "pc")
+    ))]
     #[doc(hidden)]
     #[macro_export]
     macro_rules! __get_section {
