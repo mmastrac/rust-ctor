@@ -73,7 +73,13 @@ pub static DEBUGGABLE_FUNCTION: fn() = {
     &(debuggable_function as fn())
 };
 
-/// Dumps the various sections.
+#[cfg(miri)]
+pub fn main() {
+    eprintln!("Miri is not supported for this test");
+    assert_eq!(TYPED_LINK_SECTION.len(), 0);
+}
+
+#[cfg(not(miri))]
 pub fn main() {
     eprintln!("LINK_SECTION: {:?}", LINK_SECTION);
     link_section_function();
