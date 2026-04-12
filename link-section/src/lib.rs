@@ -300,7 +300,7 @@ pub mod __support {
         pub type SectionPtr<T> = *const ::core::marker::PhantomData<T>;
     }
 
-    #[cfg(target_family = "wasm")]
+    #[cfg(all(not(miri), target_family = "wasm"))]
     mod section {
         #[doc(hidden)]
         #[macro_export]
@@ -333,7 +333,7 @@ pub mod __support {
             &'static ::core::sync::atomic::AtomicPtr<::core::marker::PhantomData<T>>;
     }
 
-    #[cfg(target_vendor = "pc")]
+    #[cfg(all(not(miri), target_vendor = "pc"))]
     mod section {
         #[doc(hidden)]
         #[macro_export]
@@ -365,7 +365,7 @@ pub mod __support {
         pub type SectionPtr<T> = *const [T; 0];
     }
 
-    #[cfg(all(not(target_family = "wasm"), not(target_vendor = "pc")))]
+    #[cfg(all(not(miri), not(target_family = "wasm"), not(target_vendor = "pc")))]
     mod section {
         #[doc(hidden)]
         #[macro_export]
@@ -606,15 +606,7 @@ impl Section {
 
     /// The byte length of the section.
     pub fn byte_len(&self) -> usize {
-        // Wash away provenance for Miri
-        #[cfg(miri)]
-        {
-            return self.end_ptr() as usize - self.start_ptr() as usize;
-        }
-        #[cfg(not(miri))]
-        unsafe {
-            (self.end_ptr() as *const u8).offset_from(self.start_ptr() as *const u8) as usize
-        }
+        unsafe { (self.end_ptr() as *const u8).offset_from(self.start_ptr() as *const u8) as usize }
     }
 }
 
@@ -711,21 +703,11 @@ impl<T: 'static> TypedSection<T> {
 impl<T: 'static> TypedSection<T> {
     /// The start address of the section.
     pub fn start_ptr(&self) -> *const T {
-        // Wash away provenance for Miri
-        #[cfg(miri)]
-        {
-            return self.start as usize as *const T;
-        }
         self.start as usize as *const T
     }
 
     /// The end address of the section.
     pub fn end_ptr(&self) -> *const T {
-        // Wash away provenance for Miri
-        #[cfg(miri)]
-        {
-            return self.end as usize as *const T;
-        }
         self.end as *const T
     }
 }
@@ -757,15 +739,7 @@ impl<T: 'static> TypedSection<T> {
 
     /// The byte length of the section.
     pub fn byte_len(&self) -> usize {
-        // Wash away provenance for Miri
-        #[cfg(miri)]
-        {
-            return self.end_ptr() as usize - self.start_ptr() as usize;
-        }
-        #[cfg(not(miri))]
-        unsafe {
-            (self.end_ptr() as *const u8).offset_from(self.start_ptr() as *const u8) as usize
-        }
+        unsafe { (self.end_ptr() as *const u8).offset_from(self.start_ptr() as *const u8) as usize }
     }
 
     /// The number of elements in the section.
