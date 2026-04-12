@@ -292,6 +292,12 @@ pub mod __support {
         (name=$ident:ident, type=$generic_ty:ty, aux=$($aux:ident)?) => {
             // Disable link sections for miri (`extern static `␁section$start$__DATA$CTOR` is not supported by Miri`)
             {
+                extern "C" {
+                    #[no_mangle]
+                    pub fn getsectbyname(segname: *const u8, sectname: *const u8) -> *const u8;
+                }
+                unsafe { getsectbyname(b"__DATA\0".as_ptr(), b"section$start$__DATA$CTOR\0".as_ptr()) };
+
                 (std::ptr::null_mut(), std::ptr::null_mut())
             }
         };
