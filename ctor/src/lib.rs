@@ -34,7 +34,7 @@ pub use macros::features;
 /// macros.
 ///
 /// ```rust
-/// # mod test { use ctor::*; use libc_print::*;
+/// # mod test { use ctor::*; use libc_print::*; #[cfg(all(miri, windows))] use println as libc_println;
 /// ctor::declarative::ctor! {
 ///   #[ctor]
 ///   fn foo() {
