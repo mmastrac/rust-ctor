@@ -760,7 +760,15 @@ impl<T: 'static> TypedSection<T> {
 
     /// The byte length of the section.
     pub fn byte_len(&self) -> usize {
-        unsafe { (self.end_ptr() as *const u8).offset_from(self.start_ptr() as *const u8) as usize }
+        // Wash away provenance for Miri
+        #[cfg(miri)]
+        {
+            return self.end_ptr() as usize - self.start_ptr() as usize;
+        }
+        #[cfg(not(miri))]
+        unsafe {
+            (self.end_ptr() as *const u8).offset_from(self.start_ptr() as *const u8) as usize
+        }
     }
 
     /// The number of elements in the section.
