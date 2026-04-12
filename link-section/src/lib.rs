@@ -285,7 +285,7 @@ pub mod __support {
         };
     }
 
-    #[cfg(miri)]
+    #[cfg(all(miri, target_vendor = "apple"))]
     #[doc(hidden)]
     #[macro_export]
     macro_rules! __get_section {
@@ -296,14 +296,14 @@ pub mod __support {
                     #[no_mangle]
                     pub fn getsectbyname(segname: *const u8, sectname: *const u8) -> *const u8;
                 }
-                unsafe { getsectbyname(b"__DATA\0".as_ptr(), b"section$start$__DATA$CTOR\0".as_ptr()) };
+                // unsafe { getsectbyname(b"__DATA\0".as_ptr(), b"section$start$__DATA$CTOR\0".as_ptr()) };
 
                 (std::ptr::null_mut(), std::ptr::null_mut())
             }
         };
     }
 
-    #[cfg(all(not(miri), target_family = "wasm"))]
+    #[cfg(target_family = "wasm")]
     #[doc(hidden)]
     #[macro_export]
     macro_rules! __get_section {
@@ -328,7 +328,7 @@ pub mod __support {
         }
     }
 
-    #[cfg(all(not(miri), target_vendor = "pc"))]
+    #[cfg(target_vendor = "pc")]
     #[doc(hidden)]
     #[macro_export]
     macro_rules! __get_section {
@@ -353,7 +353,7 @@ pub mod __support {
         }
     }
 
-    #[cfg(all(not(miri), not(target_family = "wasm"), not(target_vendor = "pc")))]
+    #[cfg(all(not(all(miri, target_vendor = "apple")), not(target_family = "wasm"), not(target_vendor = "pc")))]
     #[doc(hidden)]
     #[macro_export]
     macro_rules! __get_section {
