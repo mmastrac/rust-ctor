@@ -126,7 +126,7 @@ mod native {
     #[cfg(not(miri))]
     #[inline(always)]
     unsafe fn _run_atexit(cb: unsafe extern "C" fn()) {
-        #[allow(missing_unsafe_on_extern)] // MSRV
+        #[allow(missing_unsafe_on_extern, unknown_lints)] // MSRV
 
         /*unsafe*/
         extern "C" {
@@ -141,7 +141,7 @@ mod native {
     #[cfg(all(not(miri), feature = "cxa_atexit"))]
     #[inline(always)]
     unsafe fn _run_cxa_atexit(cb: extern "C" fn()) {
-        #[allow(missing_unsafe_on_extern)] // MSRV
+        #[allow(missing_unsafe_on_extern, unknown_lints)] // MSRV
 
         /*unsafe*/
         extern "C" {
