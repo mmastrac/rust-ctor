@@ -86,28 +86,30 @@ mod native {
     #![allow(unsafe_code, unused_unsafe)]
 
     /// Registers a raw function to be called at binary exit time.
-    /// 
+    ///
     /// Corresponds to `atexit` in C.
-    /// 
+    ///
     /// # Safety
-    /// 
+    ///
     /// Rust does not provide any safety guarantees about life-before-main or
     /// life-after-main. Ordering of destructors is not guaranteed, nor that a
     /// destructor will be called at all.
     #[allow(unused)]
     #[inline(always)]
     pub unsafe fn at_binary_exit(cb: extern "C" fn()) {
-        unsafe { _run_atexit(cb); }
+        unsafe {
+            _run_atexit(cb);
+        }
     }
 
     /// Registers a raw function to be called at library (libc calls this a DSO
     /// or "dynamic shared object") exit time.
-    /// 
+    ///
     /// Corresponds to `__cxa_atexit` in C, though the exit function argument is
     /// not available.
-    /// 
+    ///
     /// # Safety
-    /// 
+    ///
     /// Rust does not provide any safety guarantees about life-before-main or
     /// life-after-main. Ordering of destructors is not guaranteed, nor that a
     /// destructor will be called at all.
@@ -115,13 +117,16 @@ mod native {
     #[allow(unused)]
     #[inline(always)]
     pub unsafe fn at_library_exit(cb: extern "C" fn()) {
-        unsafe { _run_cxa_atexit(cb); }
+        unsafe {
+            _run_cxa_atexit(cb);
+        }
     }
 
+    /// Register a function to be called at libc exit time.
     #[cfg(not(miri))]
     #[inline(always)]
     unsafe fn _run_atexit(cb: unsafe extern "C" fn()) {
-        unsafe extern "C" {
+        /*unsafe*/ extern "C" {
             fn atexit(cb: unsafe extern "C" fn());
         }
         unsafe {
@@ -129,13 +134,17 @@ mod native {
         }
     }
 
-    // For platforms that have __cxa_atexit, we register the dtor as scoped to dso_handle
+    /// Register a function scoped to the current dynamic shared object.
     #[cfg(all(not(miri), feature = "cxa_atexit"))]
     #[inline(always)]
     unsafe fn _run_cxa_atexit(cb: extern "C" fn()) {
-        unsafe extern "C" {
+        /*unsafe*/ extern "C" {
             static __dso_handle: *const u8;
-            fn __cxa_atexit(cb: /*unsafe*/ extern "C" fn(_: *const u8), arg: *const u8, dso_handle: *const u8);
+            fn __cxa_atexit(
+                cb: /*unsafe*/ extern "C" fn(_: *const u8),
+                arg: *const u8,
+                dso_handle: *const u8,
+            );
         }
         extern "C" fn exit_fn(fn_ptr: *const u8) {
             let f: fn() = unsafe { std::mem::transmute(fn_ptr) };
