@@ -83,7 +83,7 @@ pub mod declarative {
 pub use native::*;
 
 mod native {
-    #![allow(unsafe_code, unused_unsafe)]
+    #![allow(unsafe_code, unused_unsafe, unknown_lints)]
 
     /// Registers a raw function to be called at binary exit time.
     ///
@@ -126,7 +126,7 @@ mod native {
     #[cfg(not(miri))]
     #[inline(always)]
     unsafe fn _run_atexit(cb: unsafe extern "C" fn()) {
-        #[allow(missing_unsafe_on_extern, unknown_lints)] // MSRV
+        #[allow(missing_unsafe_on_extern)] // MSRV
         extern "C" {
             fn atexit(cb: unsafe extern "C" fn());
         }
@@ -139,7 +139,7 @@ mod native {
     #[cfg(all(not(miri), feature = "cxa_atexit"))]
     #[inline(always)]
     unsafe fn _run_cxa_atexit(cb: extern "C" fn()) {
-        #[allow(missing_unsafe_on_extern, unknown_lints)] // MSRV
+        #[allow(missing_unsafe_on_extern)] // MSRV
         extern "C" {
             static __dso_handle: *const u8;
             fn __cxa_atexit(
