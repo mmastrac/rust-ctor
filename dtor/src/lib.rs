@@ -79,59 +79,64 @@ pub mod declarative {
     pub use crate::__support::dtor_parse as dtor;
 }
 
-/// Registers a raw function to be called at binary exit time.
-/// 
-/// Corresponds to `atexit` in C.
-pub unsafe fn at_binary_exit(cb: extern "C" fn()) {
-    _run_atexit(cb);
-}
+#[cfg(feature = "export_native")]
+pub use native::*;
 
-/// Registers a raw function to be called at library (libc calls this a DSO or
-/// "dynamic shared object") exit time.
-/// 
-/// Corresponds to `__cxa_atexit` in C, though the exit function argument is not
-/// available.
-#[cfg(feature = "dso_handle")]
-pub unsafe fn at_library_exit(cb: extern "C" fn()) {
-    _run_cxa_atexit(cb);
-}
+mod native {
+    /// Registers a raw function to be called at binary exit time.
+    /// 
+    /// Corresponds to `atexit` in C.
+    pub unsafe fn at_binary_exit(cb: extern "C" fn()) {
+        _run_atexit(cb);
+    }
 
-#[cfg(not(miri))]
-#[inline(always)]
-unsafe fn _run_atexit(cb: unsafe extern "C" fn()) {
-    /*unsafe*/ extern "C" {
-        fn atexit(cb: unsafe extern "C" fn());
+    /// Registers a raw function to be called at library (libc calls this a DSO or
+    /// "dynamic shared object") exit time.
+    /// 
+    /// Corresponds to `__cxa_atexit` in C, though the exit function argument is not
+    /// available.
+    #[cfg(feature = "cxa_atexit")]
+    pub unsafe fn at_library_exit(cb: extern "C" fn()) {
+        _run_cxa_atexit(cb);
     }
-    unsafe {
-        atexit(cb);
-    }
-}
 
-// For platforms that have __cxa_atexit, we register the dtor as scoped to dso_handle
-#[cfg(all(not(miri), feature = "cxa_atexit"))]
-#[inline(always)]
-unsafe fn _run_cxa_atexit(cb: extern "C" fn()) {
-    /*unsafe*/ extern "C" {
-        static __dso_handle: *const u8;
-        fn __cxa_atexit(cb: /*unsafe*/ extern "C" fn(_: *const u8), arg: *const u8, dso_handle: *const u8);
+    #[cfg(not(miri))]
+    #[inline(always)]
+    unsafe fn _run_atexit(cb: unsafe extern "C" fn()) {
+        /*unsafe*/ extern "C" {
+            fn atexit(cb: unsafe extern "C" fn());
+        }
+        unsafe {
+            atexit(cb);
+        }
     }
-    extern "C" fn exit_fn(fn_ptr: *const u8) {
-        let f: fn() = unsafe { std::mem::transmute(fn_ptr) };
-        f()
-    }
-    unsafe {
-        __cxa_atexit(exit_fn, cb as _, __dso_handle);
-    }
-}
 
-#[cfg(miri)]
-#[inline(always)]
-unsafe fn _run_atexit(_cb: extern "C" fn()) {
-    // no-op on miri
-}
+    // For platforms that have __cxa_atexit, we register the dtor as scoped to dso_handle
+    #[cfg(all(not(miri), feature = "cxa_atexit"))]
+    #[inline(always)]
+    unsafe fn _run_cxa_atexit(cb: extern "C" fn()) {
+        /*unsafe*/ extern "C" {
+            static __dso_handle: *const u8;
+            fn __cxa_atexit(cb: /*unsafe*/ extern "C" fn(_: *const u8), arg: *const u8, dso_handle: *const u8);
+        }
+        extern "C" fn exit_fn(fn_ptr: *const u8) {
+            let f: fn() = unsafe { std::mem::transmute(fn_ptr) };
+            f()
+        }
+        unsafe {
+            __cxa_atexit(exit_fn, cb as _, __dso_handle);
+        }
+    }
 
-#[cfg(miri)]
-#[inline(always)]
-unsafe fn _run_cxa_atexit(_cb: extern "C" fn()) {
-    // no-op on miri
+    #[cfg(miri)]
+    #[inline(always)]
+    unsafe fn _run_atexit(_cb: extern "C" fn()) {
+        // no-op on miri
+    }
+
+    #[cfg(miri)]
+    #[inline(always)]
+    unsafe fn _run_cxa_atexit(_cb: extern "C" fn()) {
+        // no-op on miri
+    }
 }
