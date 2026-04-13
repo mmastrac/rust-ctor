@@ -189,7 +189,7 @@ name = "ctor"
 version = "0.10.0"
 dependencies = [
  "ctor-proc-macro 0.0.12",
- "dtor 0.7.0",
+ "dtor 0.8.0",
  "libc-print",
  "link-section 0.2.0",
 ]
@@ -201,7 +201,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "95d0d11eb38e7642efca359c3cf6eb7b2e528182d09110165de70192b0352775"
 dependencies = [
  "ctor-proc-macro 0.0.12 (registry+https://github.com/rust-lang/crates.io-index)",
- "dtor 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "dtor 0.7.0",
  "link-section 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -286,18 +286,18 @@ dependencies = [
 [[package]]
 name = "dtor"
 version = "0.7.0"
-dependencies = [
- "dtor-proc-macro 0.0.12",
- "libc-print",
-]
-
-[[package]]
-name = "dtor"
-version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "17f72721db8027a4e96dd6fb50d2a1d32259c9d3da1b63dee612ccd981e14293"
 dependencies = [
  "dtor-proc-macro 0.0.12 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "dtor"
+version = "0.8.0"
+dependencies = [
+ "dtor-proc-macro 0.0.12",
+ "libc-print",
 ]
 
 [[package]]

@@ -10,7 +10,11 @@ pub use macros::features;
 
 #[doc(hidden)]
 #[allow(unused)]
-pub use macros::__support;
+pub mod __support {
+    pub use crate::macros::__support::dtor_parse_impl as dtor_parse;
+    pub use crate::macros::__support::*;
+    pub use crate::native::*;
+}
 
 /// Marks a function as a library/executable destructor. This uses OS-specific
 /// linker sections to call a specific function at termination time.
@@ -76,7 +80,7 @@ pub use dtor_proc_macro::__dtor_from_ctor;
 /// ```
 pub mod declarative {
     #[doc(inline)]
-    pub use crate::__support::dtor_parse as dtor;
+    pub use crate::__support::dtor_parse_impl as dtor;
 }
 
 #[cfg(feature = "export_native")]
@@ -94,7 +98,6 @@ mod native {
     /// Rust does not provide any safety guarantees about life-before-main or
     /// life-after-main. Ordering of destructors is not guaranteed, nor that a
     /// destructor will be called at all.
-    #[allow(unused)]
     #[inline(always)]
     pub unsafe fn at_binary_exit(cb: extern "C" fn()) {
         unsafe {
@@ -113,8 +116,7 @@ mod native {
     /// Rust does not provide any safety guarantees about life-before-main or
     /// life-after-main. Ordering of destructors is not guaranteed, nor that a
     /// destructor will be called at all.
-    #[cfg(feature = "cxa_atexit")]
-    #[allow(unused)]
+    #[cfg(any(feature = "cxa_atexit", target_vendor = "apple"))]
     #[inline(always)]
     pub unsafe fn at_library_exit(cb: extern "C" fn()) {
         unsafe {
@@ -136,7 +138,7 @@ mod native {
     }
 
     /// Register a function scoped to the current dynamic shared object.
-    #[cfg(all(not(miri), feature = "cxa_atexit"))]
+    #[cfg(all(not(miri), any(feature = "cxa_atexit", target_vendor = "apple")))]
     #[inline(always)]
     unsafe fn _run_cxa_atexit(cb: extern "C" fn()) {
         #[allow(missing_unsafe_on_extern)] // MSRV
@@ -149,7 +151,7 @@ mod native {
             );
         }
         extern "C" fn exit_fn(fn_ptr: *const u8) {
-            let f: fn() = unsafe { std::mem::transmute(fn_ptr) };
+            let f: fn() = unsafe { ::core::mem::transmute(fn_ptr) };
             f()
         }
         unsafe {

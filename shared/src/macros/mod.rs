@@ -23,7 +23,7 @@ pub mod __support {
     pub use crate::__ctor_link_section_attr as ctor_link_section_attr;
     pub use crate::__ctor_parse as ctor_parse;
     pub use crate::__dtor_entry as dtor_entry;
-    pub use crate::__dtor_parse as dtor_parse;
+    pub use crate::__dtor_parse_impl as dtor_parse_impl;
     pub use crate::__get_priority as get_priority;
     pub use crate::__if_has_feature as if_has_feature;
     pub use crate::__if_unsafe as if_unsafe;
@@ -126,7 +126,7 @@ macro_rules! __ctor_parse {
 /// # }
 #[doc(hidden)]
 #[macro_export]
-macro_rules! __dtor_parse {
+macro_rules! __dtor_parse_impl {
     (#[dtor $(($($meta:tt)*))?] $(#[$imeta:meta])* pub ( $($extra:tt)* ) $($item:tt)*) => {
         $crate::__support::unify_features!(next=$crate::__support::dtor_entry, meta=[$($($meta)*)?], imeta=$(#[$imeta])*, vis=[pub($($extra)*)], item=$($item)*);
     };
@@ -522,7 +522,15 @@ macro_rules! __dtor_entry {
 
                 $crate::__support::ctor_call!(
                     features=$features,
-                    { unsafe { do_atexit(__dtor); } }
+                    { unsafe {
+                        // Maintain compatibility with earlier versions of dtor. For
+                        // ctor 1.0 we can remove `dtor` as a default and then make
+                        // this `at_library_exit` by default.
+                        #[cfg(target_vendor = "apple")]
+                        $crate::__support::at_library_exit(__dtor);
+                        #[cfg(not(target_vendor = "apple"))]
+                        $crate::__support::at_binary_exit(__dtor);
+                    } }
                 );
 
                 $crate::__support::ctor_link_section!(
@@ -530,39 +538,8 @@ macro_rules! __dtor_entry {
                     features=$features,
                     (""),
 
-                    /*unsafe*/ extern "C" fn __dtor(
-                        #[cfg(target_vendor = "apple")] _: *const u8
-                    ) { unsafe { $ident() } }
+                    /*unsafe*/ extern "C" fn __dtor() { unsafe { $ident() } }
                 );
-
-                #[cfg(all(not(miri), not(target_vendor = "apple")))]
-                #[inline(always)]
-                unsafe fn do_atexit(cb: unsafe extern fn()) {
-                    /*unsafe*/ extern "C" {
-                        fn atexit(cb: unsafe extern fn());
-                    }
-                    unsafe {
-                        atexit(cb);
-                    }
-                }
-
-                // For platforms that have __cxa_atexit, we register the dtor as scoped to dso_handle
-                #[cfg(all(not(miri), target_vendor = "apple"))]
-                #[inline(always)]
-                unsafe fn do_atexit(cb: /*unsafe*/ extern "C" fn(_: *const u8)) {
-                    /*unsafe*/ extern "C" {
-                        static __dso_handle: *const u8;
-                        fn __cxa_atexit(cb: /*unsafe*/ extern "C" fn(_: *const u8), arg: *const u8, dso_handle: *const u8);
-                    }
-                    unsafe {
-                        __cxa_atexit(cb, ::core::ptr::null(), __dso_handle);
-                    }
-                }
-
-                #[cfg(miri)]
-                unsafe fn do_atexit(_cb: unsafe extern fn(#[cfg(target_vendor = "apple")] _: *const u8)) {
-                    // no-op on miri
-                }
             }
 
             $block

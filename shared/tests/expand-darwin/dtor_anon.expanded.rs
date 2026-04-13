@@ -11,28 +11,14 @@ const _: () = {
                 #[allow(non_snake_case)]
                 extern "C" fn __CTOR_FUNCTION_INNER() -> ::shared::__support::CtorRetType {
                     unsafe {
-                        do_atexit(__dtor);
+                        ::shared::__support::at_library_exit(__dtor);
                     };
                     ::core::default::Default::default()
                 }
                 __CTOR_FUNCTION_INNER
             };
-            extern "C" fn __dtor(_: *const u8) {
+            extern "C" fn __dtor() {
                 unsafe { foo() }
-            }
-            #[inline(always)]
-            unsafe fn do_atexit(cb: extern "C" fn(_: *const u8)) {
-                extern "C" {
-                    static __dso_handle: *const u8;
-                    fn __cxa_atexit(
-                        cb: extern "C" fn(_: *const u8),
-                        arg: *const u8,
-                        dso_handle: *const u8,
-                    );
-                }
-                unsafe {
-                    __cxa_atexit(cb, ::core::ptr::null(), __dso_handle);
-                }
             }
         }
         {

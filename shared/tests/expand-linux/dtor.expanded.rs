@@ -11,7 +11,7 @@ unsafe fn foo() {
             #[allow(non_snake_case)]
             extern "C" fn __CTOR_FUNCTION_INNER() -> ::shared::__support::CtorRetType {
                 unsafe {
-                    do_atexit(__dtor);
+                    ::shared::__support::at_binary_exit(__dtor);
                 };
                 ::core::default::Default::default()
             }
@@ -20,15 +20,6 @@ unsafe fn foo() {
         #[link_section = ".text.exit"]
         extern "C" fn __dtor() {
             unsafe { foo() }
-        }
-        #[inline(always)]
-        unsafe fn do_atexit(cb: unsafe extern fn()) {
-            extern "C" {
-                fn atexit(cb: unsafe extern fn());
-            }
-            unsafe {
-                atexit(cb);
-            }
         }
     }
     {
