@@ -141,13 +141,13 @@ macro_rules! __dtor_parse_impl {
     };
     // Reorder attributes that aren't `#[dtor]`
     (#[$imeta:meta] $($rest:tt)*) => {
-        $crate::__support::dtor_parse!(__reorder__(#[$imeta],), $($rest)*);
+        $crate::__support::dtor_parse_impl!(__reorder__(#[$imeta],), $($rest)*);
     };
     (__reorder__($(#[$imeta:meta],)*), #[dtor $(($($meta:tt)*))?] $($rest:tt)*) => {
-        $crate::__support::dtor_parse!(#[dtor $(($($meta)*))?] $(#[$imeta])* $($rest)*);
+        $crate::__support::dtor_parse_impl!(#[dtor $(($($meta)*))?] $(#[$imeta])* $($rest)*);
     };
     (__reorder__($(#[$imeta:meta],)*), #[$imeta2:meta] $($rest:tt)*) => {
-        $crate::__support::dtor_parse!(__reorder__($(#[$imeta],)*#[$imeta2],), $($rest)*);
+        $crate::__support::dtor_parse_impl!(__reorder__($(#[$imeta],)*#[$imeta2],), $($rest)*);
     };
 }
 

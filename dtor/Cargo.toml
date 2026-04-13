@@ -27,5 +27,9 @@ dtor-proc-macro = { workspace = true, optional = true }
 [dev-dependencies]
 libc-print = "0.1"
 
+[[example]]
+name = "dtor-example"
+path = "src/example.rs"
+
 [lib]
 name = "dtor"

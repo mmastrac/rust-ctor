@@ -3,9 +3,8 @@
 
 #![cfg_attr(feature = "used_linker", feature(used_with_arg))]
 
+use dtor::dtor;
 use libc_print::*;
-use std::collections::HashMap;
-use ctor::{ctor, dtor};
 
 #[dtor]
 #[allow(unsafe_code)]
@@ -13,6 +12,7 @@ unsafe fn dtor() {
     libc_eprintln!("dtor");
 }
 
+/// Doc
 #[dtor]
 #[allow(unsafe_code)]
 unsafe fn dtor_unsafe() {

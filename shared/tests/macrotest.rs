@@ -20,13 +20,8 @@ pub fn pass_linux() {
 }
 
 #[test]
-pub fn pass() {
-    macrotest::expand("tests/expand/*.rs");
-}
-
-#[test]
 pub fn trybuild() {
     let t = trybuild::TestCases::new();
     t.compile_fail("tests/errors/*.rs");
-    t.pass("tests/expand/*.rs");
+    t.pass("tests/pass/*.rs");
 }

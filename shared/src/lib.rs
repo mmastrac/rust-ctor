@@ -2,6 +2,15 @@
 
 pub mod macros;
 
-pub use __support::ctor_parse;
-pub use __support::dtor_parse_impl as dtor_parse;
-pub use macros::__support;
+pub use macros::__support::ctor_parse;
+pub use macros::__support::dtor_parse_impl as dtor_parse;
+
+pub mod __support {
+    pub use crate::macros::__support::*;
+    #[allow(unused)]
+    pub fn at_library_exit(_: unsafe extern "C" fn()) {
+    }
+    #[allow(unused)]
+    pub fn at_binary_exit(_: unsafe extern "C" fn()) {
+    }
+}
