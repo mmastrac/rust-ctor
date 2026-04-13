@@ -5,6 +5,7 @@ pub mod macros;
 pub use macros::__support::ctor_parse;
 pub use macros::__support::dtor_parse_impl as dtor_parse;
 
+#[allow(unreachable_pub)]
 pub mod __support {
     pub use crate::macros::__support::*;
     #[allow(unused)]
