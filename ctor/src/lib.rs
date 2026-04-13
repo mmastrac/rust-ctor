@@ -20,7 +20,12 @@ extern crate std;
 
 #[doc(hidden)]
 #[allow(unused)]
-pub use macros::__support;
+pub mod __support {
+    pub use crate::macros::__support::*;
+
+    #[cfg(feature = "dtor")]
+    pub use dtor::declarative::dtor as dtor_parse;
+}
 
 mod macros;
 

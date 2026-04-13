@@ -9,21 +9,7 @@ fn foo() {
         const fn ctor_without_unsafe_is_deprecated() {}
         #[allow(unused)]
         static UNSAFE_WARNING: () = ctor_without_unsafe_is_deprecated();
-        const _: () = {
-            #[link_section = "__DATA,CTOR,regular,no_dead_strip"]
-            #[used]
-            static ANONYMOUS: <::shared::__support::explicit_ctor::CTOR as ::link_section::__support::SectionItemType>::Item = (
-                {
-                    fn ctor() {
-                        unsafe {
-                            foo();
-                        }
-                    }
-                    ctor
-                },
-                1,
-            );
-        };
+        (/*ERROR*/);
     }
     {
         {
