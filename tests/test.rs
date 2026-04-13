@@ -1,5 +1,7 @@
 //! `clitest` tests.
 
+#![cfg(not(miri))]
+
 /// `ctor` tests
 #[cfg(test)]
 mod ctor;

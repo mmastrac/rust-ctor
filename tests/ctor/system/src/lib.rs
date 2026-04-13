@@ -3,11 +3,6 @@
 #![allow(unused_features)]
 #![cfg_attr(feature = "used_linker", feature(used_with_arg))]
 
-// Prevent a spurious 'unused_imports' warning
-#[allow(unused_imports)]
-#[macro_use]
-extern crate ctor;
-
 #[cfg(test)]
 mod test {
     use libc_print::*;

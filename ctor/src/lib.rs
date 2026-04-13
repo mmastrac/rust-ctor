@@ -34,7 +34,7 @@ pub use macros::features;
 /// macros.
 ///
 /// ```rust
-/// # mod test { use ctor::*; use libc_print::*;
+/// # #[cfg(not(miri))] mod test { use ctor::*; use libc_print::*;
 /// ctor::declarative::ctor! {
 ///   #[ctor]
 ///   fn foo() {
@@ -45,7 +45,7 @@ pub use macros::features;
 ///
 /// // ... the above is identical to:
 ///
-/// # mod test_2 { use ctor::*; use libc_print::*;
+/// # #[cfg(not(miri))] mod test_2 { use ctor::*; use libc_print::*;
 /// #[ctor]
 /// fn foo() {
 ///   libc_println!("Hello, world!");
@@ -74,10 +74,10 @@ pub mod declarative {
 /// Multiple startup functions/statics are supported, but the invocation order
 /// is not guaranteed.
 ///
-/// The `ctor` crate assumes it is available as a direct dependency, with
-/// `extern crate ctor`. If you re-export `ctor` items as part of your crate,
-/// you can use the `crate_path` parameter to redirect the macro's output to the
-/// correct crate.
+/// The `ctor` crate assumes it is available as a direct dependency, If you
+/// re-export `ctor` items as part of your crate, you can use the `crate_path`
+/// parameter to redirect the macro's output to the correct crate, or use the
+/// [`declarative::ctor`] form.
 ///
 /// # Attribute parameters
 ///
@@ -106,8 +106,8 @@ pub mod declarative {
 ///
 /// ```rust
 /// # #![cfg_attr(feature="used_linker", feature(used_with_arg))]
-/// # extern crate ctor;
-/// # use ctor::*;
+/// # #[cfg(not(miri))] mod test {
+/// # use ctor::ctor;
 /// use libc_print::std_name::println;
 ///
 /// #[ctor(unsafe)]
@@ -118,14 +118,13 @@ pub mod declarative {
 ///
 /// # fn main() {
 /// println!("main()");
-/// # }
+/// # }}
 /// ```
 ///
 /// Make changes to `static` variables:
 ///
 /// ```rust
 /// # #![cfg_attr(feature="used_linker", feature(used_with_arg))]
-/// # extern crate ctor;
 /// # mod test {
 /// # use ctor::*;
 /// # use std::sync::atomic::{AtomicBool, Ordering};
@@ -142,7 +141,6 @@ pub mod declarative {
 ///
 /// ```rust
 /// # #![cfg_attr(feature="used_linker", feature(used_with_arg))]
-/// # extern crate ctor;
 /// # mod test {
 /// # use std::collections::HashMap;
 /// # use ctor::*;
@@ -168,7 +166,6 @@ pub mod declarative {
 ///
 /// ```rust
 /// # #![cfg_attr(feature="used_linker", feature(used_with_arg))]
-/// # extern crate ctor;
 /// # mod test {
 /// # use ctor::*;
 /// #[ctor(unsafe)]
@@ -198,7 +195,6 @@ pub mod declarative {
 /// default `std` feature.
 ///
 /// ```rust
-/// # extern crate ctor;
 /// # mod test {
 /// # use ctor::*;
 /// # use std::collections::HashMap;
@@ -217,7 +213,6 @@ pub mod declarative {
 /// which eagerly initializes the `HashMap` inside a `OnceLock` at startup time:
 ///
 /// ```rust
-/// # extern crate ctor;
 /// # mod test {
 /// # use ctor::ctor;
 /// # use std::collections::HashMap;

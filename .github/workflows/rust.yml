@@ -47,7 +47,7 @@ jobs:
                 job: [lint, test, miri]
               windows:
                 os: windows-latest
-                job: [lint, test]
+                job: [lint, test, miri]
           config: |
             github: ${{ toJSON(github) }}
 

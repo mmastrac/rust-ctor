@@ -1,3 +1,5 @@
+#![cfg(not(miri))]
+
 //! To overwrite the Linux expansion tests on macOS, run:
 //!
 //! ```bash
