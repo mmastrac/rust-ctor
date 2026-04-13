@@ -83,6 +83,8 @@ pub mod declarative {
 pub use native::*;
 
 mod native {
+    #![allow(unsafe_code, unused_unsafe)]
+
     /// Registers a raw function to be called at binary exit time.
     /// 
     /// Corresponds to `atexit` in C.
@@ -95,7 +97,7 @@ mod native {
     #[allow(unused)]
     #[inline(always)]
     pub unsafe fn at_binary_exit(cb: extern "C" fn()) {
-        _run_atexit(cb);
+        unsafe { _run_atexit(cb); }
     }
 
     /// Registers a raw function to be called at library (libc calls this a DSO
@@ -113,7 +115,7 @@ mod native {
     #[allow(unused)]
     #[inline(always)]
     pub unsafe fn at_library_exit(cb: extern "C" fn()) {
-        _run_cxa_atexit(cb);
+        unsafe { _run_cxa_atexit(cb); }
     }
 
     #[cfg(not(miri))]
