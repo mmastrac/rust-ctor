@@ -42,7 +42,7 @@ jobs:
             label:
               linux:
                 os: ubuntu-latest
-                job: [build, build-minimal, lint, test, miri, wasm]
+                job: [build, build-minimal, lint, test, miri, wasm, sanitize]
                 target: x86_64-unknown-linux-gnu
               linux-musl:
                 os: ubuntu-latest
