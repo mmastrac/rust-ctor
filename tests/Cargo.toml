@@ -6,6 +6,8 @@ publish = false
 
 [dev-dependencies]
 clitest-lib = "0.4.4"
+# Avoid bringing in a native C dependency in onig
+grok = { version = "2", features = ["fancy-regex"] }
 
 [lib]
 path = "test.rs"
