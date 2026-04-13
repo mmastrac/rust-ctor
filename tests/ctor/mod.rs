@@ -135,8 +135,8 @@ unordered {
 "#
 );
 
-// Only Windows supports +crt-static w/dylibs
-#[cfg(windows)]
+// Only Windows/MUSL supports +crt-static w/dylibs
+#[cfg(any(windows, target_env = "musl"))]
 clitest!(
     system_crt_static,
     r#"
