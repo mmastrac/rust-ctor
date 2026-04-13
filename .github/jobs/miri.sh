@@ -9,13 +9,13 @@ export MIRIFLAGS="-Zmiri-permissive-provenance"
 cargo miri test
 
 cd tests/ctor/edition-2018
-cargo miri run
+cargo miri run --target $TARGET
 cd ../../..
 
 cd tests/ctor/priority
-cargo miri run
+cargo miri run --target $TARGET
 cd ../../..
 
 cd tests/link_section/basic
-cargo miri run
+cargo miri run --target $TARGET
 cd ../../..

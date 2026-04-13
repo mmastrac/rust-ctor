@@ -34,6 +34,7 @@ jobs:
             rust-extra-target:
               $match:
                 "this.job == 'wasm'": "wasm32-unknown-unknown,wasm32-wasip1"
+                "this.label == 'linux-musl'": "x86_64-unknown-linux-musl"
             rust-components:
               $match:
                 "this.job == 'miri'": "miri,rust-src"
@@ -41,13 +42,20 @@ jobs:
             label:
               linux:
                 os: ubuntu-latest
-                job: [build, build-minimal, lint, test, miri, wasm]
+                job: [build, build-minimal, lint, test, miri, wasm, sanitize]
+                target: x86_64-unknown-linux-gnu
+              linux-musl:
+                os: ubuntu-latest
+                job: [build, lint, test]
+                target: x86_64-unknown-linux-musl
               macos:
                 os: macOS-latest
                 job: [lint, test, miri]
+                target: aarch64-apple-darwin
               windows:
                 os: windows-latest
                 job: [lint, test, miri]
+                target: x86_64-pc-windows-msvc
           config: |
             github: ${{ toJSON(github) }}
 
@@ -61,6 +69,7 @@ jobs:
         include: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
     env:
       CACHE_KEY: 2
+      TARGET: ${{ matrix.target }}
       CLIPPY_LINTS: >-
         -D clippy::all
         -D deprecated-safe
