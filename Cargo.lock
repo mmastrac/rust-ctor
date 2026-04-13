@@ -66,9 +66,9 @@ checksum = "843867be96c8daad0d758b57df9392b6d8d271134fce549de6ce169ff98a92af"
 
 [[package]]
 name = "cc"
-version = "1.2.59"
+version = "1.2.60"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7a4d3ec6524d28a329fc53654bbadc9bdd7b0431f5d65f1a56ffb28a1ee5283"
+checksum = "43c5703da9466b66a946814e1adf53ea2c90f10063b86290cc9eb67ce3478a20"
 dependencies = [
  "find-msvc-tools",
  "shlex",
@@ -173,33 +173,34 @@ dependencies = [
 
 [[package]]
 name = "ctor"
-version = "0.8.0"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "352d39c2f7bef1d6ad73db6f5160efcaed66d94ef8c6c573a8410c00bf909a98"
+checksum = "c1c888a2a4f677017373fb6c01e13e318dd9e78758445ed5eb985e355d3f8281"
 dependencies = [
- "ctor-proc-macro 0.0.7",
- "dtor 0.3.0",
+ "ctor-proc-macro 0.0.12 (registry+https://github.com/rust-lang/crates.io-index)",
+ "dtor 0.6.0",
+ "link-section 0.0.12",
 ]
 
 [[package]]
 name = "ctor"
-version = "0.9.1"
+version = "0.10.0"
 dependencies = [
  "ctor-proc-macro 0.0.12",
- "dtor 0.6.0",
+ "dtor 0.7.0",
  "libc-print",
- "link-section",
+ "link-section 0.2.0",
 ]
 
 [[package]]
 name = "ctor-proc-macro"
-version = "0.0.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "52560adf09603e58c9a7ee1fe1dcb95a16927b17c127f0ac02d6e768a0e25bc1"
+version = "0.0.12"
 
 [[package]]
 name = "ctor-proc-macro"
 version = "0.0.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a7ab264ea985f1bd27887d7b21ea2bb046728e05d11909ca138d700c494730db"
 
 [[package]]
 name = "derive-io"
@@ -271,16 +272,16 @@ dependencies = [
 
 [[package]]
 name = "dtor"
-version = "0.3.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1057d6c64987086ff8ed0fd3fbf377a6b7d205cc7715868cd401705f715cbe4"
+checksum = "30e4690622ab6700ced40fc370a3f07b7d111f0154bb6fb08f73b4c8834f75b6"
 dependencies = [
- "dtor-proc-macro 0.0.6",
+ "dtor-proc-macro 0.0.12 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "dtor"
-version = "0.6.0"
+version = "0.7.0"
 dependencies = [
  "dtor-proc-macro 0.0.12",
  "libc-print",
@@ -288,13 +289,13 @@ dependencies = [
 
 [[package]]
 name = "dtor-proc-macro"
-version = "0.0.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f678cf4a922c215c63e0de95eb1ff08a958a81d47e485cf9da1e27bf6305cfa5"
+version = "0.0.12"
 
 [[package]]
 name = "dtor-proc-macro"
 version = "0.0.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8c98b077c7463d01d22dde8a24378ddf1ca7263dc687cffbed38819ea6c21131"
 
 [[package]]
 name = "dunce"
@@ -396,9 +397,9 @@ dependencies = [
 
 [[package]]
 name = "hashbrown"
-version = "0.16.1"
+version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "841d1cc9bed7f9236f321df977030373f4a4163ae1a7dbfe1a51a2c1a51d9100"
+checksum = "4f467dd6dccf739c208452f8014c75c18bb8301b050ad1cfb27153803edb0f51"
 
 [[package]]
 name = "heck"
@@ -426,12 +427,12 @@ checksum = "3d3067d79b975e8844ca9eb072e16b31c3c1c36928edf9c6789548c524d0d954"
 
 [[package]]
 name = "indexmap"
-version = "2.13.1"
+version = "2.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "45a8a2b9cb3e0b0c1803dbb0758ffac5de2f425b23c28f518faabd9d805342ff"
+checksum = "d466e9454f08e4a911e14806c24e16fba1b4c121d1ea474396f396069cf949d9"
 dependencies = [
  "equivalent",
- "hashbrown 0.16.1",
+ "hashbrown 0.17.0",
  "serde",
  "serde_core",
 ]
@@ -480,9 +481,9 @@ dependencies = [
 
 [[package]]
 name = "libredox"
-version = "0.1.15"
+version = "0.1.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ddbf48fd451246b1f8c2610bd3b4ac0cc6e149d89832867093ab69a17194f08"
+checksum = "e02f3bb43d335493c96bf3fd3a321600bf6bd07ed34bc64118e9293bdffea46c"
 dependencies = [
  "libc",
 ]
@@ -490,6 +491,12 @@ dependencies = [
 [[package]]
 name = "link-section"
 version = "0.0.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f52437d47b0358721ec869cc7374b2a21f7b2237af9b439c0391341a1fbfbf1b"
+
+[[package]]
+name = "link-section"
+version = "0.2.0"
 dependencies = [
  "link-section-proc-macro",
 ]
@@ -613,9 +620,9 @@ checksum = "df94ce210e5bc13cb6651479fa48d14f601d9858cfe0467f43ae157023b938d3"
 
 [[package]]
 name = "pkg-config"
-version = "0.3.32"
+version = "0.3.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
+checksum = "19f132c84eca552bf34cab8ec81f1c1dcc229b811638f9d283dceabe58c5569e"
 
 [[package]]
 name = "prettyplease"
@@ -780,8 +787,8 @@ dependencies = [
 name = "shared"
 version = "0.1.0"
 dependencies = [
- "ctor 0.8.0",
- "link-section",
+ "ctor 0.9.1",
+ "link-section 0.2.0",
  "macrotest",
  "trybuild",
 ]
