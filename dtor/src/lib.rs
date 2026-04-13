@@ -86,7 +86,8 @@ mod native {
     /// Registers a raw function to be called at binary exit time.
     /// 
     /// Corresponds to `atexit` in C.
-    pub unsafe fn at_binary_exit(cb: extern "C" fn()) {
+    #[allow(unused)]
+        pub unsafe fn at_binary_exit(cb: extern "C" fn()) {
         _run_atexit(cb);
     }
 
@@ -96,6 +97,7 @@ mod native {
     /// Corresponds to `__cxa_atexit` in C, though the exit function argument is not
     /// available.
     #[cfg(feature = "cxa_atexit")]
+    #[allow(unused)]
     pub unsafe fn at_library_exit(cb: extern "C" fn()) {
         _run_cxa_atexit(cb);
     }
