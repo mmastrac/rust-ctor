@@ -86,18 +86,32 @@ mod native {
     /// Registers a raw function to be called at binary exit time.
     /// 
     /// Corresponds to `atexit` in C.
+    /// 
+    /// # Safety
+    /// 
+    /// Rust does not provide any safety guarantees about life-before-main or
+    /// life-after-main. Ordering of destructors is not guaranteed, nor that a
+    /// destructor will be called at all.
     #[allow(unused)]
-        pub unsafe fn at_binary_exit(cb: extern "C" fn()) {
+    #[inline(always)]
+    pub unsafe fn at_binary_exit(cb: extern "C" fn()) {
         _run_atexit(cb);
     }
 
-    /// Registers a raw function to be called at library (libc calls this a DSO or
-    /// "dynamic shared object") exit time.
+    /// Registers a raw function to be called at library (libc calls this a DSO
+    /// or "dynamic shared object") exit time.
     /// 
-    /// Corresponds to `__cxa_atexit` in C, though the exit function argument is not
-    /// available.
+    /// Corresponds to `__cxa_atexit` in C, though the exit function argument is
+    /// not available.
+    /// 
+    /// # Safety
+    /// 
+    /// Rust does not provide any safety guarantees about life-before-main or
+    /// life-after-main. Ordering of destructors is not guaranteed, nor that a
+    /// destructor will be called at all.
     #[cfg(feature = "cxa_atexit")]
     #[allow(unused)]
+    #[inline(always)]
     pub unsafe fn at_library_exit(cb: extern "C" fn()) {
         _run_cxa_atexit(cb);
     }
