@@ -127,7 +127,9 @@ mod native {
     #[inline(always)]
     unsafe fn _run_atexit(cb: unsafe extern "C" fn()) {
         #[allow(missing_unsafe_on_extern)] // MSRV
-        /*unsafe*/ extern "C" {
+
+        /*unsafe*/
+        extern "C" {
             fn atexit(cb: unsafe extern "C" fn());
         }
         unsafe {
@@ -140,7 +142,9 @@ mod native {
     #[inline(always)]
     unsafe fn _run_cxa_atexit(cb: extern "C" fn()) {
         #[allow(missing_unsafe_on_extern)] // MSRV
-        /*unsafe*/ extern "C" {
+
+        /*unsafe*/
+        extern "C" {
             static __dso_handle: *const u8;
             fn __cxa_atexit(
                 cb: /*unsafe*/ extern "C" fn(_: *const u8),
