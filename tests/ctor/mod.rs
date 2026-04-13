@@ -135,8 +135,9 @@ unordered {
 "#
 );
 
-// Only Windows/MUSL supports +crt-static w/dylibs
-#[cfg(any(windows, target_env = "musl"))]
+// Only Windows supports +crt-static w/dylibs, but we may be able to work around
+// this: https://github.com/rust-lang/rust/issues/71651#issuecomment-864265118
+#[cfg(windows)]
 clitest!(
     system_crt_static,
     r#"
