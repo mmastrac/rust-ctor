@@ -14,10 +14,9 @@ priority = []
 
 [dependencies]
 link-section = { workspace = true, default-features = false }
+ctor = { workspace = true, features = ["std", "proc_macro"] }
+dtor = { workspace = true, features = ["std", "proc_macro"] }
 
 [dev-dependencies]
 macrotest = "1"
 trybuild = "1"
-
-# Prevents warning about unused patch version
-ctor = "*"

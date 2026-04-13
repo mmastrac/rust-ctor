@@ -2,7 +2,7 @@
 
 #[doc(hidden)]
 #[allow(unused)]
-pub mod __support {
+pub(crate) mod __support {
     /// Return type for the constructor. Why is this needed?
     ///
     /// On Windows, `.CRT$XIA` … `.CRT$XIZ` constructors are required to return a `usize` value. We don't know

@@ -188,32 +188,15 @@ dependencies = [
 name = "ctor"
 version = "0.10.0"
 dependencies = [
- "ctor-proc-macro 0.0.12",
- "dtor 0.8.0",
+ "ctor-proc-macro",
+ "dtor",
  "libc-print",
- "link-section 0.2.0",
-]
-
-[[package]]
-name = "ctor"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95d0d11eb38e7642efca359c3cf6eb7b2e528182d09110165de70192b0352775"
-dependencies = [
- "ctor-proc-macro 0.0.12 (registry+https://github.com/rust-lang/crates.io-index)",
- "dtor 0.7.0",
- "link-section 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "link-section",
 ]
 
 [[package]]
 name = "ctor-proc-macro"
 version = "0.0.12"
-
-[[package]]
-name = "ctor-proc-macro"
-version = "0.0.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a7ab264ea985f1bd27887d7b21ea2bb046728e05d11909ca138d700c494730db"
 
 [[package]]
 name = "derive-io"
@@ -285,30 +268,15 @@ dependencies = [
 
 [[package]]
 name = "dtor"
-version = "0.7.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "17f72721db8027a4e96dd6fb50d2a1d32259c9d3da1b63dee612ccd981e14293"
-dependencies = [
- "dtor-proc-macro 0.0.12 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "dtor"
 version = "0.8.0"
 dependencies = [
- "dtor-proc-macro 0.0.12",
+ "dtor-proc-macro",
  "libc-print",
 ]
 
 [[package]]
 name = "dtor-proc-macro"
 version = "0.0.12"
-
-[[package]]
-name = "dtor-proc-macro"
-version = "0.0.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c98b077c7463d01d22dde8a24378ddf1ca7263dc687cffbed38819ea6c21131"
 
 [[package]]
 name = "dunce"
@@ -512,12 +480,6 @@ version = "0.2.0"
 dependencies = [
  "link-section-proc-macro",
 ]
-
-[[package]]
-name = "link-section"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "468808413fa8bdf0edbe61c2bbc182dfc59885b94f496cf3fb42c9c96b1e0149"
 
 [[package]]
 name = "link-section-proc-macro"
@@ -794,8 +756,9 @@ dependencies = [
 name = "shared"
 version = "0.1.0"
 dependencies = [
- "ctor 0.10.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "link-section 0.2.0",
+ "ctor",
+ "dtor",
+ "link-section",
  "macrotest",
  "trybuild",
 ]
