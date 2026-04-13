@@ -121,7 +121,7 @@ mod native {
     #[cfg(not(miri))]
     #[inline(always)]
     unsafe fn _run_atexit(cb: unsafe extern "C" fn()) {
-        /*unsafe*/ extern "C" {
+        unsafe extern "C" {
             fn atexit(cb: unsafe extern "C" fn());
         }
         unsafe {
@@ -133,7 +133,7 @@ mod native {
     #[cfg(all(not(miri), feature = "cxa_atexit"))]
     #[inline(always)]
     unsafe fn _run_cxa_atexit(cb: extern "C" fn()) {
-        /*unsafe*/ extern "C" {
+        unsafe extern "C" {
             static __dso_handle: *const u8;
             fn __cxa_atexit(cb: /*unsafe*/ extern "C" fn(_: *const u8), arg: *const u8, dso_handle: *const u8);
         }
