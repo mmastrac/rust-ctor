@@ -118,3 +118,32 @@ jobs:
     - name: Run ${{ matrix.job }}
       shell: bash
       run: ".github/jobs/${{ matrix.job }}.sh"
+
+  vmactions:
+    runs-on: ubuntu-latest
+    name: FreeBSD / test (stable)
+    steps:
+      - uses: actions/checkout@v6
+      - name: Start VM
+        uses: vmactions/freebsd-vm@v1
+        with:
+          release: "14.4"
+          usesh: true
+      - name: Install dependencies
+        shell: freebsd {0}
+        run: |
+          pkg install -y curl
+          fetch https://sh.rustup.rs -o rustup.sh
+          sh rustup.sh -y --profile=minimal
+          . $HOME/.cargo/env
+          cargo install cargo-expand
+      - name: Build
+        shell: freebsd {0}
+        run: |
+          . $HOME/.cargo/env
+          cargo build
+      - name: Test
+        shell: freebsd {0}
+        run: |
+          . $HOME/.cargo/env
+          RUST_TEST_THREADS=1 cargo test
