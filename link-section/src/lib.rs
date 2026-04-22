@@ -98,7 +98,7 @@ pub mod __support {
             data section => ("__DATA,") __ (",regular,no_dead_strip");
             code section => ("__TEXT,") __ (",regular,no_dead_strip");
             data start =>   ("\x01section$start$__DATA$") __ ();
-            data end =>     ("\x01section$end$__DATA$") __ ();
+            data end =>     ("\x01section$stop$__DATA$") __ ();
         }
         AUXILIARY = "_";
         MAX_LENGTH = 16;
