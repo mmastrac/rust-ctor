@@ -9,8 +9,7 @@
 //! `bin` and `cdylib` outputs, ie: the `ctor` and `dtor` will run at executable or library
 //! startup/shutdown respectively.
 //!
-//! This library currently requires Rust > `1.31.0` at a minimum for the
-//! procedural macro support.
+//! For most platforms, this library currently has a MSRV of **Rust >= 1.60**.
 
 #![no_std]
 #![recursion_limit = "256"]
