@@ -387,6 +387,13 @@ pub mod __support {
                         );
                     }
 
+                    #[used]
+                    $crate::__support::add_section_link_attribute!(
+                        data section $ident $($aux)?
+                        #[link_section = __]
+                        static __USED: [$generic_ty; 0] = [];
+                    );
+
                     (
                         unsafe { &raw const __START as $crate::__support::SectionPtr<$generic_ty> },
                         unsafe { &raw const __END as $crate::__support::SectionPtr<$generic_ty> },
