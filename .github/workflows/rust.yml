@@ -24,6 +24,7 @@ jobs:
               $match:
                 "this.job == 'wasm'": "wasmtime-cli"
                 "this.job == 'test'": "cargo-expand"
+                "this.job == 'zigbuild'": "cargo-zigbuild"
             rust-toolchain:
               $match:
                 "this.job == 'miri'": nightly
@@ -50,7 +51,7 @@ jobs:
                 target: x86_64-unknown-linux-musl
               macos:
                 os: macOS-latest
-                job: [lint, test, miri]
+                job: [lint, test, miri, zigbuild]
                 target: aarch64-apple-darwin
               windows:
                 os: windows-latest
@@ -102,6 +103,12 @@ jobs:
         toolchain: ${{ matrix.rust-toolchain }}
         components: ${{ matrix.rust-components }}
         target: ${{ matrix.rust-extra-target }}
+
+    - name: Install Zig
+      if: ${{ matrix.job == 'zigbuild' }}
+      uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29
+      with:
+        version: 0.15.2
 
     - name: Cache Rust files
       uses: actions/cache@v5
