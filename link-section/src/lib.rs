@@ -373,6 +373,7 @@ pub mod __support {
             (name=$ident:ident, type=$generic_ty:ty, aux=$($aux:ident)?) => {
                 {
                     extern "C" {
+                        #[used]
                         $crate::__support::add_section_link_attribute!(
                             data start $ident $($aux)?
                             #[link_name = __]
@@ -380,19 +381,13 @@ pub mod __support {
                         );
                     }
                     extern "C" {
+                        #[used]
                         $crate::__support::add_section_link_attribute!(
                             data end $ident $($aux)?
                             #[link_name = __]
                             static __END: $crate::__support::SectionPtr<$generic_ty>;
                         );
                     }
-
-                    #[used]
-                    $crate::__support::add_section_link_attribute!(
-                        data section $ident $($aux)?
-                        #[link_section = __]
-                        static __USED: [$generic_ty; 0] = [];
-                    );
 
                     (
                         unsafe { &raw const __START as $crate::__support::SectionPtr<$generic_ty> },
