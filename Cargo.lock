@@ -186,7 +186,7 @@ dependencies = [
 
 [[package]]
 name = "ctor"
-version = "0.10.0"
+version = "0.10.1"
 dependencies = [
  "ctor-proc-macro",
  "dtor",
@@ -196,7 +196,7 @@ dependencies = [
 
 [[package]]
 name = "ctor-proc-macro"
-version = "0.0.12"
+version = "0.0.13"
 
 [[package]]
 name = "derive-io"
@@ -268,7 +268,7 @@ dependencies = [
 
 [[package]]
 name = "dtor"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "dtor-proc-macro",
  "libc-print",
@@ -276,7 +276,7 @@ dependencies = [
 
 [[package]]
 name = "dtor-proc-macro"
-version = "0.0.12"
+version = "0.0.13"
 
 [[package]]
 name = "dunce"
@@ -476,14 +476,14 @@ dependencies = [
 
 [[package]]
 name = "link-section"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "link-section-proc-macro",
 ]
 
 [[package]]
 name = "link-section-proc-macro"
-version = "0.0.12"
+version = "0.0.13"
 
 [[package]]
 name = "linux-raw-sys"
