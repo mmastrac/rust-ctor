@@ -50,7 +50,7 @@ jobs:
                 target: x86_64-unknown-linux-musl
               macos:
                 os: macOS-latest
-                job: [lint, test, miri]
+                job: [lint, test, miri, zigbuild]
                 target: aarch64-apple-darwin
               windows:
                 os: windows-latest
@@ -102,6 +102,18 @@ jobs:
         toolchain: ${{ matrix.rust-toolchain }}
         components: ${{ matrix.rust-components }}
         target: ${{ matrix.rust-extra-target }}
+
+    - name: Install Zig
+      if: ${{ matrix.job == 'zigbuild' }}
+      uses: mlugg/setup-zig@v2
+      with:
+        version: 0.13.0
+
+    - name: Install cargo-zigbuild
+      if: ${{ matrix.job == 'zigbuild' }}
+      uses: taiki-e/install-action@v2
+      with:
+        tool: cargo-zigbuild@2
 
     - name: Cache Rust files
       uses: actions/cache@v5
