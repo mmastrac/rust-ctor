@@ -1,6 +1,6 @@
 //! This example demonstrates the various types of ctor/dtor in an executable
 //! context.
-
+#![recursion_limit = "75"]
 #![cfg_attr(feature = "used_linker", feature(used_with_arg))]
 
 use dtor::dtor;

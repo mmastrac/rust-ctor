@@ -20,7 +20,7 @@ macro_rules! __perform {
 #[doc(hidden)]
 macro_rules! __debug {
     ( @entry next=$next:path[$next_args:tt], input=$input:tt ) => {
-        const _: () = { stringify!($input); };
+        const _: () = { stringify! $input ; };
         $next ! ( $next_args, $input );
     };
 
@@ -83,6 +83,28 @@ macro_rules! __brace {
 
     ( @entry next=$next:path[$next_args:tt], input=($($input:tt)*), args=[ {} ] ) => {
         $next ! ( $next_args, ( { $($input)* } ) );
+    };
+
+    ( $($input:tt)* ) => {
+        const _: () = { compile_error!(concat!("Unexpected input: ", stringify!($($input)*))); };
+    };
+}
+
+
+/// Removes surrounding braces from the input.
+#[macro_export]
+#[doc(hidden)]
+macro_rules! __unbrace {
+    ( @entry next=$next:path[$next_args:tt], input=(($($input:tt)*))) => {
+        $next ! ( $next_args, ( $($input)* ) );
+    };
+
+    ( @entry next=$next:path[$next_args:tt], input=([$($input:tt)*])) => {
+        $next ! ( $next_args, [ $($input)* ] );
+    };
+
+    ( @entry next=$next:path[$next_args:tt], input=({$($input:tt)*})) => {
+        $next ! ( $next_args, { $($input)* } );
     };
 
     ( $($input:tt)* ) => {
@@ -273,6 +295,29 @@ macro_rules! __pick {
     };
 }
 
+/// Calls a macro for each tokentree in the input and accumulates the results.
+#[macro_export]
+#[doc(hidden)]
+macro_rules! __for_each {
+    ( @entry next=$next:path[$next_args:tt], input=$input:tt, args=[$macro_name:path $([$($args:tt)*])?] ) => {
+        $crate::__for_each!( @process accum=(), input=$input, args=[$macro_name $([$($args)*])?], next=[$next[$next_args]] );
+    };
+    ( @process accum=$accum:tt, input=(), args=$args:tt, next=[$next:path [$next_args:tt]] ) => {
+        $next ! ( $next_args, $accum );
+    };
+    ( @process accum=$accum:tt, input=($input:tt $($rest:tt)*), args=[$macro_name:path $( [$($macro_args:tt)*] )?], next=$next:tt) => {
+        $macro_name ! ( @entry next=$crate::__for_each[
+            [@continue $accum, ($($rest)*), [$macro_name $( [$($macro_args)*] )?], $next]
+        ], input=($input) $(, args=[$($macro_args)*])? );
+    };
+    ( [@continue ($($accum:tt)*), $input:tt, $args:tt, $next:tt], ($($output:tt)*) ) => {
+        $crate::__for_each!( @process accum=($($accum)* $($output)*), input=$input, args=$args, next=$next );
+    };
+    ( $($input:tt)* ) => {
+        const _: () = { compile_error!(concat!("Unexpected input for __for_each: ", stringify!($($input)*))); };
+    };
+}
+
 /// Calls a dynamic macro with the given input and arguments.
 #[macro_export]
 #[doc(hidden)]
@@ -288,38 +333,44 @@ macro_rules! __call {
 macro_rules! __test {
     ($macro:path $([$($macro_args:tt)*])?: $input:tt => $output:tt) => {
         const _: () = {
-            __perform!(
-                $input,
-                __chain[
-                    $macro $([$($macro_args)*])?,
-                    __stringify[],
-                    __surround[prefix=[const INPUT: &str = ] suffix=[;]],
-                ]
-            );
+            const INPUT: &str = "Failed to evaluate input";
+            {
+                __perform!(
+                    $input,
+                    __chain[
+                        $macro $([$($macro_args)*])?,
+                        __stringify[],
+                        __surround[prefix=[const INPUT: &str = ] suffix=[;]],
+                    ]
+                );
 
-            __perform!(
-                $output,
-                __chain[
-                    __stringify[],
-                    __surround[prefix=[const OUTPUT: &str = ] suffix=[;]],
-                ]
-            );
+                __perform!(
+                    $output,
+                    __chain[
+                        __stringify[],
+                        __surround[prefix=[const OUTPUT: &str = ] suffix=[;]],
+                    ]
+                );
 
-            if !$crate::perform::const_str_eq(
-                INPUT,
-                OUTPUT,
-            ) {
-                const SLICE: &[&str] = &[
-                    "Input and output do not match, processed input:\n", INPUT,
-                    "\n... was not equal to expected output:\n", OUTPUT
-                ];
-                let mut out = [0; $crate::perform::const_str_slice_len(SLICE)];
-                panic!("{}", $crate::perform::const_str_slice_concat(SLICE, &mut out));
+                if !$crate::perform::const_str_eq(
+                    INPUT,
+                    OUTPUT,
+                ) {
+                    const SLICE: &[&str] = &[
+                        "Input and output do not match, processed input:\n", INPUT,
+                        "\n... was not equal to expected output:\n", OUTPUT,
+                        "\nIn ",
+                        file!()
+                    ];
+                    let mut out = [0; $crate::perform::const_str_slice_len(SLICE)];
+                    panic!("{}", $crate::perform::const_str_slice_concat(SLICE, &mut out));
+                }
             }
         };
     };
 }
 
+#[allow(unused)]
 pub const fn const_str_slice_len(s: &[&str]) -> usize {
     let mut len = 0;
     let mut i = 0;
@@ -330,6 +381,7 @@ pub const fn const_str_slice_len(s: &[&str]) -> usize {
     len
 }
 
+#[allow(unused)]
 pub const fn const_str_slice_concat<'a>(s: &[&str], out: &'a mut [u8]) -> &'a str {
     let mut i = 0;
     let mut j = 0;
@@ -350,6 +402,7 @@ pub const fn const_str_slice_concat<'a>(s: &[&str], out: &'a mut [u8]) -> &'a st
     }
 }
 
+#[allow(unused)]
 pub const fn const_str_eq(a: &str, b: &str) -> bool {
     let mut i = 0;
     let mut j = 0;
@@ -362,17 +415,3 @@ pub const fn const_str_eq(a: &str, b: &str) -> bool {
     }
     i == a.len() && j == b.len()
 }
-
-pub use __perform;
-pub use __debug;
-pub use __split;
-pub use __chain;
-pub use __parallel;
-pub use __separate;
-pub use __zip;
-pub use __pick;
-pub use __stringify;
-pub use __emit;
-pub use __identity;
-pub use __call;
-pub use __test;

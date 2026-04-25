@@ -9,7 +9,7 @@ pub use ctor::declarative::ctor as ctor_parse;
 pub use dtor::declarative::dtor as dtor_parse;
 
 __declare_features!(
-    my_macro: my_macro_parse => my_macro_impl;
+    my_macro: my_macro_parse;
 
     /// Enable support for the standard library. This is required for static
     /// ctor variables, but not for functions.

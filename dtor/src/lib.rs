@@ -1,5 +1,6 @@
-#![doc = include_str!("../README.md")]
+#![recursion_limit = "256"]
 #![no_std]
+#![doc = include_str!("../docs/GENERATED.md")]
 
 #[cfg(feature = "std")]
 extern crate std;
@@ -99,8 +100,178 @@ pub mod __support {
     #[macro_export]
     #[doc(hidden)]
     macro_rules! __dtor_parse_impl {
-        ( @entry next=$next:path[$next_args:tt], input=$input:tt ) => {
-            $next ! ( $next_args, () );
+        // Delegate term -> default_term_method
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = $anonymous:tt,
+                crate_path = $crate_path:tt,
+                ctor_link_section = $ctor_link_section:tt,
+                default_term_method = $default_term_method:tt,
+                default_unload_method = $default_unload_method:tt,
+                link_section = $link_section:tt,
+                method = term,
+                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
+                proc_macro = $proc_macro:tt,
+                std = $std:tt,
+                used_linker = $used_linker:tt,
+            ),
+            meta = (
+                $(#[$meta:meta])*
+            ),
+            item = (
+                $($item:tt)*
+            )
+        ) ) => {
+            $crate::__dtor_parse_impl(@entry next=$next[$next_args], input=(
+                features = (
+                    anonymous = $anonymous:tt,
+                    crate_path = $crate_path:tt,
+                    ctor_link_section = $ctor_link_section:tt,
+                    default_term_method = $default_term_method:tt,
+                    default_unload_method = $default_unload_method:tt,
+                    link_section = $link_section:tt,
+                    method = $default_term_method,
+                    no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
+                    proc_macro = $proc_macro:tt,
+                    std = $std:tt,
+                    used_linker = $used_linker:tt,
+                ),
+                meta = (
+                    $(#[$meta:meta])*
+                ),
+                item = (
+                    $($item:tt)*
+                )
+            ));
+        };
+
+        // Delegate unload -> default_unload_method
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = $anonymous:tt,
+                crate_path = $crate_path:tt,
+                ctor_link_section = $ctor_link_section:tt,
+                default_term_method = $default_term_method:tt,
+                default_unload_method = $default_unload_method:tt,
+                link_section = $link_section:tt,
+                method = unload,
+                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
+                proc_macro = $proc_macro:tt,
+                std = $std:tt,
+                used_linker = $used_linker:tt,
+            ),
+            meta = (
+                $(#[$meta:meta])*
+            ),
+            item = (
+                $($item:tt)*
+            )
+        ) ) => {
+            $crate::__dtor_parse_impl(@entry next=$next[$next_args], input=(
+                features = (
+                    anonymous = $anonymous:tt,
+                    crate_path = $crate_path:tt,
+                    ctor_link_section = $ctor_link_section:tt,
+                    default_term_method = $default_term_method:tt,
+                    default_unload_method = $default_unload_method:tt,
+                    link_section = $link_section:tt,
+                    method = $default_unload_method,
+                    no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
+                    proc_macro = $proc_macro:tt,
+                    std = $std:tt,
+                    used_linker = $used_linker:tt,
+                ),
+                meta = (
+                    $(#[$meta:meta])*
+                ),
+                item = (
+                    $($item:tt)*
+                )
+            ));
+        };
+
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = $anonymous:tt,
+                crate_path = $crate_path:tt,
+                ctor_link_section = $ctor_link_section:tt,
+                default_term_method = $default_term_method:tt,
+                default_unload_method = $default_unload_method:tt,
+                link_section = $link_section:tt,
+                method = at_library_exit,
+                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
+                proc_macro = $proc_macro:tt,
+                std = $std:tt,
+                used_linker = $used_linker:tt,
+            ),
+            meta = (
+                $(#[$meta:meta])*
+            ),
+            item = (
+                $($item:tt)*
+            )
+        ) ) => {
+            const _: () = {
+                #[link_section = $ctor_link_section]
+                static __DTOR_REF__: extern "C" fn() = {
+                    extern "C" fn __dtor() {
+                    }
+
+                    __dtor
+                };
+            };
+
+            $($item)*
+        };
+
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = $anonymous:tt,
+                crate_path = $crate_path:tt,
+                ctor_link_section = $ctor_link_section:tt,
+                default_term_method = $default_term_method:tt,
+                default_unload_method = $default_unload_method:tt,
+                link_section = $link_section:tt,
+                method = at_binary_exit,
+                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
+                proc_macro = $proc_macro:tt,
+                std = $std:tt,
+                used_linker = $used_linker:tt,
+            ),
+            meta = (
+                $(#[$meta:meta])*
+            ),
+            item = (
+                $($item:tt)*
+            )
+        ) ) => {
+            #[link_section = $ctor_link_section]
+            $($item)*
+        };
+
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = $anonymous:tt,
+                crate_path = $crate_path:tt,
+                ctor_link_section = $ctor_link_section:tt,
+                default_term_method = $default_term_method:tt,
+                default_unload_method = $default_unload_method:tt,
+                link_section = $link_section:tt,
+                method = link_section,
+                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
+                proc_macro = $proc_macro:tt,
+                std = $std:tt,
+                used_linker = $used_linker:tt,
+            ),
+            meta = (
+                $(#[$meta:meta])*
+            ),
+            item = (
+                $($item:tt)*
+            )
+        ) ) => {
+            #[link_section = $link_section]
+            $($item)*
         };
     }
 
@@ -110,37 +281,112 @@ pub mod __support {
 }
 
 __declare_features!(
-    dtor: dtor_parse => dtor_impl;
+    dtor: dtor_parse;
     
-    /// Enable support for the standard library. This is required for static
-    /// ctor variables, but not for functions.
-    std {
-        feature: "std" = __include_std_feature;
-    };
-    /// Mark all ctor functions with `used(linker)`.
-    used_linker {
-        feature: "used_linker" = __include_used_linker_feature;
-        attr: [(used(linker)) => (used_linker)];
-    };
-    /// Enable support for the proc-macro `#[ctor]` and `#[dtor]` attributes.
-    proc_macro {
-        feature: "proc_macro" = __include_proc_macro_feature;
-    };
-    /// Do not warn when a ctor or dtor is missing the `unsafe` keyword.
-    no_warn_on_missing_unsafe {
-        feature: "no_warn_on_missing_unsafe" = __include_no_warn_on_missing_unsafe_feature;
-        attr: [(no_warn_on_missing_unsafe) => (no_warn_on_missing_unsafe)];
-    };
-    /// Marks a ctor/dtor as unsafe. This will become a warning in 1.0.
-    unsafe {
-        attr: [(unsafe) => (unsafe)];
+    /// Make the ctor function anonymous.
+    anonymous {
+        attr: [(anonymous) => (anonymous)];
     };
     /// Specify a custom crate path for the `ctor` crate. Used when re-exporting the ctor macro.
     crate_path {
         attr: [(crate_path = $path:pat) => ($path)];
     };
-    /// Make the ctor function anonymous.
-    anonymous {
-        attr: [(anonymous) => (anonymous)];
+    /// Place the initialization function pointer in a custom link section.
+    ctor_link_section {
+        attr: [(ctor(link_section = $ctor_link_section_name:literal)) => ($ctor_link_section_name)];
+        default {
+            // This is no longer supported by Apple
+            (target_vendor = "apple") => "__DATA,__mod_init_func,mod_init_funcs",
+            // Most LLVM/GCC targets can use .fini_array
+            (any(
+                target_os = "linux",
+                target_os = "android",
+                target_os = "freebsd",
+                target_os = "netbsd",
+                target_os = "openbsd",
+                target_os = "dragonfly",
+                target_os = "illumos",
+                target_os = "haiku",
+                target_family = "wasm"
+            )) => ".init_array",
+            // xtensa targets: .dtors
+            (target_arch = "xtensa") => ".ctors",
+            // Windows targets: CRT$XPU
+            (all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc"))) => ".CRT$XCU",
+            // ... except GNU
+            (all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc")))) => ".ctors",
+            _ => (compile_error!("Unsupported target for #[ctor]"))
+        }
+    };
+    default_term_method {
+        default {
+            (target_vendor = "apple") => at_binary_exit,
+            _ => link_section,
+        }
+    };
+    default_unload_method {
+        default {
+            _ => at_library_exit,
+        }
+    };
+    /// Place the destructor function pointer in a custom link section.
+    link_section {
+        attr: [(link_section = $section:literal) => ($section)];
+        default {
+            // This is no longer supported by Apple
+            (target_vendor = "apple") => "__DATA,__mod_term_func,mod_term_funcs",
+            // Most LLVM/GCC targets can use .fini_array
+            (any(
+                target_os = "linux",
+                target_os = "android",
+                target_os = "freebsd",
+                target_os = "netbsd",
+                target_os = "openbsd",
+                target_os = "dragonfly",
+                target_os = "illumos",
+                target_os = "haiku",
+                target_family = "wasm"
+            )) => ".fini_array",
+            // xtensa targets: .dtors
+            (target_arch = "xtensa") => ".dtors",
+            // Windows targets: CRT$XPU
+            (all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc"))) => ".CRT$XPU",
+            // ... except GNU
+            (all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc")))) => ".dtors",
+            _ => (compile_error!("Unsupported target for #[dtor]"))
+        }
+    };
+    /// Specify the dtor method
+    method {
+        attr: [(method = $method_id:ident) => ($method_id)];
+        validate: [(method = term), (method = unload), (method = at_library_exit), (method = at_binary_exit), (method = link_section)];
+        default {
+            (target_vendor = "apple") => at_library_exit,
+            _ => link_section,
+        }
+    };
+    no_warn_on_missing_unsafe {
+        /// crate
+        /// Do not warn when a ctor or dtor is missing the `unsafe` keyword.
+        feature: "no_warn_on_missing_unsafe";
+        /// attr
+        /// Marks a ctor/dtor as unsafe.
+        attr: [(unsafe) => (no_warn_on_missing_unsafe)];
+    };
+    /// Enable support for the proc-macro `#[ctor]` and `#[dtor]` attributes.
+    proc_macro {
+        feature: "proc_macro";
+    };
+    /// Enable support for the standard library. This is required for static
+    /// ctor variables, but not for functions.
+    std {
+        feature: "std";
+    };
+    /// Mark all ctor functions with `used(linker)`.
+    used_linker {
+        feature: "used_linker";
+        attr: [(used(linker)) => (used_linker)];
     };
 );
+
+__generate_docs!(dtor_parse);

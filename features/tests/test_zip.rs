@@ -1,4 +1,3 @@
-use ::features::perform::*;
 use ::features::*;
 
 __test!(__zip: (

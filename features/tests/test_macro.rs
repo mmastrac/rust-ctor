@@ -1,47 +1,118 @@
 #![allow(unexpected_cfgs)]
+#![recursion_limit = "256"]
 
 use ::features::*;
 
+
+__test!(__parse_feature_input:
+    (    
+        my_macro: my_macro_parse;
+
+        link_section {
+            attr: [(link_section($section:literal)) => ($section)];
+            default {
+                (target_vendor = "apple") => "__DATA,__mod_term_func,mod_term_funcs",
+                (target_vendor = "pc") => (compile_error!("Link section dtor is not supported on PC")),
+                (target_os = "linux") => ".dtors",
+                _ => (compile_error!("Unsupported target vendor"))
+            }
+        };
+    ) => (
+        (my_macro my_macro_parse)
+        ((
+            feature = link_section; 
+            docs = [];
+            attr = [(link_section($section:literal)) => ($section)];
+            attr_docs = [];
+            default = [
+                ((target_vendor = "apple") => "__DATA,__mod_term_func,mod_term_funcs")
+                ((target_vendor = "pc") => (compile_error!("Link section dtor is not supported on PC")))
+                ((target_os = "linux") => ".dtors")
+                (_ => (compile_error!("Unsupported target vendor")))
+                (_ => ())
+            ]
+        ))
+    )
+);
+
+__test!(__process_defaults:
+    (
+        (
+            feature = link_section;
+            docs = [];
+            attr = [(link_section($section:literal)) => ($section)];
+            attr_docs = [];
+            default = [
+                ((a = "apple") => 1)
+                ((b = "pc") => (compile_error!("2")))
+                ((c = "linux") => 3)
+                (_ => (compile_error!("4")))
+            ]
+        )
+    ) => (
+        (
+            feature = link_section;
+            docs = [];
+            feature_attr = link_section;
+            attr = [(link_section($section:literal)) => ($section)];
+            attr_docs = [];
+            default = [
+                ((all(a = "apple", not(any()))) => 1)
+                ((all(b = "pc", not(any(a = "apple",)))) => (compile_error!("2")))
+                ((all(c = "linux", not(any(a = "apple", b = "pc",)))) => 3)
+                ((not(any(a = "apple", b = "pc", c = "linux",))) => (compile_error!("4")))
+            ]
+        )
+    )
+);
+
 __declare_features!(
-    small_macro: small_macro_parse => small_macro_impl;
+    small_macro: small_macro_parse;
 
     /// Enable support for the standard library. This is required for static
     /// ctor variables, but not for functions.
     std {
-        feature: "std" = small_macro_include_std_feature;
+        feature: "std";
+    };
+    priority {
+        attr: [(priority = $priority_value:tt) => ($priority_value)];
+    };
+    unsafe {
+        attr: [(unsafe) => (unsafe)];
     };
 );
 
 
 __declare_features!(
-    my_macro: my_macro_parse => my_macro_impl;
+    my_macro: my_macro_parse;
 
     /// Enable support for the standard library. This is required for static
     /// ctor variables, but not for functions.
     std {
-        feature: "std" = __include_std_feature;
+        feature: "std";
     };
     /// Mark all ctor functions with `used(linker)`.
     used_linker {
-        feature: "used_linker" = __include_used_linker_feature;
+        feature: "used_linker";
         attr: [(used(linker)) => (used_linker)];
     };
     /// Enable support for the proc-macro `#[ctor]` and `#[dtor]` attributes.
     proc_macro {
-        feature: "proc_macro" = __include_proc_macro_feature;
+        feature: "proc_macro";
     };
     /// Do not warn when a ctor or dtor is missing the `unsafe` keyword.
     no_warn_on_missing_unsafe {
-        feature: "no_warn_on_missing_unsafe" = __include_no_warn_on_missing_unsafe_feature;
+        feature: "no_warn_on_missing_unsafe";
         attr: [(no_warn_on_missing_unsafe) => (no_warn_on_missing_unsafe)];
     };
     /// Enable support for the priority parameter.
     priority_enabled {
-        feature: "priority" = __include_priority_feature;
+        feature: "priority";
     };
     /// Set the ctor priority to a given value.
     priority {
-        attr: [(priority = $priority:literal) => ($priority)];
+        attr: [(priority = $priority_value:tt) => ($priority_value)];
+        validate: [(priority = $priority:literal), (priority = early), (priority = late)];
     };
     /// Marks a ctor/dtor as unsafe. This will become a warning in 1.0.
     unsafe {
@@ -53,10 +124,10 @@ __declare_features!(
     link_section {
         attr: [(link_section($section:literal)) => ($section)];
         default {
-            target_vendor = "apple" => "__DATA,__mod_term_func,mod_term_funcs",
-            target_vendor = "pc" => compile_error!("Link section dtor is not supported on PC"),
-            target_os = "linux" => ".dtors",
-            _ => compile_error!("Unsupported target vendor"),
+            (target_vendor = "apple") => "__DATA,__mod_term_func,mod_term_funcs",
+            (target_vendor = "pc") => ".fini_array",
+            (target_os = "linux") => ".dtors",
+            _ => (compile_error!("Unsupported target vendor"))
         }
     };
     /// Specify a custom crate path for the `ctor` crate. Used when re-exporting the ctor macro.
@@ -82,18 +153,23 @@ __test!(my_macro_parse[my_macro_parse => @extract (std anonymous)]:
     (std = std_value,) => (std = std_value, anonymous = (),));
 
 
-__test!(my_macro_parse[my_macro_parse => @meta]:
-    (()) => ());
-__test!(my_macro_parse[my_macro_parse => @meta]:
-    ((unsafe)) => (unsafe = unsafe,));
-__test!(my_macro_parse[my_macro_parse => @meta]:
-    ((unsafe, priority = 1)) => (unsafe = unsafe, priority = 1,));
-__test!(my_macro_parse[my_macro_parse => @meta]:
-    ((priority = 1)) => (priority = 1,));
+__test!(__extract_meta[small_macro_parse]:
+    (()) => (std = std, priority = (), unsafe = (),));
+__test!(__extract_meta[small_macro_parse]:
+    ((unsafe)) => (std = std, priority = (), unsafe = unsafe,));
+__test!(__extract_meta[small_macro_parse]:
+    ((unsafe, priority = 1)) => (std = std, priority = 1, unsafe = unsafe,));
+__test!(__extract_meta[small_macro_parse]:
+    ((priority = 1)) => (std = std, priority = 1, unsafe = (),));
 
 
+#[cfg(target_vendor = "apple")]
 __test!(my_macro_parse[my_macro_parse => @crate]:
-    () => (std = std,));
+    () => (
+        std = std, used_linker = (), proc_macro = (), no_warn_on_missing_unsafe = (),
+        priority_enabled = (), priority = (), unsafe = (),
+        link_section = "__DATA,__mod_term_func,mod_term_funcs", 
+        crate_path = (), anonymous = (),));
 
 
 __test!(my_macro_parse[my_macro_parse => @self]:
