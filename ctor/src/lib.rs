@@ -254,3 +254,36 @@ pub use ctor_proc_macro::ctor;
 #[doc(inline)]
 #[cfg(all(feature = "dtor", feature = "proc_macro"))]
 pub use dtor::__dtor_from_ctor as dtor; // note: this is the dtor proc macro that looks in ctor
+
+__declare_features!(
+    /// Crate features: name/name as string/include macro.
+    crate = [
+        /// Enable support for the standard library. This is required for static ctor variables, but not for functions.
+        std "std" = __include_std_feature;
+        /// Mark all ctor functions with `used(linker)`.
+        used_linker "used_linker" = __include_used_linker_feature;
+        /// Enable support for the proc-macro `#[ctor]` and `#[dtor]` attributes.
+        proc_macro "proc_macro" = __include_proc_macro_feature;
+        /// Do not warn when a ctor or dtor is missing the `unsafe` keyword.
+        no_warn_on_missing_unsafe "no_warn_on_missing_unsafe" = __include_no_warn_on_missing_unsafe_feature;
+        /// Enable support for the priority parameter.
+        priority "priority" = __include_priority_feature;
+    ];
+
+    /// Attributes.
+    attr = [
+        /// Marks a ctor/dtor as unsafe. This will become a warning in 1.0.
+        unsafe = [unsafe];
+        /// Place the initialization function pointer in a custom link section. This may cause the initialization function
+        /// to fail to run or run earlier or later than other `ctor` functions.
+        link_section = [link_section($section:literal)];
+        /// Specify a custom crate path for the `ctor` crate. Used when re-exporting the ctor macro.
+        crate_path = [crate_path = $path:path];
+        /// Make the ctor function anonymous.
+        anonymous = [anonymous];
+        /// Mark this function with `used(linker)`.
+        used_linker = [used(linker)];
+        /// Set the ctor priority to a given value.
+        priority = [priority = $priority:literal];
+    ];
+);

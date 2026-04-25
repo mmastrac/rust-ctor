@@ -4,17 +4,11 @@
 #[cfg(feature = "std")]
 extern crate std;
 
-mod macros;
+mod features;
+mod native;
 
-pub use macros::features;
-
-#[doc(hidden)]
-#[allow(unused)]
-pub mod __support {
-    pub use crate::macros::__support::dtor_parse_impl as dtor_parse;
-    pub use crate::macros::__support::*;
-    pub use crate::native::*;
-}
+#[cfg(feature = "export_native")]
+pub use native::*;
 
 /// Marks a function as a library/executable destructor. This uses OS-specific
 /// linker sections to call a specific function at termination time.
@@ -80,94 +74,73 @@ pub use dtor_proc_macro::__dtor_from_ctor;
 /// ```
 pub mod declarative {
     #[doc(inline)]
-    pub use crate::__support::dtor_parse_impl as dtor;
+    pub use crate::__support::dtor_parse as dtor;
 }
 
-#[cfg(feature = "export_native")]
-pub use native::*;
+#[doc(hidden)]
+#[allow(unused)]
+pub mod __support {
+    use crate::features::*;
 
-mod native {
-    #![allow(unsafe_code, unused_unsafe, unknown_lints)]
-
-    /// Registers a raw function to be called at binary exit time.
-    ///
-    /// Corresponds to `atexit` in C.
-    ///
-    /// # Safety
-    ///
-    /// Rust does not provide any safety guarantees about life-before-main or
-    /// life-after-main. Ordering of destructors is not guaranteed, nor that a
-    /// destructor will be called at all.
-    #[inline(always)]
-    pub unsafe fn at_binary_exit(cb: extern "C" fn()) {
-        unsafe {
-            _run_atexit(cb);
-        }
-    }
-
-    /// Registers a raw function to be called at library (libc calls this a DSO
-    /// or "dynamic shared object") exit time.
-    ///
-    /// Corresponds to `__cxa_atexit` in C, though the exit function argument is
-    /// not available.
-    ///
-    /// # Safety
-    ///
-    /// Rust does not provide any safety guarantees about life-before-main or
-    /// life-after-main. Ordering of destructors is not guaranteed, nor that a
-    /// destructor will be called at all.
-    #[cfg(any(feature = "cxa_atexit", target_vendor = "apple"))]
-    #[inline(always)]
-    pub unsafe fn at_library_exit(cb: extern "C" fn()) {
-        unsafe {
-            _run_cxa_atexit(cb);
-        }
-    }
-
-    /// Register a function to be called at libc exit time.
-    #[cfg(not(miri))]
-    #[inline(always)]
-    unsafe fn _run_atexit(cb: unsafe extern "C" fn()) {
-        #[allow(missing_unsafe_on_extern)] // MSRV
-        extern "C" {
-            fn atexit(cb: unsafe extern "C" fn());
-        }
-        unsafe {
-            atexit(cb);
-        }
-    }
-
-    /// Register a function scoped to the current dynamic shared object.
-    #[cfg(all(not(miri), any(feature = "cxa_atexit", target_vendor = "apple")))]
-    #[inline(always)]
-    unsafe fn _run_cxa_atexit(cb: extern "C" fn()) {
-        #[allow(missing_unsafe_on_extern)] // MSRV
-        extern "C" {
-            static __dso_handle: *const u8;
-            fn __cxa_atexit(
-                cb: /*unsafe*/ extern "C" fn(_: *const u8),
-                arg: *const u8,
-                dso_handle: *const u8,
+    #[macro_export]
+    #[doc(hidden)]
+    macro_rules! __dtor_parse {
+        ( $($input:tt)* ) => {
+            $crate::__perform!(
+                ($($input)*),
+                $crate::__chain[
+                    $crate::__parse_item[$crate::dtor_parse],
+                    $crate::__dtor_parse_impl,
+                ]
             );
-        }
-        extern "C" fn exit_fn(fn_ptr: *const u8) {
-            let f: fn() = unsafe { ::core::mem::transmute(fn_ptr) };
-            f()
-        }
-        unsafe {
-            __cxa_atexit(exit_fn, cb as _, __dso_handle);
-        }
+        };
     }
 
-    #[cfg(miri)]
-    #[inline(always)]
-    unsafe fn _run_atexit(_cb: extern "C" fn()) {
-        // no-op on miri
+    #[macro_export]
+    #[doc(hidden)]
+    macro_rules! __dtor_parse_impl {
+        ( @entry next=$next:path[$next_args:tt], input=$input:tt ) => {
+            $next ! ( $next_args, () );
+        };
     }
 
-    #[cfg(miri)]
-    #[inline(always)]
-    unsafe fn _run_cxa_atexit(_cb: extern "C" fn()) {
-        // no-op on miri
-    }
+    pub use __dtor_parse as dtor_parse;
+
+    pub use crate::native::*;
 }
+
+__declare_features!(
+    dtor: dtor_parse => dtor_impl;
+    
+    /// Enable support for the standard library. This is required for static
+    /// ctor variables, but not for functions.
+    std {
+        feature: "std" = __include_std_feature;
+    };
+    /// Mark all ctor functions with `used(linker)`.
+    used_linker {
+        feature: "used_linker" = __include_used_linker_feature;
+        attr: [(used(linker)) => (used_linker)];
+    };
+    /// Enable support for the proc-macro `#[ctor]` and `#[dtor]` attributes.
+    proc_macro {
+        feature: "proc_macro" = __include_proc_macro_feature;
+    };
+    /// Do not warn when a ctor or dtor is missing the `unsafe` keyword.
+    no_warn_on_missing_unsafe {
+        feature: "no_warn_on_missing_unsafe" = __include_no_warn_on_missing_unsafe_feature;
+        attr: [(no_warn_on_missing_unsafe) => (no_warn_on_missing_unsafe)];
+    };
+    /// Marks a ctor/dtor as unsafe. This will become a warning in 1.0.
+    unsafe {
+        attr: [(unsafe) => (unsafe)];
+    };
+    /// Specify a custom crate path for the `ctor` crate. Used when re-exporting the ctor macro.
+    crate_path {
+        attr: [(crate_path = $path:pat) => ($path)];
+    };
+    /// Make the ctor function anonymous.
+    anonymous {
+        attr: [(anonymous) => (anonymous)];
+    };
+);

@@ -5,6 +5,7 @@ members = [
     "dtor", 
     "ctor-proc-macro",
     "dtor-proc-macro",
+    "features",
     "link-section",
     "link-section-proc-macro",
     "shared",

@@ -1,5 +1,8 @@
 //! Shared macros for the `ctor` and `dtor` crates.
 
+mod features;
+mod perform;
+
 #[doc(hidden)]
 #[allow(unused)]
 pub(crate) mod __support {
@@ -151,109 +154,6 @@ macro_rules! __dtor_parse_impl {
     };
 }
 
-/// A macro that generates the appropriate feature extraction macros.
-macro_rules! declare_features {
-    ( $(#[doc = $doc1:literal])* crate = $crate_features:tt; $(#[doc = $doc2:literal])* attr = $attrs:tt; ) => {
-        declare_features!( __ crate $crate_features );
-    };
-
-    ( __ crate [$(
-        $( #[doc = $doc:literal] )*
-        $feature_name:ident $feature_name_str:literal = $feature_include_macro:ident ;
-    )*] ) => {
-        /// # Crate features
-        ///
-        $(
-            #[doc = concat!("<code>", stringify!($feature_name), "</code>: ")]
-            $( #[doc = $doc] )*
-            #[doc = "\n"]
-        )*
-        pub mod features {
-        }
-
-        $(
-        #[doc(hidden)]
-        #[macro_export]
-        #[cfg(feature = $feature_name_str)]
-        macro_rules! $feature_include_macro {
-            ($true:item $false:item) => {
-                $true
-            };
-        }
-
-        #[doc(hidden)]
-        #[macro_export]
-        #[cfg(not(feature = $feature_name_str))]
-        macro_rules! $feature_include_macro {
-            ($true:item $false:item) => {
-                $false
-            };
-        }
-        )*
-
-        #[doc(hidden)]
-        #[macro_export]
-        macro_rules! __features_expand {
-            (next=$next_macro:path, $args:tt) => {
-                $crate::__features_expand_all!(next=$next_macro, $args, $( $feature_name / $feature_include_macro )*);
-            };
-        }
-    };
-}
-
-declare_features!(
-    /// Crate features: name/name as string/include macro.
-    crate = [
-        /// Enable support for the standard library. This is required for static ctor variables, but not for functions.
-        std "std" = __include_std_feature;
-        /// Mark all ctor functions with `used(linker)`.
-        used_linker "used_linker" = __include_used_linker_feature;
-        /// Enable support for the proc-macro `#[ctor]` and `#[dtor]` attributes.
-        proc_macro "proc_macro" = __include_proc_macro_feature;
-        /// Do not warn when a ctor or dtor is missing the `unsafe` keyword.
-        no_warn_on_missing_unsafe "no_warn_on_missing_unsafe" = __include_no_warn_on_missing_unsafe_feature;
-        /// Enable support for the priority parameter.
-        priority "priority" = __include_priority_feature;
-    ];
-
-    /// Attributes.
-    attr = [
-        /// Marks a ctor/dtor as unsafe. This will become a warning in 1.0.
-        unsafe = [unsafe];
-        /// Place the initialization function pointer in a custom link section. This may cause the initialization function
-        /// to fail to run or run earlier or later than other `ctor` functions.
-        link_section = [link_section($section:literal)];
-        /// Specify a custom crate path for the `ctor` crate. Used when re-exporting the ctor macro.
-        crate_path = [crate_path = $path:path];
-        /// Make the ctor function anonymous.
-        anonymous = [anonymous];
-        /// Mark this function with `used(linker)`.
-        used_linker = [used(linker)];
-        /// Set the ctor priority to a given value.
-        priority = [priority = $priority:literal];
-    ];
-);
-
-/// Expands all of the crate features into the features list.
-#[macro_export]
-#[doc(hidden)]
-macro_rules! __features_expand_all {
-    // Entry
-    (next=$next:path, $args:tt, $($macro:tt)*) => {
-        $crate::__features_expand_all!(: [] $next, $args, $($macro)*);
-    };
-    (: [$($features:tt)*] $next:path, $args:tt, $first_macro_feature:ident / $first_macro:ident $($rest:tt)*) => {
-        $crate:: $first_macro !(
-            $crate::__features_expand_all!(: [$first_macro_feature,$($features)*] $next, $args, $($rest)*);
-            $crate::__features_expand_all!(: [$($features)*] $next, $args, $($rest)*);
-        );
-    };
-    // Exit
-    (: [$($features:tt)*] $next:path, $args:tt,) => {
-        $next!(features=[$($features)*], $args);
-    };
-}
-
 /// Extract #[ctor/dtor] attribute parameters and crate features and turn them
 /// into a unified feature array.
 ///
@@ -358,7 +258,7 @@ macro_rules! __ctor_entry {
         $crate::__support::ctor_entry!(features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=, item=fn $($item)*);
     };
     (features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], item=static $ident:ident : $ty:ty = $(unsafe)? $({ $lit:literal })? $($lit2:literal)? ;) => {
-        compile_error!(concat!("Use `const ", stringify!($ident), " = ", stringify!($($lit)?$($lit2)?), ";` or `static ", stringify!($ident), ": ", stringify!($ty), " = ", stringify!($($lit)?$($lit2)?), ";` instead"));
+        compile_error!(concat!("For trivial static values use `const ", stringify!($ident), " = ", stringify!($($lit)?$($lit2)?), ";` or `static ", stringify!($ident), ": ", stringify!($ty), " = ", stringify!($($lit)?$($lit2)?), ";` instead"));
     };
     (features=$features:tt, imeta=$(#[$fnmeta:meta])*, vis=[$($vis:tt)*], item=static $ident:ident : $ty:ty = unsafe $($item:tt)*) => {
         $crate::__support::ctor_entry!(features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=unsafe, item=static $ident: $ty = $($item)*);
