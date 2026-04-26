@@ -1,0 +1,9 @@
+error: Unexpected type of meta argument: unknown-attribute
+
+       ... expected 'attr', 'attr = value', 'attr(arg)', 'attr(arg) = value'
+ --> tests/errors/dtor-bad.rs:4:1
+  |
+4 | #[dtor(unknown-attribute)]
+  | ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |
+  = note: this error originates in the macro `$crate::__extract_meta` which comes from the expansion of the attribute macro `dtor` (in Nightly builds, run with -Z macro-backtrace for more info)

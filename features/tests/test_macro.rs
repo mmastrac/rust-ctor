@@ -39,7 +39,6 @@ __test!(__process_defaults:
     (
         (
             feature = link_section;
-            docs = [];
             attr = [(link_section($section:literal)) => ($section)];
             attr_docs = [];
             default = [
@@ -52,10 +51,12 @@ __test!(__process_defaults:
     ) => (
         (
             feature = link_section;
-            docs = [];
             feature_attr = link_section;
             attr = [(link_section($section:literal)) => ($section)];
             attr_docs = [];
+            original_defaults =
+            {((a = "apple") => 1) ((b = "pc") => (compile_error!("2")))
+                ((c = "linux") => 3) (_ => (compile_error!("4")))};
             default = [
                 ((all(a = "apple", not(any()))) => 1)
                 ((all(b = "pc", not(any(a = "apple",)))) => (compile_error!("2")))
@@ -167,6 +168,14 @@ __test!(__extract_meta[small_macro_parse]:
 __test!(my_macro_parse[my_macro_parse => @crate]:
     () => (
         std = std, used_linker = (), proc_macro = (), no_warn_on_missing_unsafe = (),
+        priority_enabled = (), priority = (), unsafe = (),
+        link_section = "__DATA,__mod_term_func,mod_term_funcs", 
+        crate_path = (), anonymous = (),));
+
+#[cfg(target_vendor = "apple")]
+__test!(__extract_meta[my_macro_parse]:
+    ((used(linker))) => (
+        std = std, used_linker = used_linker, proc_macro = (), no_warn_on_missing_unsafe = (),
         priority_enabled = (), priority = (), unsafe = (),
         link_section = "__DATA,__mod_term_func,mod_term_funcs", 
         crate_path = (), anonymous = (),));

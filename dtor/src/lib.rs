@@ -100,6 +100,8 @@ pub mod __support {
     #[macro_export]
     #[doc(hidden)]
     macro_rules! __dtor_parse_impl {
+        // Step 1: Compute method
+
         // Delegate term -> default_term_method
         ( @entry next=$next:path[$next_args:tt], input=(
             features = (
@@ -115,33 +117,21 @@ pub mod __support {
                 std = $std:tt,
                 used_linker = $used_linker:tt,
             ),
-            meta = (
-                $(#[$meta:meta])*
-            ),
-            item = (
-                $($item:tt)*
-            )
+            meta = $meta:tt,
+            item = $item:tt
         ) ) => {
+            // method = term
             $crate::__dtor_parse_impl(@entry next=$next[$next_args], input=(
                 features = (
-                    anonymous = $anonymous:tt,
-                    crate_path = $crate_path:tt,
-                    ctor_link_section = $ctor_link_section:tt,
-                    default_term_method = $default_term_method:tt,
-                    default_unload_method = $default_unload_method:tt,
-                    link_section = $link_section:tt,
+                    anonymous = $anonymous,
+                    ctor_link_section = $ctor_link_section,
+                    link_section = $link_section,
                     method = $default_term_method,
-                    no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
-                    proc_macro = $proc_macro:tt,
-                    std = $std:tt,
-                    used_linker = $used_linker:tt,
+                    no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
+                    used_linker = $used_linker,
                 ),
-                meta = (
-                    $(#[$meta:meta])*
-                ),
-                item = (
-                    $($item:tt)*
-                )
+                meta = $meta,
+                item = $item
             ));
         };
 
@@ -160,118 +150,282 @@ pub mod __support {
                 std = $std:tt,
                 used_linker = $used_linker:tt,
             ),
-            meta = (
-                $(#[$meta:meta])*
-            ),
-            item = (
-                $($item:tt)*
-            )
+            meta = $meta:tt,
+            item = $item:tt
         ) ) => {
-            $crate::__dtor_parse_impl(@entry next=$next[$next_args], input=(
+            // method = unload
+            $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
                 features = (
-                    anonymous = $anonymous:tt,
-                    crate_path = $crate_path:tt,
-                    ctor_link_section = $ctor_link_section:tt,
-                    default_term_method = $default_term_method:tt,
-                    default_unload_method = $default_unload_method:tt,
-                    link_section = $link_section:tt,
+                    anonymous = $anonymous,
+                    ctor_link_section = $ctor_link_section,
+                    link_section = $link_section,
                     method = $default_unload_method,
-                    no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
-                    proc_macro = $proc_macro:tt,
-                    std = $std:tt,
-                    used_linker = $used_linker:tt,
+                    no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
+                    used_linker = $used_linker,
                 ),
-                meta = (
-                    $(#[$meta:meta])*
+                meta = $meta,
+                item = $item
+            ));
+        };
+
+        // Other methods, pass through
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = $anonymous:tt,
+                crate_path = $crate_path:tt,
+                ctor_link_section = $ctor_link_section:tt,
+                default_term_method = $default_term_method:tt,
+                default_unload_method = $default_unload_method:tt,
+                link_section = $link_section:tt,
+                method = $method:tt,
+                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
+                proc_macro = $proc_macro:tt,
+                std = $std:tt,
+                used_linker = $used_linker:tt,
+            ),
+            meta = $meta:tt,
+            item = $item:tt
+        ) ) => {
+            // method = other
+            $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
+                features = (
+                    anonymous = $anonymous,
+                    ctor_link_section = $ctor_link_section,
+                    link_section = $link_section,
+                    method = $method,
+                    no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
+                    used_linker = $used_linker,
                 ),
-                item = (
-                    $($item:tt)*
-                )
+                meta = $meta,
+                item = $item
+            ));
+        };
+
+        // Step 2: warn on missing unsafe
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = $anonymous:tt,
+                ctor_link_section = $ctor_link_section:tt,
+                link_section = $link_section:tt,
+                method = $method:tt,
+                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
+                used_linker = $used_linker:tt,
+            ),
+            meta = $meta:tt,
+            item = $item:tt
+        ) ) => {
+            $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
+                features = (
+                    anonymous = $anonymous,
+                    ctor_link_section = $ctor_link_section,
+                    link_section = $link_section,
+                    method = $method,
+                    used_linker = $used_linker,
+                ),
+                meta = $meta,
+                item = $item
+            ));
+        };
+
+        // Step 3: Wrap anonymous if needed
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = anonymous,
+                ctor_link_section = $ctor_link_section:tt,
+                link_section = $link_section:tt,
+                method = $method:tt,
+                used_linker = $used_linker:tt,
+            ),
+            meta = $meta:tt,
+            item = $item:tt
+        ) ) => {
+            // Anonymous function
+            const _: () = {
+                $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
+                    features = (
+                        ctor_link_section = $ctor_link_section,
+                        link_section = $link_section,
+                        method = $method,
+                        used_linker = $used_linker,
+                    ),
+                    meta = $meta,
+                    item = $item
+                ));
+            };
+        };
+
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = (),
+                ctor_link_section = $ctor_link_section:tt,
+                link_section = $link_section:tt,
+                method = $method:tt,
+                used_linker = $used_linker:tt,
+            ),
+            meta = $meta:tt,
+            item = $item:tt
+        ) ) => {
+            $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
+                features = (
+                    ctor_link_section = $ctor_link_section,
+                    link_section = $link_section,
+                    method = $method,
+                    used_linker = $used_linker,
+                ),
+                meta = $meta,
+                item = $item
+            ));
+        };
+
+        // Step 4: Compute used_linker
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                ctor_link_section = $ctor_link_section:tt,
+                link_section = $link_section:tt,
+                method = $method:tt,
+                used_linker = (),
+            ),
+            meta = $meta:tt,
+            item = $item:tt
+        ) ) => {
+            $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
+                features = (
+                    ctor_link_section = $ctor_link_section,
+                    link_section = $link_section,
+                    method = $method,
+                    used_linker_meta = (#[used]),
+                ),
+                meta = $meta,
+                item = $item
             ));
         };
 
         ( @entry next=$next:path[$next_args:tt], input=(
             features = (
-                anonymous = $anonymous:tt,
-                crate_path = $crate_path:tt,
                 ctor_link_section = $ctor_link_section:tt,
-                default_term_method = $default_term_method:tt,
-                default_unload_method = $default_unload_method:tt,
+                link_section = $link_section:tt,
+                method = $method:tt,
+                used_linker = used_linker,
+            ),
+            meta = $meta:tt,
+            item = $item:tt
+        ) ) => {
+            $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
+                features = (
+                    ctor_link_section = $ctor_link_section,
+                    link_section = $link_section,
+                    method = $method,
+                    used_linker_meta = (#[used(linker)]),
+                ),
+                meta = $meta,
+                item = $item
+            ));
+        };
+
+        // Step 5: Delegate on method (at_library_exit, at_binary_exit, link_section)
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                ctor_link_section = $ctor_link_section:tt,
+                link_section = $link_section:tt,
+                method = $method:tt,
+                used_linker_meta = (#$used_linker_meta:tt),
+            ),
+            meta = ($($meta:tt)*),
+            item = ($vis:vis $( unsafe )? $( extern $abi:literal )? fn $name:ident $args:tt $( -> () )? {
+                $($body:tt)*
+            })
+        ) ) => {
+            $($meta)*
+            $vis $( extern $abi )? fn $name $args {
+                $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
+                    features = (
+                        ctor_link_section = $ctor_link_section,
+                        link_section = $link_section,
+                        method = $method,
+                        used_linker_meta = (#$used_linker_meta),
+                    ),
+                    item = $name
+                ));
+
+                $($body)*
+            }
+        };
+
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                ctor_link_section = $ctor_link_section:tt,
+                link_section = $link_section:tt,
+                method = link_section,
+                used_linker_meta = (#$used_linker_meta:tt),
+            ),
+            item = $name:ident
+        ) ) => {
+            const _: () = {
+                #[link_section = $link_section]
+                #$used_linker_meta
+                #[allow(non_upper_case_globals)]
+                static __DTOR__PRIVATE__REF__: extern "C" fn() = {
+                    #[allow(non_snake_case)]
+                    extern "C" fn __dtor__private__() {
+                        $name()
+                    }
+                    __dtor__private__
+                };
+            };
+        };
+
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                ctor_link_section = $ctor_link_section:tt,
                 link_section = $link_section:tt,
                 method = at_library_exit,
-                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
-                proc_macro = $proc_macro:tt,
-                std = $std:tt,
-                used_linker = $used_linker:tt,
+                used_linker_meta = (#$used_linker_meta:tt),
             ),
-            meta = (
-                $(#[$meta:meta])*
-            ),
-            item = (
-                $($item:tt)*
-            )
+            item = $name:ident
         ) ) => {
             const _: () = {
                 #[link_section = $ctor_link_section]
-                static __DTOR_REF__: extern "C" fn() = {
-                    extern "C" fn __dtor() {
+                #$used_linker_meta
+                #[allow(non_upper_case_globals)]
+                static __CTOR__PRIVATE__REF__: unsafe extern "C" fn() = {
+                    #[allow(non_snake_case)]
+                    unsafe extern "C" fn __ctor__private__() {
+                        $crate::__support::at_library_exit(__dtor__private__);
                     }
-
-                    __dtor
+                    #[allow(non_snake_case)]
+                    extern "C" fn __dtor__private__() {
+                        $name()
+                    }
+                    __ctor__private__
                 };
             };
-
-            $($item)*
         };
 
         ( @entry next=$next:path[$next_args:tt], input=(
             features = (
-                anonymous = $anonymous:tt,
-                crate_path = $crate_path:tt,
                 ctor_link_section = $ctor_link_section:tt,
-                default_term_method = $default_term_method:tt,
-                default_unload_method = $default_unload_method:tt,
                 link_section = $link_section:tt,
                 method = at_binary_exit,
-                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
-                proc_macro = $proc_macro:tt,
-                std = $std:tt,
-                used_linker = $used_linker:tt,
+                used_linker_meta = (#$used_linker_meta:tt),
             ),
-            meta = (
-                $(#[$meta:meta])*
-            ),
-            item = (
-                $($item:tt)*
-            )
+            item = $name:ident
         ) ) => {
-            #[link_section = $ctor_link_section]
-            $($item)*
-        };
-
-        ( @entry next=$next:path[$next_args:tt], input=(
-            features = (
-                anonymous = $anonymous:tt,
-                crate_path = $crate_path:tt,
-                ctor_link_section = $ctor_link_section:tt,
-                default_term_method = $default_term_method:tt,
-                default_unload_method = $default_unload_method:tt,
-                link_section = $link_section:tt,
-                method = link_section,
-                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
-                proc_macro = $proc_macro:tt,
-                std = $std:tt,
-                used_linker = $used_linker:tt,
-            ),
-            meta = (
-                $(#[$meta:meta])*
-            ),
-            item = (
-                $($item:tt)*
-            )
-        ) ) => {
-            #[link_section = $link_section]
-            $($item)*
+            const _: () = {
+                #[link_section = $ctor_link_section]
+                #$used_linker_meta
+                #[allow(non_upper_case_globals)]
+                static __CTOR__PRIVATE__REF__: unsafe extern "C" fn() = {
+                    #[allow(non_snake_case)]
+                    unsafe extern "C" fn __ctor__private__() {
+                        $crate::__support::at_binary_exit(__dtor__private__);
+                    }
+                    #[allow(non_snake_case)]
+                    extern "C" fn __dtor__private__() {
+                        $name()
+                    }
+                    __ctor__private__
+                };
+            };
         };
     }
 
@@ -290,10 +444,12 @@ __declare_features!(
     /// Specify a custom crate path for the `ctor` crate. Used when re-exporting the ctor macro.
     crate_path {
         attr: [(crate_path = $path:pat) => ($path)];
+        example: "crate_path = ::path::to::dtor::crate";
     };
     /// Place the initialization function pointer in a custom link section.
     ctor_link_section {
         attr: [(ctor(link_section = $ctor_link_section_name:literal)) => ($ctor_link_section_name)];
+        example: "ctor(link_section = \".ctors\")";
         default {
             // This is no longer supported by Apple
             (target_vendor = "apple") => "__DATA,__mod_init_func,mod_init_funcs",
@@ -332,6 +488,7 @@ __declare_features!(
     /// Place the destructor function pointer in a custom link section.
     link_section {
         attr: [(link_section = $section:literal) => ($section)];
+        example: "link_section = \".dtors\"";
         default {
             // This is no longer supported by Apple
             (target_vendor = "apple") => "__DATA,__mod_term_func,mod_term_funcs",
@@ -359,6 +516,7 @@ __declare_features!(
     /// Specify the dtor method
     method {
         attr: [(method = $method_id:ident) => ($method_id)];
+        example: "method = term|unload|at_library_exit|at_binary_exit|link_section";
         validate: [(method = term), (method = unload), (method = at_library_exit), (method = at_binary_exit), (method = link_section)];
         default {
             (target_vendor = "apple") => at_library_exit,
@@ -373,20 +531,26 @@ __declare_features!(
         /// Marks a ctor/dtor as unsafe.
         attr: [(unsafe) => (no_warn_on_missing_unsafe)];
     };
-    /// Enable support for the proc-macro `#[ctor]` and `#[dtor]` attributes.
+    /// Enable support for the proc-macro `#[dtor]` attribute. The declarative
+    /// form (`dtor!(...)`) is always available. It is recommended that crates
+    /// re-exporting the `dtor` macro disable this feature and only use the
+    /// declarative form.
     proc_macro {
         feature: "proc_macro";
     };
-    /// Enable support for the standard library. This is required for static
-    /// ctor variables, but not for functions.
+    /// Enable support for the standard library.
     std {
         feature: "std";
     };
-    /// Mark all ctor functions with `used(linker)`.
     used_linker {
+        /// crate
+        /// Applies `used(linker)` to all `dtor`-generated functions. Requires nightly and `feature(used_with_arg)`.
         feature: "used_linker";
+        /// attr
+        /// Mark generated functions for this `dtor` as `used(linker)`. Requires nightly and `feature(used_with_arg)`.
         attr: [(used(linker)) => (used_linker)];
     };
 );
 
+#[cfg(doc)]
 __generate_docs!(dtor_parse);

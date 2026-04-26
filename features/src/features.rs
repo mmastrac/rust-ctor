@@ -17,6 +17,7 @@ macro_rules! __declare_features {
                     $crate::__chain[
                         $crate::__pick[1],
                         $crate::__unbrace,
+                        $crate::__for_each[$crate::__fix_docs],
                         $crate::__for_each[$crate::__process_defaults],
                         $crate::__for_each[$crate::__evaluate_defaults],
                         $crate::__brace[()],
@@ -149,6 +150,9 @@ macro_rules! __parse_feature_input {
                     $( #[doc = r" attr"] $( #[doc = $doc_attr:literal] )* )? 
                     attr: $attr:tt;
                     $(
+                        example: $example:literal;
+                    )?
+                    $(
                         validate: $validate:tt;
                     )?
                 )?
@@ -194,6 +198,79 @@ macro_rules! __parse_feature_input {
     };
 }
 
+/// Concatenate the global docs with the crate/attr docs.
+#[macro_export]
+#[doc(hidden)]
+macro_rules! __fix_docs {
+    ( @entry next=$next:path[$next_args:tt], input=(
+        (
+            feature = $feature:ident;
+            docs = [$($docs:tt)*];
+            name = $crate_name:literal;
+            crate_docs = [$($crate_docs:tt)*];
+            attr = $attr:tt;
+            attr_docs = [$($attr_docs:tt)*];
+            default = $default:tt
+        )
+    ) ) => {
+        $next ! ( $next_args, ((
+            feature = $feature;
+            name = $crate_name;
+            crate_docs = [$($docs)* $($crate_docs)*];
+            attr = $attr;
+            attr_docs = [$($docs)* $($attr_docs)*];
+            default = $default
+        )) );
+    };
+
+    ( @entry next=$next:path[$next_args:tt], input=(
+        (
+            feature = $feature:ident;
+            docs = [$($docs:tt)*];
+            attr = $attr:tt;
+            attr_docs = [$($attr_docs:tt)*];
+            default = $default:tt
+        )        
+    ) ) => {
+        $next ! ( $next_args, ((
+            feature = $feature;
+            attr = $attr;
+            attr_docs = [$($docs)* $($attr_docs)*];
+            default = $default
+        )) );
+    };
+
+    ( @entry next=$next:path[$next_args:tt], input=(
+        (
+            feature = $feature:ident;
+            docs = [$($docs:tt)*];
+            name = $crate_name:literal;
+            crate_docs = [$($crate_docs:tt)*];
+            default = $default:tt
+        )        
+    ) ) => {
+        $next ! ( $next_args, ((
+            feature = $feature;
+            name = $crate_name;
+            crate_docs = [$($docs)* $($crate_docs)*];
+            default = $default
+        )) );
+    };
+
+    ( @entry next=$next:path[$next_args:tt], input=(
+        (
+            feature = $feature:ident;
+            docs = [$($docs:tt)*];
+            default = $default:tt
+        )        
+    ) ) => {
+        $next ! ( $next_args, ((
+            feature = $feature;
+            default = $default
+        )) );
+    }
+}
+
 /// Process the defaults into full cfg chains.
 #[macro_export]
 #[doc(hidden)]
@@ -201,7 +278,6 @@ macro_rules! __process_defaults {
     ( @entry next=$next:path[$next_args:tt], input=(
         (
             feature = $feature:ident;
-            docs = $docs:tt;
             $(
                 name = $name_both:literal;
                 crate_docs = $crate_docs:tt;
@@ -220,7 +296,6 @@ macro_rules! __process_defaults {
             next=[$next[$next_args]],
             rest=(
                 feature = $feature;
-                docs = $docs;
                 $(
                     feature_crate = $feature;
                     name = $name_both;
@@ -231,6 +306,7 @@ macro_rules! __process_defaults {
                     attr = $attr;
                     attr_docs = $attr_docs;
                 )?
+                original_defaults = {$($default)*};
             )
         );
     };
@@ -257,7 +333,6 @@ macro_rules! __process_defaults {
 macro_rules! __evaluate_defaults {
     ( @entry next=$next:path[$next_args:tt], input=((
         feature = $feature:ident;
-        docs = $docs:tt;
         $(
             feature_crate = $feature_crate:ident;
             name = $name:literal;
@@ -268,13 +343,13 @@ macro_rules! __evaluate_defaults {
             attr = $attr:tt;
             attr_docs = $attr_docs:tt;
         )?
+        original_defaults = $original_defaults:tt;
         default = [
             $( ($default_expr:tt => $default_value:tt) )*
         ]
     ))) => {
         $crate::__evaluate_defaults!(@process next=[$next[$next_args]], input=($( ($default_expr => $default_value) )*), rest=(
             feature = $feature;
-            docs = $docs;
             $(
                 feature_crate = $feature_crate;
                 name = $name;
@@ -285,6 +360,7 @@ macro_rules! __evaluate_defaults {
                 attr = $attr;
                 attr_docs = $attr_docs;
             )?
+            original_defaults = $original_defaults;
         ));
     };
 
@@ -358,9 +434,19 @@ macro_rules! __extract_meta {
             ),*
         )
     ), args=[$macro_path:path]) => {
-        $macro_path!(@meta next=$crate::__extract_meta[[@finish next=$next[$next_args]]] $(
+        $macro_path!(@meta macro=$macro_path, next=$crate::__extract_meta[[@finish next=$next[$next_args]]] $(
             $name $( ($( $args )*) )? $( = $value )? , , ;
         )*);
+    };
+    ( @entry next=$next:path[$next_args:tt], input=(
+        (
+            $($input:tt)*
+        )
+    ), args=[$macro_path:path]) => {
+        const _: () = { compile_error!(concat!("Unexpected type of meta argument: ",
+        stringify!($($input)*),
+        "\n\n... expected 'attr', 'attr = value', 'attr(arg)', 'attr(arg) = value'"));
+     };
     };
     ( [@finish next=$next:path[$next_args:tt]], 
         ($( 
@@ -373,9 +459,23 @@ macro_rules! __extract_meta {
             )*
         ) );
     };
-    ( @error rest=($($rest:tt)*) attrs=($($attr:tt)*)) => {
-        const _: () = { compile_error!(concat!("Unexpected meta attribute: ", stringify!($($rest)*),
-        " expected one of: ",
+    ( [@finish next=$next:path[$next_args:tt]],
+        ( 
+            $(( $name:ident = $value:tt $( , $def_value:tt $( $comma:tt $($rest:tt)* )? )? ))*
+        )
+    ) => {
+        // TODO: This should show the underlying attribute rather than the internal name.
+        const _: () = { compile_error!(concat!("Duplicate meta attribute: '", stringify!(
+            $( $($($name = ...$comma)?)?  )*
+        ))) };
+    };
+    ( @error rest=(
+        $name:ident $( ($( $args:tt)*) )? $( = $value:tt )? , , ; $($rest:tt)*
+    ) attrs=($($attr:tt)*)) => {
+        const _: () = { compile_error!(concat!("Unexpected meta attribute: '", stringify!(
+            $name $( ($( $args )*) )? $( = $value )?
+        ),
+        "'\n...expected one of:\n",
         stringify!($($attr)*))); };
     };
     ( $($input:tt)* ) => {
@@ -417,7 +517,6 @@ macro_rules! __make_macros {
             $(
                 (
                     feature = $feature:ident;
-                    docs = $docs:tt;
                     $(
                         feature_crate = $feature_crate:ident;
                         name = $name:literal;
@@ -428,6 +527,7 @@ macro_rules! __make_macros {
                         attr = [($($attr:tt)*) => ($($attr_output:tt)*)];
                         attr_docs = $attr_docs:tt;
                     )?
+                    original_defaults = $original_defaults:tt;
                     default = $default_value:tt;
                 )
             )*
@@ -467,7 +567,7 @@ macro_rules! __make_macros {
             // @meta extracts the meta items from the proc-macro attribute. The
             // items need to be pre-processed to ensure that each one ends with
             // a comma and a semicolon to disambiguate.
-            (@meta next=$next_macro:path[$next_macro_args:tt] 
+            (@meta macro=$macro_path:path, next=$next_macro:path[$next_macro_args:tt] 
                 $dollar (
                     $($(
                         $dollar( 
@@ -484,7 +584,27 @@ macro_rules! __make_macros {
                 )? $default_value))* ) );
             };
 
-            (@meta next=$next_macro:path[$next_macro_args:tt] $dollar ($dollar rest:tt)*) => {
+            // Unrecognized, munch until end of recognized input.
+            (@meta macro=$macro_path:path, next=$next_macro:path[$next_macro_args:tt] 
+                $dollar ($dollar rest:tt)*) => {
+                $macro_path!(@metaerror macro=$macro_path, next=$next_macro[$next_macro_args] $dollar($dollar rest)*);
+            };
+
+            (@metaerror macro=$macro_path:path, next=$next_macro:path[$next_macro_args:tt] 
+                $($(
+                    $dollar( 
+                        $($attr)*
+                        ,
+                        $dollar $feature:tt // comma
+                    )?
+                )?)*
+                ;
+                $dollar ($dollar rest:tt)*) => {
+                $macro_path!(@metaerror macro=$macro_path, next=$next_macro[$next_macro_args] $dollar($dollar rest)*);
+            };
+
+            (@metaerror macro=$macro_path:path, next=$next_macro:path[$next_macro_args:tt] 
+                $dollar ($dollar rest:tt)*) => {
                 $crate::__extract_meta!(@error rest=($dollar($dollar rest)*) attrs=($($($($attr)* ;)?)*));
             };
 
@@ -556,40 +676,95 @@ macro_rules! __make_docs {
         $(
             (
                 feature = $feature:ident;
-                docs = $docs:tt;
                 $(
                     feature_crate = $feature_crate:ident;
                     name = $feature_name:literal;
-                    crate_docs = $crate_docs:tt;
+                    crate_docs = [ $( $crate_doc_lit:literal )* ];
                 )?
                 $(
                     feature_attr = $feature_attr:ident;
                     attr = [($($attr:tt)*) => ($($attr_output:tt)*)];
-                    attr_docs = $attr_docs:tt;
+                    attr_docs = [ $( $attr_doc_lit:literal )* ];
                 )?
+                original_defaults = $original_defaults:tt;
                 default = $default_value:tt;
             )
         )*
     )) => {
-        mod __generated_docs {
+        $crate::__make_docs!(@defaults accum=(
             #![doc = include_str!("../docs/PREAMBLE.md")]
-            #![doc = "# Features"]
+            #![doc = "\n\n# Crate Features\n\n| Cargo feature | Description |\n| --- | --- |"]
             $(
                 $(
-                    #![doc = concat!("<code>", stringify!($feature_name), "</code>: ")]
-                    #![doc = "\n"]
+                    #![doc = concat!("\n| `", stringify!($feature_crate), "` | ", $( $crate_doc_lit, )* " |")]
                 )?
             )*
-        }
+            #![doc = "\n\n# Attribute Features\n\n| Attribute | Description |\n| --- | --- |"]
+            $(
+                $(
+                    #![doc = concat!("\n| `", stringify!($($attr)*), "` | ", $( $attr_doc_lit, )*  " |")]
+                )?
+            )*
+            #![doc = "\n\n# Defaults"]
+        ),
+            ($(
+                (feature = $feature; default = $original_defaults;)
+            )*)
+        );
     };
 
-    ( @entry next=$next:path[$next_args:tt], input=(
-        $(
-            $input:tt
-        )*
-    ), args=[@attr] ) => {
-        $next ! ( $next_args, () );
+    // Emits one "defaults" subsection per feature that has a non-()` default.
+    (@defaults accum=($($accum:tt)*), ()) => {
+        mod __generated_docs {
+            $($accum)*
+        }
     };
+    
+    // Hide attributes with no default.
+    (@defaults accum=($($accum:tt)*), ((feature = $feature:ident; default = {(_ => ())};) $($rest:tt)*)) => {
+        $crate::__make_docs!(@defaults accum=(
+            $($accum)*
+        ), ($($rest)*));
+    };
+    // Hide crate features with no default.
+    (@defaults accum=($($accum:tt)*), ((feature = $feature:ident; default = {((feature = $feature_lit:literal) => $feature_default_value:ident) (_ => ())};) $($rest:tt)*)) => {
+        $crate::__make_docs!(@defaults accum=(
+            $($accum)*
+        ), ($($rest)*));
+    };
+
+    (@defaults accum=($($accum:tt)*), ((feature = $feature:ident; default = $default_value:tt;) $($rest:tt)*)) => {
+        $crate::__make_docs!(@default accum=(
+            $($accum)*
+            //! 
+            #![doc = concat!("## `", stringify!($feature), "`")]
+            //! 
+            //! ```rust
+            //! # #[cfg(false)] {
+        ), ((feature = $feature; default = $default_value;) $($rest)*));
+    };
+    (@default accum=($($accum:tt)*), ((feature = $feature:ident; default = {
+        (($($branch:tt)*) => $default_value:tt) $($branch_rest:tt)*};) $($rest:tt)*)) => {
+        $crate::__make_docs!(@default accum=(
+            $($accum)*
+            #![doc = concat!("#[cfg(", stringify!($($branch)*), ")]")]
+            //! # const _: () = { let 
+            #![doc = concat!(stringify!($feature), " = ", stringify!($default_value))]
+            //! # ; };
+            //! 
+        ), ((feature = $feature; default = {$($branch_rest)*};) $($rest)*));
+    };
+    (@default accum=($($accum:tt)*), ((feature = $feature:ident; default = {
+        (_ => $default_value:tt) $($branch_rest:tt)*};) $($rest:tt)*)) => {
+        $crate::__make_docs!(@defaults accum=(
+            $($accum)*
+            //! // default
+            #![doc = concat!(stringify!($feature), " = ", stringify!($default_value))]
+            //! # }
+            //! ```
+        ), ($($rest)*));
+    };
+
 
     ( $($input:tt)* ) => {
         const _: () = { compile_error!(concat!("Unexpected input: ", stringify!($($input)*))); };

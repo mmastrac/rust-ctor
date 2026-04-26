@@ -272,6 +272,8 @@ version = "0.8.1"
 dependencies = [
  "dtor-proc-macro",
  "libc-print",
+ "macrotest",
+ "trybuild",
 ]
 
 [[package]]
