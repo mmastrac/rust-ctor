@@ -34,6 +34,9 @@ $ cargo run --quiet --target $TARGET
 if TARGET_OS == "linux" {
     ! dtor-link-section:dtor
 }
+if TARGET_OS == "freebsd" {
+    ! dtor-link-section:dtor
+}
 "#
 );
 
@@ -54,6 +57,9 @@ $ rustc -vV
 $ cargo run --quiet --target $TARGET
 ! dtor-link-section:main
 if TARGET_OS == "linux" {
+    ! dtor-link-section:dtor
+}
+if TARGET_OS == "freebsd" {
     ! dtor-link-section:dtor
 }
 if TARGET_OS == "windows" {
