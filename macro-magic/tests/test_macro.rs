@@ -126,6 +126,7 @@ __declare_features!(
             (target_vendor = "apple") => "__DATA,__mod_term_func,mod_term_funcs",
             (target_vendor = "pc") => ".fini_array",
             (target_os = "linux") => ".dtors",
+            (target_os = "freebsd") => ".fini",
             _ => (compile_error!("Unsupported target vendor"))
         }
     };
