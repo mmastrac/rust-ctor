@@ -84,7 +84,8 @@ macro_rules! __ctor_parse_impl {
             used_linker = $used_linker:tt,
         ),
         meta = $meta:tt,
-        item = ($vis:vis static $ident:ident : $ty:ty = $(unsafe)? const $body:expr;)
+        unsafe = $unsafe:tt,
+        item = ($vis:vis static $ident:ident : $ty:ty = $(unsafe)? const $body:block;)
     ) ) => {
         compile_error!("Trivial const expressions are not supported. Remove the #[ctor] and use a regular `static`.");
     };
@@ -101,6 +102,7 @@ macro_rules! __ctor_parse_impl {
             used_linker = $used_linker:tt,
         ),
         meta = $meta:tt,
+        unsafe = $unsafe:tt,
         item = ($vis:vis static $ident:ident : $ty:ty = $(unsafe)? $literal:literal;)
     ) ) => {
         compile_error!("Trivial const expressions are not supported. Remove the #[ctor] and use a regular `static`.");
@@ -147,6 +149,7 @@ macro_rules! __ctor_parse_impl {
             used_linker = $used_linker:tt,
         ),
         meta = $meta:tt,
+        unsafe = $unsafe:tt,
         item = ($item:item)
     ) ) => {
         compile_error!("Invalid ctor item. \
