@@ -1,4 +1,3 @@
-
 /// A macro that generates the appropriate feature extraction macros.
 #[macro_export]
 #[doc(hidden)]
@@ -143,11 +142,11 @@ macro_rules! __parse_feature_input {
             $( #[doc = $doc:literal] )*
             $feature:ident {
                 $(
-                    $( #[doc = r" crate"] $( #[doc = $doc_crate:literal] )* )? 
+                    $( #[doc = r" crate"] $( #[doc = $doc_crate:literal] )* )?
                     feature: $feature_name:literal;
                 )?
                 $(
-                    $( #[doc = r" attr"] $( #[doc = $doc_attr:literal] )* )? 
+                    $( #[doc = r" attr"] $( #[doc = $doc_attr:literal] )* )?
                     attr: $attr:tt;
                     $(
                         example: $example:literal;
@@ -157,7 +156,7 @@ macro_rules! __parse_feature_input {
                     )?
                 )?
                 $( default {
-                    $( ($default_expr:meta) => $default_value:tt, )* 
+                    $( ($default_expr:meta) => $default_value:tt, )*
                     _ => $default_fallback:tt $(,)?
                 } )?
             };
@@ -182,11 +181,11 @@ macro_rules! __parse_feature_input {
                             attr_docs = [$( $( $doc_attr )* )?];
                         )?
                         default = [
-                            $( 
-                                ((feature = $feature_name) => $feature) 
+                            $(
+                                ((feature = $feature_name) => $feature)
                             )?
                             $(
-                                $( (($default_expr) => $default_value) )* 
+                                $( (($default_expr) => $default_value) )*
                                 (_ => $default_fallback)
                             )?
                             (_ => ())
@@ -230,7 +229,7 @@ macro_rules! __fix_docs {
             attr = $attr:tt;
             attr_docs = [$($attr_docs:tt)*];
             default = $default:tt
-        )        
+        )
     ) ) => {
         $next ! ( $next_args, ((
             feature = $feature;
@@ -247,7 +246,7 @@ macro_rules! __fix_docs {
             name = $crate_name:literal;
             crate_docs = [$($crate_docs:tt)*];
             default = $default:tt
-        )        
+        )
     ) ) => {
         $next ! ( $next_args, ((
             feature = $feature;
@@ -262,7 +261,7 @@ macro_rules! __fix_docs {
             feature = $feature:ident;
             docs = [$($docs:tt)*];
             default = $default:tt
-        )        
+        )
     ) ) => {
         $next ! ( $next_args, ((
             feature = $feature;
@@ -311,7 +310,7 @@ macro_rules! __process_defaults {
         );
     };
 
-    // Stop when we hit the final default.  
+    // Stop when we hit the final default.
     (@process accum=($($accum:tt)*), negative=$negative:tt, defaults=[(_ => $default_value:tt) $($ignored:tt)*], next=[$next:path[$next_args:tt]], rest=($($rest:tt)*)) => {
         $next ! ( $next_args, (($($rest)* default = [
             $($accum)*
@@ -321,7 +320,7 @@ macro_rules! __process_defaults {
 
     // Accumulate the expression + negative and add to the negative.
     (@process accum=($($accum:tt)*), negative=($($negative:tt)*), defaults=[(($default_expr:meta) => $default_value:tt) $($default_rest:tt)*], $($rest:tt)*) => {
-        $crate::__process_defaults!(@process 
+        $crate::__process_defaults!(@process
             accum=($($accum)* ((all($default_expr, not(any ($($negative)*)))) => $default_value) ),
             negative=($($negative)* $default_expr ,),
             defaults=[$($default_rest)*], $($rest)*);
@@ -386,7 +385,7 @@ macro_rules! __feature_square {
     ( @entry next=$next:path[$next_args:tt], input=(
         ($((
             feature = $all:ident;
-            $($ignored:tt)*                
+            $($ignored:tt)*
         ))*)
     ) ) => {
         $crate::__feature_square!( @loop queue=[$($all)*], mult=[$($all)*], next=$next[$next_args] );
@@ -448,8 +447,8 @@ macro_rules! __extract_meta {
         "\n\n... expected 'attr', 'attr = value', 'attr(arg)', 'attr(arg) = value'"));
      };
     };
-    ( [@finish next=$next:path[$next_args:tt]], 
-        ($( 
+    ( [@finish next=$next:path[$next_args:tt]],
+        ($(
             ( $name:ident = $value:tt $( , $def_value:tt )? )
         )*)
     ) => {
@@ -460,7 +459,7 @@ macro_rules! __extract_meta {
         ) );
     };
     ( [@finish next=$next:path[$next_args:tt]],
-        ( 
+        (
             $(( $name:ident = $value:tt $( , $def_value:tt $( $comma:tt $($rest:tt)* )? )? ))*
         )
     ) => {
@@ -546,11 +545,11 @@ macro_rules! __make_macros {
             // feature at a time. If present, the next macro receives
             // (name = $feature_value:tt), otherwise ().
             $(
-                (@extract next=$next_macro:path[$next_macro_args:tt] $feature_sq_1 
+                (@extract next=$next_macro:path[$next_macro_args:tt] $feature_sq_1
                     (
                         $dollar (
                         $(
-                            $dollar ( $feature_sq_2 = $dollar $feature_sq_2:tt)? 
+                            $dollar ( $feature_sq_2 = $dollar $feature_sq_2:tt)?
                         )* ,
                         )*
                     )) => {
@@ -567,10 +566,10 @@ macro_rules! __make_macros {
             // @meta extracts the meta items from the proc-macro attribute. The
             // items need to be pre-processed to ensure that each one ends with
             // a comma and a semicolon to disambiguate.
-            (@meta macro=$macro_path:path, next=$next_macro:path[$next_macro_args:tt] 
+            (@meta macro=$macro_path:path, next=$next_macro:path[$next_macro_args:tt]
                 $dollar (
                     $($(
-                        $dollar( 
+                        $dollar(
                             $($attr)*
                             ,
                             $dollar $feature:tt // comma
@@ -585,14 +584,14 @@ macro_rules! __make_macros {
             };
 
             // Unrecognized, munch until end of recognized input.
-            (@meta macro=$macro_path:path, next=$next_macro:path[$next_macro_args:tt] 
+            (@meta macro=$macro_path:path, next=$next_macro:path[$next_macro_args:tt]
                 $dollar ($dollar rest:tt)*) => {
                 $macro_path!(@metaerror macro=$macro_path, next=$next_macro[$next_macro_args] $dollar($dollar rest)*);
             };
 
-            (@metaerror macro=$macro_path:path, next=$next_macro:path[$next_macro_args:tt] 
+            (@metaerror macro=$macro_path:path, next=$next_macro:path[$next_macro_args:tt]
                 $($(
-                    $dollar( 
+                    $dollar(
                         $($attr)*
                         ,
                         $dollar $feature:tt // comma
@@ -603,7 +602,7 @@ macro_rules! __make_macros {
                 $macro_path!(@metaerror macro=$macro_path, next=$next_macro[$next_macro_args] $dollar($dollar rest)*);
             };
 
-            (@metaerror macro=$macro_path:path, next=$next_macro:path[$next_macro_args:tt] 
+            (@metaerror macro=$macro_path:path, next=$next_macro:path[$next_macro_args:tt]
                 $dollar ($dollar rest:tt)*) => {
                 $crate::__extract_meta!(@error rest=($dollar($dollar rest)*) attrs=($($($($attr)* ;)?)*));
             };
@@ -636,7 +635,7 @@ macro_rules! __make_macros {
                     $( $feature = $default_value, )*
                 ) );
             };
-            
+
             // Extracts the self-attribute from a list of attributes.
             (@entry next=$next_macro:path [$next_macro_args:tt],
                 input=($dollar ( # $dollar attr:tt )*),
@@ -661,12 +660,12 @@ macro_rules! __make_macros {
 }
 
 /// Generates a module named $macro_impl and inside, two crate-scoped macros:
-/// 
+///
 /// make_crate_docs and make_attr_docs.
-/// 
+///
 /// These macros are used to generate the documentation for the crate-scoped
 /// features.
-/// 
+///
 /// `make_crate_docs` generates docs for crate features. `make_attr_docs`
 /// generates docs for proc macro attributes.
 #[macro_export]
@@ -719,7 +718,7 @@ macro_rules! __make_docs {
             $($accum)*
         }
     };
-    
+
     // Hide attributes with no default.
     (@defaults accum=($($accum:tt)*), ((feature = $feature:ident; default = {(_ => ())};) $($rest:tt)*)) => {
         $crate::__make_docs!(@defaults accum=(
@@ -736,9 +735,9 @@ macro_rules! __make_docs {
     (@defaults accum=($($accum:tt)*), ((feature = $feature:ident; default = $default_value:tt;) $($rest:tt)*)) => {
         $crate::__make_docs!(@default accum=(
             $($accum)*
-            //! 
+            //!
             #![doc = concat!("## `", stringify!($feature), "`")]
-            //! 
+            //!
             //! ```rust
             //! # #[cfg(false)] {
         ), ((feature = $feature; default = $default_value;) $($rest)*));
@@ -748,10 +747,10 @@ macro_rules! __make_docs {
         $crate::__make_docs!(@default accum=(
             $($accum)*
             #![doc = concat!("#[cfg(", stringify!($($branch)*), ")]")]
-            //! # const _: () = { let 
+            //! # const _: () = { let
             #![doc = concat!(stringify!($feature), " = ", stringify!($default_value))]
             //! # ; };
-            //! 
+            //!
         ), ((feature = $feature; default = {$($branch_rest)*};) $($rest)*));
     };
     (@default accum=($($accum:tt)*), ((feature = $feature:ident; default = {

@@ -21,7 +21,6 @@ __declare_features!(
     };
 );
 
-
 __test!(__split_meta:
     (#[my_macro] fn foo() { /* ... */ }) => 
     ((#[my_macro]) (fn foo() { /* ... */ })));
@@ -32,27 +31,26 @@ __test!(__split_meta:
     (#[my_macro] #[other_macro] fn foo() { /* ... */ }) => 
     ((#[my_macro] #[other_macro]) (fn foo() { /* ... */ })));
 
+__test!(__parse_item[my_macro_parse]:
+(
+    #[my_macro(unsafe, priority = 1)]
+    fn foo() { /* ... */ }
+) =>
+(
+    features = (std = std, unsafe = unsafe, priority = 1, anonymous = (),),
+    meta = (),
+    item = (fn foo() { /* ... */ })
+));
 
 __test!(__parse_item[my_macro_parse]:
-    (
-        #[my_macro(unsafe, priority = 1)]
-        fn foo() { /* ... */ }
-    ) =>
-    (
-        features = (std = std, unsafe = unsafe, priority = 1, anonymous = (),), 
-        meta = (),
-        item = (fn foo() { /* ... */ })
-    ));
-
-__test!(__parse_item[my_macro_parse]:
-    (
-        #[other]
-        #[my_macro(unsafe)]
-        #[doc]
-        fn foo() { /* ... */ }
-    ) =>
-    (
-        features = (std = std, unsafe = unsafe, priority = (), anonymous = (),), 
-        meta = (#[other] #[doc]),
-        item = (fn foo() { /* ... */ })
-    ));
+(
+    #[other]
+    #[my_macro(unsafe)]
+    #[doc]
+    fn foo() { /* ... */ }
+) =>
+(
+    features = (std = std, unsafe = unsafe, priority = (), anonymous = (),),
+    meta = (#[other] #[doc]),
+    item = (fn foo() { /* ... */ })
+));

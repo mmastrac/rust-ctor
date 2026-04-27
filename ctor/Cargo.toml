@@ -39,7 +39,7 @@ link-section = { workspace = true, optional = true, default-features = false }
 libc-print = "0.1"
 
 [[example]]
-name = "example"
+name = "ctor-example"
 path = "src/example.rs"
 
 [[example]]

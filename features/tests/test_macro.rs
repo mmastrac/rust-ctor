@@ -3,9 +3,8 @@
 
 use ::features::*;
 
-
 __test!(__parse_feature_input:
-    (    
+    (
         my_macro: my_macro_parse;
 
         link_section {
@@ -20,7 +19,7 @@ __test!(__parse_feature_input:
     ) => (
         (my_macro my_macro_parse)
         ((
-            feature = link_section; 
+            feature = link_section;
             docs = [];
             attr = [(link_section($section:literal)) => ($section)];
             attr_docs = [];
@@ -83,7 +82,6 @@ __declare_features!(
     };
 );
 
-
 __declare_features!(
     my_macro: my_macro_parse;
 
@@ -141,7 +139,6 @@ __declare_features!(
     };
 );
 
-
 __test!(my_macro_parse[my_macro_parse => @extract (std)]:
     (std = std_value,) => (std = std_value,));
 __test!(my_macro_parse[my_macro_parse => @extract (std)]:
@@ -153,7 +150,6 @@ __test!(my_macro_parse[my_macro_parse => @extract (std anonymous)]:
 __test!(my_macro_parse[my_macro_parse => @extract (std anonymous)]:
     (std = std_value,) => (std = std_value, anonymous = (),));
 
-
 __test!(__extract_meta[small_macro_parse]:
     (()) => (std = std, priority = (), unsafe = (),));
 __test!(__extract_meta[small_macro_parse]:
@@ -162,7 +158,6 @@ __test!(__extract_meta[small_macro_parse]:
     ((unsafe, priority = 1)) => (std = std, priority = 1, unsafe = unsafe,));
 __test!(__extract_meta[small_macro_parse]:
     ((priority = 1)) => (std = std, priority = 1, unsafe = (),));
-
 
 #[cfg(target_vendor = "apple")]
 __test!(my_macro_parse[my_macro_parse => @crate]:
@@ -179,7 +174,6 @@ __test!(__extract_meta[my_macro_parse]:
         priority_enabled = (), priority = (), unsafe = (),
         link_section = "__DATA,__mod_term_func,mod_term_funcs", 
         crate_path = (), anonymous = (),));
-
 
 __test!(my_macro_parse[my_macro_parse => @self]:
     (#[my_macro]) => ((())()));

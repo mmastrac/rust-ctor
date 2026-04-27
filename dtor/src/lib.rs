@@ -75,13 +75,16 @@ pub use dtor_proc_macro::__dtor_from_ctor;
 /// ```
 pub mod declarative {
     #[doc(inline)]
-    pub use crate::__support::dtor_parse as dtor;
+    pub use crate::__dtor_parse as dtor;
 }
 
 #[doc(hidden)]
 #[allow(unused)]
 pub mod __support {
     use crate::features::*;
+
+    // Required for proc_macro.
+    pub use crate::__dtor_parse as dtor_parse;
 
     #[macro_export]
     #[doc(hidden)]
@@ -90,19 +93,21 @@ pub mod __support {
             $crate::__perform!(
                 ($($input)*),
                 $crate::__chain[
-                    $crate::__parse_item[$crate::dtor_parse],
+                    $crate::__parse_item[$crate::__dtor_features],
                     $crate::__dtor_parse_impl,
                 ]
             );
         };
     }
 
+    /// Parse a processed `dtor` item. This is intentionally verbose to avoid
+    /// excessive nesting of macro calls in user code.
     #[macro_export]
     #[doc(hidden)]
     macro_rules! __dtor_parse_impl {
-        // Step 1: Compute method
-
-        // Delegate term -> default_term_method
+        // Step 0: Check function shape
+        
+        // unsafe fn
         ( @entry next=$next:path[$next_args:tt], input=(
             features = (
                 anonymous = $anonymous:tt,
@@ -111,10 +116,108 @@ pub mod __support {
                 default_term_method = $default_term_method:tt,
                 default_unload_method = $default_unload_method:tt,
                 link_section = $link_section:tt,
-                method = term,
+                method = $method:tt,
                 no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
                 proc_macro = $proc_macro:tt,
                 std = $std:tt,
+                used_linker = $used_linker:tt,
+            ),
+            meta = $meta:tt,
+            item = ($vis:vis unsafe $( extern $abi:literal )? fn $name:ident () $( -> () )? {
+                $($body:tt)*
+            })
+        ) ) => {
+            $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
+                features = (
+                    anonymous = $anonymous,
+                    ctor_link_section = $ctor_link_section,
+                    default_term_method = $default_term_method,
+                    default_unload_method = $default_unload_method,
+                    link_section = $link_section,
+                    method = $method,
+                    no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
+                    used_linker = $used_linker,
+                ),
+                meta = $meta,
+                item = ($vis unsafe $( extern $abi )? fn $name () {
+                    $($body)*
+                })
+            ));
+        };
+
+        // non-unsafe fn
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = $anonymous:tt,
+                crate_path = $crate_path:tt,
+                ctor_link_section = $ctor_link_section:tt,
+                default_term_method = $default_term_method:tt,
+                default_unload_method = $default_unload_method:tt,
+                link_section = $link_section:tt,
+                method = $method:tt,
+                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
+                proc_macro = $proc_macro:tt,
+                std = $std:tt,
+                used_linker = $used_linker:tt,
+            ),
+            meta = $meta:tt,
+            item = ($vis:vis $( extern $abi:literal )? fn $name:ident () $( -> () )? {
+                $($body:tt)*
+            })
+        ) ) => {
+            $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
+                features = (
+                    anonymous = $anonymous,
+                    ctor_link_section = $ctor_link_section,
+                    default_term_method = $default_term_method,
+                    default_unload_method = $default_unload_method,
+                    link_section = $link_section,
+                    method = $method,
+                    no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
+                    used_linker = $used_linker,
+                ),
+                meta = $meta,
+                item = ($vis $( extern $abi )? fn $name () {
+                    $($body)*
+                })
+            ));
+        };
+
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = $anonymous:tt,
+                crate_path = $crate_path:tt,
+                ctor_link_section = $ctor_link_section:tt,
+                default_term_method = $default_term_method:tt,
+                default_unload_method = $default_unload_method:tt,
+                link_section = $link_section:tt,
+                method = $method:tt,
+                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
+                proc_macro = $proc_macro:tt,
+                std = $std:tt,
+                used_linker = $used_linker:tt,
+            ),
+            meta = $meta:tt,
+            item = ($item:item)
+        ) ) => {
+            compile_error!("Invalid dtor function. \
+                Expected a function with no args, \
+                return value, or type parameters.\n\
+                Valid forms are: [pub] [unsafe] [extern $abi] fn $name() { ... }");
+        };
+
+        // Step 1: Compute method
+
+        // Delegate term -> default_term_method
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = $anonymous:tt,
+                ctor_link_section = $ctor_link_section:tt,
+                default_term_method = $default_term_method:tt,
+                default_unload_method = $default_unload_method:tt,
+                link_section = $link_section:tt,
+                method = term,
+                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
                 used_linker = $used_linker:tt,
             ),
             meta = $meta:tt,
@@ -139,15 +242,12 @@ pub mod __support {
         ( @entry next=$next:path[$next_args:tt], input=(
             features = (
                 anonymous = $anonymous:tt,
-                crate_path = $crate_path:tt,
                 ctor_link_section = $ctor_link_section:tt,
                 default_term_method = $default_term_method:tt,
                 default_unload_method = $default_unload_method:tt,
                 link_section = $link_section:tt,
                 method = unload,
                 no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
-                proc_macro = $proc_macro:tt,
-                std = $std:tt,
                 used_linker = $used_linker:tt,
             ),
             meta = $meta:tt,
@@ -172,15 +272,12 @@ pub mod __support {
         ( @entry next=$next:path[$next_args:tt], input=(
             features = (
                 anonymous = $anonymous:tt,
-                crate_path = $crate_path:tt,
                 ctor_link_section = $ctor_link_section:tt,
                 default_term_method = $default_term_method:tt,
                 default_unload_method = $default_unload_method:tt,
                 link_section = $link_section:tt,
                 method = $method:tt,
                 no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
-                proc_macro = $proc_macro:tt,
-                std = $std:tt,
                 used_linker = $used_linker:tt,
             ),
             meta = $meta:tt,
@@ -202,18 +299,84 @@ pub mod __support {
         };
 
         // Step 2: warn on missing unsafe
+
+        // If no_warn_on_missing_unsafe, ignore
         ( @entry next=$next:path[$next_args:tt], input=(
             features = (
                 anonymous = $anonymous:tt,
                 ctor_link_section = $ctor_link_section:tt,
                 link_section = $link_section:tt,
                 method = $method:tt,
-                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
+                no_warn_on_missing_unsafe = no_warn_on_missing_unsafe,
                 used_linker = $used_linker:tt,
             ),
             meta = $meta:tt,
             item = $item:tt
         ) ) => {
+            $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
+                features = (
+                    anonymous = $anonymous,
+                    ctor_link_section = $ctor_link_section,
+                    link_section = $link_section,
+                    method = $method,
+                    used_linker = $used_linker,
+                ),
+                meta = $meta,
+                item = $item
+            ));
+        };
+
+        // If unsafe, pass through
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = $anonymous:tt,
+                ctor_link_section = $ctor_link_section:tt,
+                link_section = $link_section:tt,
+                method = $method:tt,
+                no_warn_on_missing_unsafe = (),
+                used_linker = $used_linker:tt,
+            ),
+            meta = $meta:tt,
+            item = ($vis:vis unsafe $($rest:tt)*)
+        ) ) => {
+            $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
+                features = (
+                    anonymous = $anonymous,
+                    ctor_link_section = $ctor_link_section,
+                    link_section = $link_section,
+                    method = $method,
+                    used_linker = $used_linker,
+                ),
+                meta = $meta,
+                item = ($vis unsafe $($rest)*)
+            ));
+        };
+
+        // If no unsafe and no_warn_on_missing_unsafe is missing, warn
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = $anonymous:tt,
+                ctor_link_section = $ctor_link_section:tt,
+                link_section = $link_section:tt,
+                method = $method:tt,
+                no_warn_on_missing_unsafe = (),
+                used_linker = $used_linker:tt,
+            ),
+            meta = $meta:tt,
+            item = $item:tt
+        ) ) => {
+            const _: () = {
+                #[deprecated="dtor deprecation note:\n\n\
+                Use of #[dtor] without `#[dtor(unsafe)]` or `unsafe fn` is deprecated. As code execution\n\
+                before main is unsupported by most Rust runtime functions, these functions must be marked\n\
+                `unsafe`."]
+                const fn dtor_without_unsafe_is_deprecated() {}
+                #[allow(unused)]
+                static UNSAFE_WARNING: () = {
+                    dtor_without_unsafe_is_deprecated()
+                };
+            };
+
             $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
                 features = (
                     anonymous = $anonymous,
@@ -331,12 +494,40 @@ pub mod __support {
                 used_linker_meta = (#$used_linker_meta:tt),
             ),
             meta = ($($meta:tt)*),
-            item = ($vis:vis $( unsafe )? $( extern $abi:literal )? fn $name:ident $args:tt $( -> () )? {
+            item = ($vis:vis $( extern $abi:literal )? fn $name:ident $args:tt $( -> () )? {
                 $($body:tt)*
             })
         ) ) => {
             $($meta)*
             $vis $( extern $abi )? fn $name $args {
+                $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
+                    features = (
+                        ctor_link_section = $ctor_link_section,
+                        link_section = $link_section,
+                        method = $method,
+                        used_linker_meta = (#$used_linker_meta),
+                    ),
+                    item = $name
+                ));
+
+                $($body)*
+            }
+        };
+
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                ctor_link_section = $ctor_link_section:tt,
+                link_section = $link_section:tt,
+                method = $method:tt,
+                used_linker_meta = (#$used_linker_meta:tt),
+            ),
+            meta = ($($meta:tt)*),
+            item = ($vis:vis unsafe $( extern $abi:literal )? fn $name:ident $args:tt $( -> () )? {
+                $($body:tt)*
+            })
+        ) ) => {
+            $($meta)*
+            $vis unsafe $( extern $abi )? fn $name $args {
                 $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
                     features = (
                         ctor_link_section = $ctor_link_section,
@@ -367,7 +558,7 @@ pub mod __support {
                 static __DTOR__PRIVATE__REF__: extern "C" fn() = {
                     #[allow(non_snake_case)]
                     extern "C" fn __dtor__private__() {
-                        $name()
+                        unsafe { $name() }
                     }
                     __dtor__private__
                 };
@@ -394,7 +585,7 @@ pub mod __support {
                     }
                     #[allow(non_snake_case)]
                     extern "C" fn __dtor__private__() {
-                        $name()
+                        unsafe { $name() }
                     }
                     __ctor__private__
                 };
@@ -421,7 +612,7 @@ pub mod __support {
                     }
                     #[allow(non_snake_case)]
                     extern "C" fn __dtor__private__() {
-                        $name()
+                        unsafe { $name() }
                     }
                     __ctor__private__
                 };
@@ -429,14 +620,12 @@ pub mod __support {
         };
     }
 
-    pub use __dtor_parse as dtor_parse;
-
     pub use crate::native::*;
 }
 
 __declare_features!(
-    dtor: dtor_parse;
-    
+    dtor: __dtor_features;
+
     /// Make the ctor function anonymous.
     anonymous {
         attr: [(anonymous) => (anonymous)];
@@ -553,4 +742,4 @@ __declare_features!(
 );
 
 #[cfg(doc)]
-__generate_docs!(dtor_parse);
+__generate_docs!(__dtor_features);

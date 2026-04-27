@@ -17,18 +17,508 @@
 #[cfg(feature = "std")]
 extern crate std;
 
+mod features;
+
 #[doc(hidden)]
 #[allow(unused)]
 pub mod __support {
-    pub use crate::macros::__support::*;
+    use crate::features::*;
 
     #[cfg(feature = "dtor")]
     pub use dtor::declarative::dtor as dtor_parse;
+
+    // Required for proc_macro.
+    pub use crate::__ctor_parse as ctor_parse;
+
+    #[macro_export]
+    #[doc(hidden)]
+    macro_rules! __ctor_parse {
+        ( $($input:tt)* ) => {
+            $crate::__perform!(
+                ($($input)*),
+                $crate::__chain[
+                    $crate::__parse_item[$crate::__ctor_features],
+                    $crate::__ctor_parse_impl,
+                ]
+            );
+        };
+    }
+
+    /// Parse a processed `ctor` item. This is intentionally verbose to avoid
+    /// excessive nesting of macro calls in user code.
+    #[macro_export]
+    #[doc(hidden)]
+    macro_rules! __ctor_parse_impl {
+        // Step 0: Check function shape
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = $anonymous:tt,
+                crate_path = $crate_path:tt,
+                link_section = $link_section:tt,
+                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
+                priority = $priority:tt,
+                proc_macro = $proc_macro:tt,
+                std = $std:tt,
+                used_linker = $used_linker:tt,
+            ),
+            meta = $meta:tt,
+            item = ($vis:vis unsafe $( extern $abi:literal )? fn $name:ident () $( -> () )? {
+                $($body:tt)*
+            })
+        ) ) => {
+            $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+                features = (
+                    anonymous = $anonymous,
+                    link_section = $link_section,
+                    no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
+                    priority = $priority,
+                    used_linker = $used_linker,
+                ),
+                meta = $meta,
+                item = ($vis unsafe $( extern $abi )? fn $name () {
+                    $($body)*
+                })
+            ));
+        };
+
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = $anonymous:tt,
+                crate_path = $crate_path:tt,
+                link_section = $link_section:tt,
+                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
+                priority = $priority:tt,
+                proc_macro = $proc_macro:tt,
+                std = $std:tt,
+                used_linker = $used_linker:tt,
+            ),
+            meta = $meta:tt,
+            item = ($vis:vis $( extern $abi:literal )? fn $name:ident () $( -> () )? {
+                $($body:tt)*
+            })
+        ) ) => {
+            $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+                features = (
+                    anonymous = $anonymous,
+                    link_section = $link_section,
+                    no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
+                    priority = $priority,
+                    used_linker = $used_linker,
+                ),
+                meta = $meta,
+                item = ($vis $( extern $abi )? fn $name () {
+                    $($body)*
+                })
+            ));
+        };
+
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = $anonymous:tt,
+                crate_path = $crate_path:tt,
+                link_section = $link_section:tt,
+                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
+                priority = $priority:tt,
+                proc_macro = $proc_macro:tt,
+                std = $std:tt,
+                used_linker = $used_linker:tt,
+            ),
+            meta = $meta:tt,
+            item = ($vis:vis static $ident:ident : $ty:ty = unsafe { $($body:tt)* };)
+        ) ) => {
+            $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+                features = (
+                    anonymous = $anonymous,
+                    link_section = $link_section,
+                    no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
+                    priority = $priority,
+                    used_linker = $used_linker,
+                ),
+                meta = $meta,
+                item = ($vis static $ident : $ty = unsafe { $($body)* };)
+            ));
+        };
+
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = $anonymous:tt,
+                crate_path = $crate_path:tt,
+                link_section = $link_section:tt,
+                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
+                priority = $priority:tt,
+                proc_macro = $proc_macro:tt,
+                std = $std:tt,
+                used_linker = $used_linker:tt,
+            ),
+            meta = $meta:tt,
+            item = ($vis:vis static $ident:ident : $ty:ty = { $($body:tt)* };)
+        ) ) => {
+            $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+                features = (
+                    anonymous = $anonymous,
+                    link_section = $link_section,
+                    no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
+                    priority = $priority,
+                    used_linker = $used_linker,
+                ),
+                meta = $meta,
+                item = ($vis:vis static $ident : $ty = { $($body)* };)
+            ));
+        };
+
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = $anonymous:tt,
+                crate_path = $crate_path:tt,
+                link_section = $link_section:tt,
+                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
+                priority = $priority:tt,
+                proc_macro = $proc_macro:tt,
+                std = $std:tt,
+                used_linker = $used_linker:tt,
+            ),
+            meta = $meta:tt,
+            item = ($item:item)
+        ) ) => {
+            compile_error!("Invalid ctor item. \
+                Expected a function with no args, \
+                return value, or type parameters or a static variable.\n\
+                Valid forms are:\n\
+                 - [pub] [unsafe] [extern $abi] fn $name() { ... }\n\
+                 - static $name : $ty = [unsafe] { ... };");
+        };
+
+        // Step 1: Compute priority
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = $anonymous:tt,
+                link_section = $link_section:tt,
+                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
+                priority = (),
+                used_linker = $used_linker:tt,
+            ),
+            meta = $meta:tt,
+            item = $item:tt
+        ) ) => {
+            $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+                features = (
+                    anonymous = $anonymous,
+                    link_section = ($link_section),
+                    no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
+                    used_linker = $used_linker,
+                ),
+                meta = $meta,
+                item = $item
+            ));
+        };
+
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = $anonymous:tt,
+                link_section = $link_section:tt,
+                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
+                priority = $priority:literal,
+                used_linker = $used_linker:tt,
+            ),
+            meta = $meta:tt,
+            item = $item:tt
+        ) ) => {
+            $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+                features = (
+                    anonymous = $anonymous,
+                    link_section = ($link_section), //(concat!($link_section, ".", $priority)),
+                    no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
+                    used_linker = $used_linker,
+                ),
+                meta = $meta,
+                item = $item
+            ));
+        };
+
+        // Step 2: Compute no_warn_on_missing_unsafe
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = $anonymous:tt,
+                link_section = $link_section:tt,
+                no_warn_on_missing_unsafe = (),
+                used_linker = $used_linker:tt,
+            ),
+            meta = $meta:tt,
+            item = $item:tt
+        ) ) => {
+            $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+                features = (
+                    anonymous = $anonymous,
+                    link_section = $link_section,
+                    used_linker = $used_linker,
+                ),
+                meta = $meta,
+                item = $item
+            ));
+        };
+
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = $anonymous:tt,
+                link_section = $link_section:tt,
+                no_warn_on_missing_unsafe = no_warn_on_missing_unsafe,
+                used_linker = $used_linker:tt,
+            ),
+            meta = $meta:tt,
+            item = $item:tt
+        ) ) => {
+            $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+                features = (
+                    anonymous = $anonymous,
+                    link_section = $link_section,
+                    used_linker = $used_linker,
+                ),
+                meta = $meta,
+                item = $item
+            ));
+        };
+
+        // Step 3: Wrap in anonymous const
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = (),
+                link_section = $link_section:tt,
+                used_linker = $used_linker:tt,
+            ),
+            meta = $meta:tt,
+            item = $item:tt
+        ) ) => {
+            $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+                features = (
+                    link_section = $link_section,
+                    used_linker = $used_linker,
+                ),
+                meta = $meta,
+                item = $item
+            ));
+        };
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = anonymous,
+                link_section = $link_section:tt,
+                used_linker = $used_linker:tt,
+            ),
+            meta = $meta:tt,
+            item = $item:tt
+        ) ) => {
+            const _: () = {
+                $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+                    features = (
+                        link_section = $link_section,
+                        used_linker = $used_linker,
+                    ),
+                    meta = $meta,
+                    item = $item
+                ));
+            };
+        };
+
+        // Step 4: Compute used_linker
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                link_section = $link_section:tt,
+                used_linker = (),
+            ),
+            meta = $meta:tt,
+            item = $item:tt
+        ) ) => {
+            $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+                features = (
+                    link_section = $link_section,
+                    used_linker_meta = (#[used]),
+                ),
+                meta = $meta,
+                item = $item
+            ));
+        };
+
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                link_section = $link_section:tt,
+                used_linker = used_linker,
+            ),
+            meta = $meta:tt,
+            item = $item:tt
+        ) ) => {
+            $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+                features = (
+                    link_section = $link_section,
+                    used_linker_meta = (#[used(linker)]),
+                ),
+                meta = $meta,
+                item = $item
+            ));
+        };
+
+        // Step 5: Delegate on item type
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                link_section = ($($link_section:tt)*),
+                used_linker_meta = (#$used_linker_meta:tt),
+            ),
+            meta = ($($meta:tt)*),
+            item = ($vis:vis unsafe $( extern $abi:literal )? fn $name:ident () $( -> () )? {
+                $($body:tt)*
+            })
+        ) ) => {
+            $($meta)*
+            $vis unsafe $( extern $abi )? fn $name () {
+                const _: () = {
+                    #[link_section = $($link_section)*]
+                    #$used_linker_meta
+                    #[allow(non_upper_case_globals)]
+                    static __CTOR__PRIVATE__REF__: unsafe extern "C" fn() = {
+                        #[allow(non_snake_case)]
+                        extern "C" fn __ctor__private__() {
+                            unsafe { $name() }
+                        }
+                        __ctor__private__
+                    };
+                };
+                $($body)*
+            }
+        };
+
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                link_section = ($($link_section:tt)*),
+                used_linker_meta = (#$used_linker_meta:tt),
+            ),
+            meta = ($($meta:tt)*),
+            item = ($vis:vis $( extern $abi:literal )? fn $name:ident () $( -> () )? {
+                $($body:tt)*
+            })
+        ) ) => {
+            $($meta)*
+            $vis $( extern $abi )? fn $name () {
+                const _: () = {
+                    #[link_section = $($link_section)*]
+                    #$used_linker_meta
+                    #[allow(non_upper_case_globals)]
+                    static __CTOR__PRIVATE__REF__: unsafe extern "C" fn() = {
+                        #[allow(non_snake_case)]
+                        extern "C" fn __ctor__private__() {
+                            unsafe { $name() }
+                        }
+                        __ctor__private__
+                    };
+                };
+                $($body)*
+            }
+        };
+
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                link_section = ($($link_section:tt)*),
+                used_linker_meta = (#$used_linker_meta:tt),
+            ),
+            meta = ($($meta:tt)*),
+            item = ($vis:vis static $ident:ident : $ty:ty = $(unsafe)? { $($body:tt)* };)
+        ) ) => {
+            $($meta)*
+            $vis static $ident: $crate::statics::Static<$ty> = {
+                fn init() -> $ty {
+                    $($body)*
+                }
+                unsafe { $crate::statics::Static::<$ty>::new(init) }
+            };
+
+            const _: () = {
+                #[link_section = $($link_section)*]
+                #$used_linker_meta
+                #[allow(non_upper_case_globals)]
+                static __CTOR__PRIVATE__REF__: unsafe extern "C" fn() = {
+                    #[allow(non_snake_case)]
+                    extern "C" fn __ctor__private__() {
+                        unsafe { _ = &*$ident; }
+                    }
+                    __ctor__private__
+                };
+            };
+        };
+
+    }
 }
 
-mod macros;
+pub mod statics {
+    use core::ops::Deref;
+    use core::mem::{MaybeUninit};
+    use core::cell::{Cell, UnsafeCell};
 
-pub use macros::features;
+    /// A static variable that is initialized at startup time.
+    /// 
+    /// # Safety
+    /// 
+    /// This must only be initialized during the pre-main startup phase. It is
+    /// assumed that no other threads access this static variable before main,
+    /// after which the static variable is guaranteed to be 1) initialized and
+    /// 2) immutable.
+    pub struct Static<T: Sync> {
+        storage: UnsafeCell<MaybeUninit<T>>,
+        initializer: fn() -> T,
+        initialized: Cell<u8>,
+    }
+
+    unsafe impl<T: Sync> Sync for Static<T> {}
+
+    impl<T: Sync> Static<T> {
+        /// Create a new ctor-initialized static variable.
+        /// 
+        /// # Safety
+        /// 
+        /// See the documentation for `Static` for more information.
+        #[doc(hidden)]
+        pub const unsafe fn new(initializer: fn() -> T) -> Self {
+            Self {
+                storage: UnsafeCell::new(MaybeUninit::uninit()),
+                initializer,
+                initialized: Cell::new(0),
+            }
+        }
+    }
+
+    impl<T: Sync> Deref for Static<T> {
+        type Target = T;
+        fn deref(&self) -> &Self::Target {
+            unsafe { 
+                match self.initialized.get() {
+                    0 => {
+                        self.initialized.set(1);
+                        let value = (self.initializer)();
+                        *self.storage.get() = MaybeUninit::new(value);
+                        self.initialized.set(2);
+                        (UnsafeCell::raw_get(&self.storage) as *const T).as_ref().unwrap_unchecked()
+                    }
+                    1 => {
+                        panic!("Recursive initialization of static variable");
+                    }
+                    2 => {
+                        (UnsafeCell::raw_get(&self.storage) as *const T).as_ref().unwrap_unchecked()
+                    }
+                    _ => panic!("Invalid state for static variable"),
+                }
+            }
+        }
+    }
+
+    impl<T: Sync> Drop for Static<T> {
+        fn drop(&mut self) {
+            unsafe {
+                match self.initialized.get() {
+                    2 => {
+                        (UnsafeCell::raw_get(&self.storage) as *mut T).drop_in_place();
+                    }
+                    _ => ()
+                }
+            }
+        }
+    }
+}
 
 /// Declarative forms of the `#[ctor]` and `#[dtor]` macros.
 ///
@@ -256,34 +746,77 @@ pub use ctor_proc_macro::ctor;
 pub use dtor::__dtor_from_ctor as dtor; // note: this is the dtor proc macro that looks in ctor
 
 __declare_features!(
-    /// Crate features: name/name as string/include macro.
-    crate = [
-        /// Enable support for the standard library. This is required for static ctor variables, but not for functions.
-        std "std" = __include_std_feature;
-        /// Mark all ctor functions with `used(linker)`.
-        used_linker "used_linker" = __include_used_linker_feature;
-        /// Enable support for the proc-macro `#[ctor]` and `#[dtor]` attributes.
-        proc_macro "proc_macro" = __include_proc_macro_feature;
-        /// Do not warn when a ctor or dtor is missing the `unsafe` keyword.
-        no_warn_on_missing_unsafe "no_warn_on_missing_unsafe" = __include_no_warn_on_missing_unsafe_feature;
-        /// Enable support for the priority parameter.
-        priority "priority" = __include_priority_feature;
-    ];
+    ctor: __ctor_features;
 
-    /// Attributes.
-    attr = [
-        /// Marks a ctor/dtor as unsafe. This will become a warning in 1.0.
-        unsafe = [unsafe];
-        /// Place the initialization function pointer in a custom link section. This may cause the initialization function
-        /// to fail to run or run earlier or later than other `ctor` functions.
-        link_section = [link_section($section:literal)];
-        /// Specify a custom crate path for the `ctor` crate. Used when re-exporting the ctor macro.
-        crate_path = [crate_path = $path:path];
-        /// Make the ctor function anonymous.
-        anonymous = [anonymous];
-        /// Mark this function with `used(linker)`.
-        used_linker = [used(linker)];
-        /// Set the ctor priority to a given value.
-        priority = [priority = $priority:literal];
-    ];
+    /// Make the ctor function anonymous.
+    anonymous {
+        attr: [(anonymous) => (anonymous)];
+    };
+    /// Specify a custom crate path for the `ctor` crate. Used when re-exporting the ctor macro.
+    crate_path {
+        attr: [(crate_path = $path:pat) => ($path)];
+        example: "crate_path = ::path::to::ctor::crate";
+    };
+    /// Place the destructor function pointer in a custom link section.
+    link_section {
+        attr: [(link_section = $section:literal) => ($section)];
+        example: "link_section = \".ctors\"";
+        default {
+            // This is no longer supported by Apple
+            (target_vendor = "apple") => "__DATA,__mod_init_func,mod_init_funcs",
+            // Most LLVM/GCC targets can use .fini_array
+            (any(
+                target_os = "linux",
+                target_os = "android",
+                target_os = "freebsd",
+                target_os = "netbsd",
+                target_os = "openbsd",
+                target_os = "dragonfly",
+                target_os = "illumos",
+                target_os = "haiku",
+                target_family = "wasm"
+            )) => ".init_array",
+            // xtensa targets: .dtors
+            (target_arch = "xtensa") => ".ctors",
+            // Windows targets: CRT$XPU
+            (all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc"))) => ".CRT$XCU",
+            // ... except GNU
+            (all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc")))) => ".ctors",
+            _ => (compile_error!("Unsupported target for #[ctor]"))
+        }
+    };
+    no_warn_on_missing_unsafe {
+        /// crate
+        /// Do not warn when a ctor or dtor is missing the `unsafe` keyword.
+        feature: "no_warn_on_missing_unsafe";
+        /// attr
+        /// Marks a ctor/dtor as unsafe.
+        attr: [(unsafe) => (no_warn_on_missing_unsafe)];
+    };
+    priority {
+        attr: [(priority = $priority_value:literal) => ($priority_value)];
+        validate: [(priority = $priority:literal), (priority = early), (priority = late)];
+    };
+    /// Enable support for the proc-macro `#[dtor]` attribute. The declarative
+    /// form (`dtor!(...)`) is always available. It is recommended that crates
+    /// re-exporting the `dtor` macro disable this feature and only use the
+    /// declarative form.
+    proc_macro {
+        feature: "proc_macro";
+    };
+    /// Enable support for the standard library.
+    std {
+        feature: "std";
+    };
+    used_linker {
+        /// crate
+        /// Applies `used(linker)` to all `dtor`-generated functions. Requires nightly and `feature(used_with_arg)`.
+        feature: "used_linker";
+        /// attr
+        /// Mark generated functions for this `dtor` as `used(linker)`. Requires nightly and `feature(used_with_arg)`.
+        attr: [(used(linker)) => (used_linker)];
+    };
 );
+
+#[cfg(doc)]
+__generate_docs!(__ctor_features);

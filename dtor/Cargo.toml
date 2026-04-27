@@ -11,7 +11,7 @@ categories = ["no-std"]
 rust-version = "1.60"
 
 [features]
-default = ["std", "proc_macro", "no_warn_on_missing_unsafe", "cxa_atexit", "export_native"]
+default = ["std", "proc_macro", "cxa_atexit", "export_native"]
 std = []
 proc_macro = ["dep:dtor-proc-macro"]
 used_linker = []

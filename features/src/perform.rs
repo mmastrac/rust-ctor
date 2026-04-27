@@ -36,7 +36,7 @@ macro_rules! __stringify {
     ( @entry next=$next:path[$next_args:tt], input=$input:tt, args=[$(prefix=[$($prefix:tt)*])? $(suffix=[$($suffix:tt)*])?] ) => {
         $next ! ( $next_args, ($($($prefix)*)? stringify! $input $($($suffix)*)? ) );
     };
-    
+
     ( $($input:tt)* ) => {
         const _: () = { compile_error!(concat!("Unexpected input: ", stringify!($($input)*))); };
     };
@@ -49,7 +49,7 @@ macro_rules! __emit {
     ( @entry next=$next:path[$next_args:tt], input=$input:tt, args=[$($args:tt)*] ) => {
         $next ! ( $next_args, ($($args)*) );
     };
-    
+
     ( $($input:tt)* ) => {
         const _: () = { compile_error!(concat!("Unexpected input: ", stringify!($($input)*))); };
     };
@@ -63,7 +63,7 @@ macro_rules! __surround {
         args=[ $( prefix=[$($prefix:tt)*] )? $( suffix=[$($suffix:tt)*] )? ] ) => {
         $next ! ( $next_args, ( $($($prefix)*)? $($input)* $($($suffix)*)? ) );
     };
-    
+
     ( $($input:tt)* ) => {
         const _: () = { compile_error!(concat!("Unexpected input: ", stringify!($($input)*))); };
     };
@@ -89,7 +89,6 @@ macro_rules! __brace {
         const _: () = { compile_error!(concat!("Unexpected input: ", stringify!($($input)*))); };
     };
 }
-
 
 /// Removes surrounding braces from the input.
 #[macro_export]
@@ -117,7 +116,7 @@ macro_rules! __unbrace {
 #[doc(hidden)]
 macro_rules! __identity {
     ( @entry next=$next:path[$next_args:tt], input=$input:tt ) => {
-        $next ! ( $next_args, $input );
+        $next!($next_args, $input);
     };
 }
 
@@ -125,8 +124,7 @@ macro_rules! __identity {
 #[macro_export]
 #[doc(hidden)]
 macro_rules! __sink {
-    ( @entry next=$next:path[$next_args:tt], input=$input:tt ) => {
-    };
+    ( @entry next=$next:path[$next_args:tt], input=$input:tt ) => {};
 }
 
 /// Splits the input and processes it down multiple paths, in order. The next
@@ -165,7 +163,7 @@ macro_rules! __parallel {
 
     // Continue point, call the next macro in the parallel chain
     ( @process $input:tt, [$next:path $([$($args:tt)*])?, $($stack:tt)*], $accum:tt, $final:tt ) => {
-        $next!( 
+        $next!(
             @entry next=$crate::__parallel[[@continue [$($stack)*] $input $accum $final]],
             input=$input $(, args=[$($args)*])?
         );
@@ -174,7 +172,7 @@ macro_rules! __parallel {
     ( [@continue [$($stack:tt)*] $input:tt ($( $accum:tt )*) $final:tt], ($($output:tt)*) ) => {
         $crate::__parallel!( @process $input, [$($stack)*], ($($accum)* $($output)*), $final);
     };
-    
+
     ( $($input:tt)* ) => {
         const _: () = { compile_error!(concat!("Unexpected input: ", stringify!($($input)*))); };
     };
@@ -225,7 +223,7 @@ macro_rules! __separate {
 
     // Continue point, call the next macro in the parallel chain
     ( @process ($input:tt $($input_rest:tt)*), [$next:path $([$($args:tt)*])?, $($stack:tt)*], $accum:tt, $final:tt ) => {
-        $next!( 
+        $next!(
             @entry next=$crate::__separate[[@continue [$($stack)*] ($($input_rest)*) $accum $final]],
             input=$input $(, args=[$($args)*])?
         );
@@ -234,7 +232,7 @@ macro_rules! __separate {
     ( [@continue [$($stack:tt)*] $input:tt ($( $accum:tt )*) $final:tt], ($($output:tt)*) ) => {
         $crate::__separate!( @process $input, [$($stack)*], ($($accum)* $($output)*), $final);
     };
-    
+
     ( $($input:tt)* ) => {
         const _: () = { compile_error!(concat!("Unexpected input: ", stringify!($($input)*))); };
     };

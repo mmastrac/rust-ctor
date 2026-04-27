@@ -22,7 +22,7 @@ static STATIC_CTOR: HashMap<u32, &'static str> = unsafe {
 unsafe fn anonymous_ctor() {
     libc_println!("ctor_anonymous (#1)");
     // We can still reference the function itself
-    let f = anonymous_ctor;
+    let _f = anonymous_ctor;
 }
 
 #[ctor(anonymous)]
@@ -34,13 +34,13 @@ const _: () = {
     #[ctor]
     unsafe fn anonymous_ctor() {
         libc_println!("ctor_anonymous (#3)");
-        let f = anonymous_ctor;
+        let _f = anonymous_ctor;
     }
 
     #[dtor]
     unsafe fn anonymous_dtor() {
         libc_println!("dtor_anonymous");
-        let f = anonymous_dtor;
+        let _f = anonymous_dtor;
     }
 };
 
@@ -49,7 +49,7 @@ const _: () = {
 unsafe fn ctor() {
     libc_println!("ctor");
     // We can still reference the function itself
-    let f = ctor;
+    let _f = ctor;
 }
 
 #[ctor(priority = 1)]
@@ -57,7 +57,7 @@ unsafe fn ctor() {
 unsafe fn ctor_priority_one() {
     libc_println!("ctor_priority_one");
     // We can still reference the function itself
-    let f = ctor_priority_one;
+    let _f = ctor_priority_one;
 }
 
 #[ctor]
@@ -71,7 +71,7 @@ unsafe fn ctor_unsafe() {
 unsafe fn dtor() {
     libc_println!("dtor");
     // We can still reference the function itself
-    let f = dtor;
+    let _f = dtor;
 }
 
 #[dtor]
@@ -83,13 +83,13 @@ unsafe fn dtor_unsafe() {
 #[dtor(anonymous)]
 unsafe fn anonymous_dtor() {
     libc_println!("dtor_anonymous (#1)");
-    let f = anonymous_dtor;
+    let _f = anonymous_dtor;
 }
 
 #[dtor(anonymous)]
 unsafe fn anonymous_dtor() {
     libc_println!("dtor_anonymous (#2)");
-    let f = anonymous_dtor;
+    let _f = anonymous_dtor;
 }
 
 /// A module with a static ctor/dtor
