@@ -18,6 +18,21 @@ fn shutdown() {
 }
 ```
 
+# Platform Support
+
+| Platform | Link Section | at_binary_exit | at_module_exit |
+| --- | --- | --- | --- |
+| Linux | `.fini_array`/`.dtors` | Yes (`atexit`) | Yes (`__cxa_atexit`) |
+| MacOS | `.mod_term_func` 🍎 | Yes (`atexit`) | Yes (`__cxa_atexit`) |
+| Windows | `.CRT$XPU` 🪟 | No | Yes (`atexit`) |
+| AIX | No 🔵 | Yes | Yes |
+| Other POSIX-like platforms | `.fini_array`/`.dtors` | Yes (`atexit`) | Yes (`__cxa_atexit`) |
+
+Notes:
+ - 🍎: Not recommended. Apple platforms no longer call `mod_term_func` functions.
+ - 🪟: Not recommended. Windows platforms may not reliably call functions in link sections, unless a binary is built with a static CRT.
+ - 🔵: Link sections are not supported on AIX, but `__sinit` functions can be used to call `atexit`.
+
 # Under the Hood
 
 The `#[dtor]` macro effectively creates a constructor that calls `libc::atexit`

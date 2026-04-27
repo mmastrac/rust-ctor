@@ -16,6 +16,20 @@ fn shutdown() {
 ```
 
 
+| Platform | Link Section | at_binary_exit | at_module_exit |
+| --- | --- | --- | --- |
+| Linux | `.fini_array`/`.dtors` | Yes (`atexit`) | Yes (`__cxa_atexit`) |
+| MacOS | `.mod_term_func` 🍎 | Yes (`atexit`) | Yes (`__cxa_atexit`) |
+| Windows | `.CRT$XPU` 🪟 | No | Yes (`atexit`) |
+| AIX | No 🔵 | Yes | Yes |
+| Other POSIX-like platforms | `.fini_array`/`.dtors` | Yes (`atexit`) | Yes (`__cxa_atexit`) |
+
+Notes:
+ - 🍎: Not recommended. Apple platforms no longer call `mod_term_func` functions.
+ - 🪟: Not recommended. Windows platforms may not reliably call functions in link sections, unless a binary is built with a static CRT.
+ - 🔵: Link sections are not supported on AIX, but `__sinit` functions can be used to call `atexit`.
+
+
 The `#[dtor]` macro effectively creates a constructor that calls `libc::atexit`
 with the provided function, i.e. roughly equivalent to:
 
@@ -41,7 +55,7 @@ fn dtor_atexit() {
 | `crate_path = $path : pat` |  Specify a custom crate path for the `dtor` crate. Used when re-exporting the dtor macro. |
 | `ctor(link_section = $ctor_link_section_name : literal)` |  Place the initialization function pointer in a custom link section. |
 | `link_section = $section : literal` |  Place the destructor function pointer in a custom link section. |
-| `method = $method_id : ident` |  Specify the dtor method.  - `term`: Run the dtor on binary termination.  - `unload`: Run the dtor on library unload.  - `at_library_exit`: Run the dtor using `__cxa_atexit` (unsupported on Windows platforms).  - `at_binary_exit`: Run the dtor using `atexit`.  - `link_section`: Run the dtor using a custom link section (unsupported on Apple platforms). |
+| `method = $method_id : ident` |  Specify the dtor method.  - `term`: Run the dtor on binary termination. Not recommended as code may be unloaded before the dtor is called.  - `unload`: Run the dtor on module unload (library or binary).  - `at_library_exit`: Run the dtor using `__cxa_atexit` (unsupported on Windows platforms).  - `at_binary_exit`: Run the dtor using `atexit`.  - `link_section`: Run the dtor using a custom link section (unsupported on Apple platforms). |
 | `unsafe` |  Marks a ctor/dtor as unsafe. |
 | `used(linker)` |  Mark generated functions for this `dtor` as `used(linker)`. Requires nightly and `feature(used_with_arg)`. |
 
@@ -61,7 +75,7 @@ ctor_link_section = ".init_array"
 ctor_link_section = ".ctors"
 
 #[cfg(all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc")))]
-ctor_link_section = ".CRT$XCU"
+ctor_link_section = ".CRT$XPU"
 
 #[cfg(all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc"))))]
 ctor_link_section = ".ctors"
@@ -73,21 +87,18 @@ ctor_link_section = (compile_error! ("Unsupported target for #[ctor]"))
 ## `default_term_method`
 
  ```rust
-#[cfg(target_vendor = "apple")]
-default_term_method = at_binary_exit
+#[cfg(target_vendor = "pc")]
+default_term_method = at_library_exit
 
  // default
-default_term_method = link_section
+default_term_method = at_binary_exit
  ```
 
 ## `default_unload_method`
 
  ```rust
-#[cfg(target_vendor = "pc")]
-default_unload_method = link_section
-
  // default
-default_unload_method = at_library_exit
+default_unload_method = at_module_exit
  ```
 
 ## `link_section`
