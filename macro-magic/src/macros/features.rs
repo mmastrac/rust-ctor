@@ -133,6 +133,50 @@ macro_rules! __split_meta {
     };
 }
 
+/// Extracts the unsafe flag from an item extracted via `__parse_item`.
+#[macro_export]
+#[doc(hidden)]
+macro_rules! __extract_unsafe {
+    ( @entry next=$next:path[$next_args:tt], input=(
+        features = $features:tt,
+        meta = $meta:tt,
+        item = ($vis:vis unsafe $($rest:tt)*)
+    ) ) => {
+        $next ! ( $next_args, (
+            features = $features,
+            meta = $meta,
+            unsafe = (unsafe),
+            item = ($vis unsafe $($rest)*)
+        ));
+    };
+
+    ( @entry next=$next:path[$next_args:tt], input=(
+        features = $features:tt,
+        meta = $meta:tt,
+        item = ($vis:vis static $ident:ident : $ty:ty = unsafe $($rest:tt)*)
+    ) ) => {
+        $next ! ( $next_args, (
+            features = $features,
+            meta = $meta,
+            unsafe = (unsafe),
+            item = ($vis static $ident : $ty = unsafe $($rest)*)
+        ));
+    };
+
+    ( @entry next=$next:path[$next_args:tt], input=(
+        features = $features:tt,
+        meta = $meta:tt,
+        item = $item:tt
+    ) ) => {
+        $next ! ( $next_args, (
+            features = $features,
+            meta = $meta,
+            unsafe = (),
+            item = $item
+        ));
+    };
+}
+
 /// Parses a "pretty" feature specification into something easier to work with.
 #[macro_export]
 #[doc(hidden)]
