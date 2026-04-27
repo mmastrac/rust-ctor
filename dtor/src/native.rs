@@ -41,6 +41,14 @@ pub unsafe fn at_module_exit(cb: extern "C" fn()) {
     }
 }
 
+#[deprecated(since = "0.11.0", note = "Use `at_module_exit` instead")]
+#[inline(always)]
+pub unsafe fn at_library_exit(cb: extern "C" fn()) {
+    unsafe {
+        at_module_exit(cb);
+    }
+}
+
 /// Register a function to be called at libc exit time.
 #[cfg(not(miri))]
 #[inline(always)]

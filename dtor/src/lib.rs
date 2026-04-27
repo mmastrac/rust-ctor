@@ -485,7 +485,7 @@ pub mod __support {
             ));
         };
 
-        // Step 5: Delegate on method (at_library_exit, at_binary_exit, link_section)
+        // Step 5: Delegate on method (at_module_exit, at_binary_exit, link_section)
         ( @entry next=$next:path[$next_args:tt], input=(
             features = (
                 ctor_link_section = $ctor_link_section:tt,
@@ -569,7 +569,7 @@ pub mod __support {
             features = (
                 ctor_link_section = $ctor_link_section:tt,
                 link_section = $link_section:tt,
-                method = at_library_exit,
+                method = at_module_exit,
                 used_linker_meta = (#$used_linker_meta:tt),
             ),
             item = $name:ident
@@ -670,10 +670,10 @@ __declare_features!(
     /// This is only used if the specified `dtor` method is `term`.
     ///
     /// All platforms use `at_binary_exit` except Windows, which uses
-    /// `at_library_exit`.
+    /// `at_module_exit`.
     default_term_method {
         default {
-            (target_vendor = "pc") => at_library_exit,
+            (target_vendor = "pc") => at_module_exit,
             _ => at_binary_exit,
         }
     };
@@ -716,18 +716,21 @@ __declare_features!(
     };
     /// Specify the dtor method.
     ///
-    ///  - `term`: Run the dtor on binary termination. Not recommended as code may be unloaded before the dtor is called.
+    ///  - `term`: Run the dtor on binary termination. Not recommended as code
+    ///    may be unloaded before the dtor is called.
     ///  - `unload`: Run the dtor on module unload (library or binary).
-    ///  - `at_library_exit`: Run the dtor using `__cxa_atexit`.
-    ///  - `at_binary_exit`: Run the dtor using `atexit` (unsupported on Windows platforms).
-    ///  - `link_section`: Run the dtor using a custom link section (unsupported on Apple platforms).
+    ///  - `at_module_exit`: Run the dtor using `__cxa_atexit`.
+    ///  - `at_binary_exit`: Run the dtor using `atexit` (unsupported on Windows
+    ///    platforms).
+    ///  - `link_section`: Run the dtor using a custom link section (unsupported
+    ///    on Apple platforms).
     method {
         attr: [(method = $method_id:ident) => ($method_id)];
-        example: "method = term|unload|at_library_exit|at_binary_exit|link_section";
-        validate: [(method = term), (method = unload), (method = at_library_exit), (method = at_binary_exit), (method = link_section)];
+        example: "method = term|unload|at_module_exit|at_binary_exit|link_section";
+        validate: [(method = term), (method = unload), (method = at_module_exit), (method = at_binary_exit), (method = link_section)];
         default {
-            (target_vendor = "apple") => at_library_exit,
-            (target_vendor = "pc") => at_library_exit,
+            (target_vendor = "apple") => at_module_exit,
+            (target_vendor = "pc") => at_module_exit,
             _ => link_section,
         }
     };

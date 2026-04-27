@@ -11,10 +11,10 @@ fn dtor() {
     libc_eprintln!("dtor");
 }
 
-#[dtor(unsafe, method = at_library_exit)]
+#[dtor(unsafe, method = at_module_exit)]
 #[allow(unsafe_code)]
-fn dtor_at_library_exit() {
-    libc_eprintln!("at_library_exit");
+fn dtor_at_module_exit() {
+    libc_eprintln!("at_module_exit");
 }
 
 /// This one is unsafe.
