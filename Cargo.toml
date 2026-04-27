@@ -8,14 +8,12 @@ members = [
     "features",
     "link-section",
     "link-section-proc-macro",
-    "shared",
     "tests"
 ]
 default-members = [
     "ctor",
     "dtor",
     "link-section",
-    "shared",
     "tests"
 ]
 exclude = []

@@ -106,7 +106,7 @@ pub mod __support {
     #[doc(hidden)]
     macro_rules! __dtor_parse_impl {
         // Step 0: Check function shape
-        
+
         // unsafe fn
         ( @entry next=$next:path[$next_args:tt], input=(
             features = (

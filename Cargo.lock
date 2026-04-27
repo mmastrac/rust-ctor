@@ -759,17 +759,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "shared"
-version = "0.1.0"
-dependencies = [
- "ctor",
- "dtor",
- "link-section",
- "macrotest",
- "trybuild",
-]
-
-[[package]]
 name = "shellish_parse"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

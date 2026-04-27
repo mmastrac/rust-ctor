@@ -380,6 +380,7 @@ pub const fn const_str_slice_len(s: &[&str]) -> usize {
 }
 
 #[allow(unused)]
+#[allow(clippy::incompatible_msrv)]
 pub const fn const_str_slice_concat<'a>(s: &[&str], out: &'a mut [u8]) -> &'a str {
     let mut i = 0;
     let mut j = 0;
