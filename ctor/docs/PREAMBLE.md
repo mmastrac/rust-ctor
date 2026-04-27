@@ -103,8 +103,7 @@ static STATIC_CTOR: HashMap<u32, &'static str> = {
 Print a message at shutdown time. Note that Rust may have shut down some stdlib
 services at this time.
 
-```rust
-# #[cfg(false)]
+```rust,ignore
 use libc::printf;
 use ctor::dtor;
 
