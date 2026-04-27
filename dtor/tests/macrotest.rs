@@ -53,6 +53,13 @@ pub fn pass_linux() {
     ensure_no_empty_files("tests/expand-linux");
 }
 
+#[cfg(windows)]
+#[test]
+pub fn pass_windows() {
+    macrotest::expand("tests/expand-windows/*.rs");
+    ensure_no_empty_files("tests/expand-windows");
+}
+
 #[test]
 pub fn trybuild() {
     let t = trybuild::TestCases::new();
