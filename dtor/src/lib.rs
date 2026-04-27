@@ -718,8 +718,8 @@ __declare_features!(
     ///
     ///  - `term`: Run the dtor on binary termination. Not recommended as code may be unloaded before the dtor is called.
     ///  - `unload`: Run the dtor on module unload (library or binary).
-    ///  - `at_library_exit`: Run the dtor using `__cxa_atexit` (unsupported on Windows platforms).
-    ///  - `at_binary_exit`: Run the dtor using `atexit`.
+    ///  - `at_library_exit`: Run the dtor using `__cxa_atexit`.
+    ///  - `at_binary_exit`: Run the dtor using `atexit` (unsupported on Windows platforms).
     ///  - `link_section`: Run the dtor using a custom link section (unsupported on Apple platforms).
     method {
         attr: [(method = $method_id:ident) => ($method_id)];
@@ -727,6 +727,7 @@ __declare_features!(
         validate: [(method = term), (method = unload), (method = at_library_exit), (method = at_binary_exit), (method = link_section)];
         default {
             (target_vendor = "apple") => at_library_exit,
+            (target_vendor = "pc") => at_library_exit,
             _ => link_section,
         }
     };
