@@ -4,12 +4,16 @@
 ///
 /// Corresponds to `atexit` in C.
 ///
+/// Unsupported on Windows platforms: the platform's libc `atexit` tracks a set
+/// of functions per module.
+///
 /// # Safety
 ///
 /// Rust does not provide any safety guarantees about life-before-main or
 /// life-after-main. Ordering of destructors is not guaranteed, nor that a
 /// destructor will be called at all.
 #[inline(always)]
+#[cfg(not(windows))]
 pub unsafe fn at_binary_exit(cb: extern "C" fn()) {
     unsafe {
         _run_atexit(cb);
@@ -22,18 +26,18 @@ pub unsafe fn at_binary_exit(cb: extern "C" fn()) {
 /// Corresponds to `__cxa_atexit` in C, though the exit function argument is
 /// not available.
 ///
-/// Unsupported on Windows platforms.
-///
 /// # Safety
 ///
 /// Rust does not provide any safety guarantees about life-before-main or
 /// life-after-main. Ordering of destructors is not guaranteed, nor that a
 /// destructor will be called at all.
-#[cfg(all(not(windows), any(feature = "cxa_atexit", target_vendor = "apple")))]
 #[inline(always)]
-pub unsafe fn at_library_exit(cb: extern "C" fn()) {
+pub unsafe fn at_module_exit(cb: extern "C" fn()) {
     unsafe {
+        #[cfg(not(windows))]
         _run_cxa_atexit(cb);
+        #[cfg(windows)]
+        _run_atexit(cb);
     }
 }
 
@@ -51,11 +55,7 @@ unsafe fn _run_atexit(cb: unsafe extern "C" fn()) {
 }
 
 /// Register a function scoped to the current dynamic shared object.
-#[cfg(all(
-    not(miri),
-    not(windows),
-    any(feature = "cxa_atexit", target_vendor = "apple")
-))]
+#[cfg(all(not(miri), not(windows),))]
 #[inline(always)]
 unsafe fn _run_cxa_atexit(cb: extern "C" fn()) {
     #[allow(missing_unsafe_on_extern)] // MSRV

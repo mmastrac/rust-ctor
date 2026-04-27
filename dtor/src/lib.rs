@@ -581,7 +581,7 @@ pub mod __support {
                 static __CTOR__PRIVATE__REF__: unsafe extern "C" fn() = {
                     #[allow(non_snake_case)]
                     unsafe extern "C" fn __ctor__private__() {
-                        $crate::__support::at_library_exit(__dtor__private__);
+                        $crate::__support::at_module_exit(__dtor__private__);
                     }
                     #[allow(non_snake_case)]
                     extern "C" fn __dtor__private__() {
@@ -656,33 +656,34 @@ __declare_features!(
             )) => ".init_array",
             // xtensa targets: .dtors
             (target_arch = "xtensa") => ".ctors",
-            // Windows targets: CRT$XPU
-            (all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc"))) => ".CRT$XCU",
+            // Windows targets: .CRT$XPU (requires static CRT)
+            (all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc"))) => ".CRT$XPU",
             // ... except GNU
             (all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc")))) => ".ctors",
             _ => (compile_error!("Unsupported target for #[ctor]"))
         }
     };
-    /// The default method used for running a `dtor` on termination.
+    /// The default method used for running a `dtor` on termination. This is
+    /// generally not recommended as code may be unloaded before the dtor is
+    /// called.
     ///
-    /// This is only used if the `method` attribute is not specified, or if the method is `term`.
+    /// This is only used if the specified `dtor` method is `term`.
     ///
-    /// All platforms except Apple use `link_section`. Apple platforms use `at_binary_exit` (`atexit`).
+    /// All platforms use `at_binary_exit` except Windows, which uses
+    /// `at_library_exit`.
     default_term_method {
         default {
-            (target_vendor = "apple") => at_binary_exit,
-            _ => link_section,
+            (target_vendor = "pc") => at_library_exit,
+            _ => at_binary_exit,
         }
     };
-    /// The default method used for running a `dtor` on unload.
+    /// The default method used for running a `dtor` on module unload.
     ///
-    /// This is only used if the `method` attribute is not specified, or if the method is `unload`.
-    ///
-    /// All platforms except Windows use `at_library_exit`. Windows uses `link_section`.
+    /// This is only used if the `method` attribute is not specified, or if the
+    /// method is `unload`.
     default_unload_method {
         default {
-            (target_vendor = "pc") => link_section,
-            _ => at_library_exit,
+            _ => at_module_exit,
         }
     };
     /// Place the destructor function pointer in a custom link section.
@@ -715,8 +716,8 @@ __declare_features!(
     };
     /// Specify the dtor method.
     ///
-    ///  - `term`: Run the dtor on binary termination.
-    ///  - `unload`: Run the dtor on library unload.
+    ///  - `term`: Run the dtor on binary termination. Not recommended as code may be unloaded before the dtor is called.
+    ///  - `unload`: Run the dtor on module unload (library or binary).
     ///  - `at_library_exit`: Run the dtor using `__cxa_atexit` (unsupported on Windows platforms).
     ///  - `at_binary_exit`: Run the dtor using `atexit`.
     ///  - `link_section`: Run the dtor using a custom link section (unsupported on Apple platforms).
