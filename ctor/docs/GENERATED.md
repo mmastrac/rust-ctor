@@ -67,12 +67,15 @@ Marks the function `foo` as a module constructor, called when a static library
 is loaded or an executable is started:
 
 ```rust
-    static INITED: AtomicBool = AtomicBool::new(false);
+use std::sync::atomic::{AtomicBool, Ordering};
+use ctor::ctor;
 
-    #[ctor]
-    fn foo() {
-        INITED.store(true, Ordering::SeqCst);
-    }
+static INITED: AtomicBool = AtomicBool::new(false);
+
+#[ctor]
+fn foo() {
+    INITED.store(true, Ordering::SeqCst);
+}
 ```
 
 Creates a `HashMap` populated with strings when a static library is loaded or an
@@ -83,6 +86,9 @@ implementation and eager initialization at startup time. `#[ctor]` on `static`
 items requires the default `std` feature.
 
 ```rust
+use std::collections::HashMap;
+use ctor::ctor;
+
 #[ctor]
 /// This is an immutable static, evaluated at init time
 static STATIC_CTOR: HashMap<u32, &'static str> = {
@@ -98,6 +104,9 @@ Print a message at shutdown time. Note that Rust may have shut down some stdlib
 services at this time.
 
 ```rust
+use libc::printf;
+use ctor::dtor;
+
 #[dtor]
 unsafe fn shutdown() {
     // Using println or eprintln here will panic as Rust has shut down
