@@ -250,7 +250,7 @@ macro_rules! __ctor_parse_impl {
         features = (
             anonymous = $anonymous:tt,
             link_section = $link_section:tt,
-            priority = $priority:literal,
+            priority = $priority:tt,
             used_linker = $used_linker:tt,
         ),
         meta = $meta:tt,
@@ -268,7 +268,7 @@ macro_rules! __ctor_parse_impl {
         // ));
 
         // #[cfg(not(target_vendor = "apple"))]
-        $crate::__priority_to_literal!($crate::__ctor_parse_impl, [
+        $crate::__priority_to_literal!($crate::__ctor_parse_impl,[
             @priority next=$next[$next_args],
             features = (
                 anonymous = $anonymous,
@@ -277,7 +277,7 @@ macro_rules! __ctor_parse_impl {
             ),
             meta = $meta,
             item = $item
-        ], $priority);
+        ] = $priority);
     };
 
     ( [@priority next=$next:path[$next_args:tt],
@@ -288,11 +288,11 @@ macro_rules! __ctor_parse_impl {
         ),
         meta = $meta:tt,
         item = $item:tt
-    ], $priority:literal) => {
+    ], ($($priority:tt)*)) => {
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
                 anonymous = $anonymous,
-                link_section = (concat!($link_section, ".", $priority)),
+                link_section = (concat!($link_section, ".", $($priority)*)),
                 used_linker = $used_linker,
             ),
             meta = $meta,

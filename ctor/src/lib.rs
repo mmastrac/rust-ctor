@@ -294,7 +294,7 @@ __declare_features!(
         attr: [(unsafe) => (no_warn_on_missing_unsafe)];
     };
     priority {
-        attr: [(priority = $priority_value:literal) => ($priority_value)];
+        attr: [(priority = $priority_value:tt) => ($priority_value)];
         validate: [(priority = $priority:literal), (priority = early), (priority = late)];
     };
     /// Enable support for the proc-macro `#[dtor]` attribute. The declarative
