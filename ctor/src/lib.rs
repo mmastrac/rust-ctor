@@ -724,8 +724,8 @@ pub mod declarative {
 /// ```rust
 /// # #![cfg_attr(feature="used_linker", feature(used_with_arg))]
 /// # mod test {
-/// # use ctor::*;
-/// # use std::sync::atomic::{AtomicBool, Ordering};
+/// use ctor::*;
+/// use std::sync::atomic::{AtomicBool, Ordering};
 /// static INITED: AtomicBool = AtomicBool::new(false);
 ///
 /// #[ctor(unsafe)]

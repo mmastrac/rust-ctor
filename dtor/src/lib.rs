@@ -671,6 +671,7 @@ __declare_features!(
     };
     default_unload_method {
         default {
+            (target_vendor = "pc") => link_section,
             _ => at_library_exit,
         }
     };
