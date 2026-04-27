@@ -12,7 +12,7 @@ target/${TARGET}/debug/examples/basic
 sleep .1
 echo "Running example..."
 sleep .1
-target/${TARGET}/debug/examples/example
+target/${TARGET}/debug/examples/ctor-example
 
 sleep .1
 echo "Running link-section example..."
