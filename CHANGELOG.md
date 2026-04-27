@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## ctor [0.11.0] - Unreleased
+## dtor [0.11.0] - Unreleased
+## link-section [0.11.0] - Unreleased
+
+### Added
+
+- Added `method` attribute to `dtor` macro.
+- Added `link_section` attribute to `dtor` macro.
+
+### Changed
+
+- Significant rewrite to ctor/dtor macros.
+
 ## ctor [0.10.1] - 2026-04-22
 ## dtor [0.8.1] - 2026-04-22
 ## link-section [0.2.1] - 2026-04-22

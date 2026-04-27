@@ -444,7 +444,7 @@ macro_rules! __extract_meta {
             $($input:tt)*
         )
     ), args=[$macro_path:path]) => {
-        const _: () = { 
+        const _: () = {
             compile_error!(concat!("Unexpected type of meta argument: ",
             stringify!($($input)*),
             "\n\n... expected 'attr', 'attr = value', 'attr(arg)', 'attr(arg) = value'"));

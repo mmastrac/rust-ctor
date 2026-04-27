@@ -41,7 +41,9 @@ fn workspace_root() -> Result<PathBuf> {
 }
 
 fn run(cmd: &mut Command) -> Result<()> {
-    let status = cmd.status().with_context(|| format!("failed to run {:?}", cmd))?;
+    let status = cmd
+        .status()
+        .with_context(|| format!("failed to run {:?}", cmd))?;
     if !status.success() {
         bail!("command {:?} failed with {}", cmd, status);
     }
@@ -65,7 +67,9 @@ fn generate_for_crate(root: &Path, spec: &CrateSpec) -> Result<String> {
         .arg(target_dir);
     run(&mut cargo).with_context(|| format!("cargo doc for {}", spec.package))?;
 
-    let json_path = target_dir.join("doc").join(format!("{}.json", spec.crate_name));
+    let json_path = target_dir
+        .join("doc")
+        .join(format!("{}.json", spec.crate_name));
     if !json_path.exists() {
         bail!("expected rustdoc json at {}", json_path.display());
     }
