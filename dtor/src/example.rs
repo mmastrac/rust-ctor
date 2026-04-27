@@ -11,6 +11,7 @@ fn dtor() {
     libc_eprintln!("dtor");
 }
 
+#[cfg(not(target_vendor = "pc"))] // unsupported on Windows
 #[dtor(unsafe, method = at_library_exit)]
 #[allow(unsafe_code)]
 fn dtor_at_library_exit() {
