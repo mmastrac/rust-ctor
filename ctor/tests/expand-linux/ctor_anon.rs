@@ -1,13 +1,11 @@
-shared::ctor_parse!(
-    #[ctor(anonymous)]
-    unsafe fn foo() {
-        println!("foo");
-    }
-);
+use ctor::ctor;
 
-shared::ctor_parse!(
-    #[ctor(anonymous)]
-    unsafe fn foo() {
-        println!("foo");
-    }
-);
+#[ctor(anonymous)]
+unsafe fn foo() {
+    println!("foo");
+}
+
+#[ctor(anonymous)]
+unsafe fn foo() {
+    println!("foo");
+}

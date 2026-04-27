@@ -1,6 +1,6 @@
-shared::dtor_parse!(
-    #[dtor]
-    unsafe fn foo() {
-        println!("foo");
-    }
-);
+use dtor::dtor;
+
+#[dtor]
+unsafe fn foo() {
+    println!("foo");
+}

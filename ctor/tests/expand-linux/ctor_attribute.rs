@@ -1,6 +1,6 @@
-shared::ctor_parse!(
-    #[ctor(link_section = ".ctors")]
-    fn foo() {
-        println!("foo");
-    }
-);
+use ctor::ctor;
+
+#[ctor(link_section = ".ctors")]
+fn foo() {
+    println!("foo");
+}

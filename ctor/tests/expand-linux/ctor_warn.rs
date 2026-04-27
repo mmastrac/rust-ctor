@@ -1,6 +1,6 @@
-shared::ctor_parse!(
-    #[ctor]
-    fn foo() {
-        println!("foo");
-    }
-);
+use ctor::ctor;
+
+#[ctor]
+fn foo() {
+    println!("foo");
+}

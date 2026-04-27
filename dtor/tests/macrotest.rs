@@ -4,15 +4,14 @@
 //!
 //! ```bash
 //! docker run --rm -v "$(pwd):/src" -w /src rust:latest \
-//!   bash -lc 'export PATH="/usr/local/cargo/bin:$PATH" && cargo install cargo-expand && export MACROTEST=overwrite && cargo test -p shared --test macrotest'
+//!   bash -lc 'export PATH="/usr/local/cargo/bin:$PATH" && cargo install cargo-expand && export MACROTEST=overwrite && cargo test -p dtor --test macrotest'
 //! ```
 
 use std::path::Path;
 
 /// Macrotest sometimes leaves files empty when things fail to compile.
-#[test]
-fn ensure_no_empty_files() {
-    if ensure_no_empty_files_recurse("tests") {
+fn ensure_no_empty_files(path: impl AsRef<Path>) {
+    if ensure_no_empty_files_recurse(path) {
         panic!("Empty files found");
     }
 }
@@ -37,18 +36,21 @@ fn ensure_no_empty_files_recurse(path: impl AsRef<Path>) -> bool {
 #[test]
 pub fn pass() {
     macrotest::expand("tests/expand/*.rs");
+    ensure_no_empty_files("tests/expand");
 }
 
 #[cfg(target_vendor = "apple")]
 #[test]
 pub fn pass_darwin() {
     macrotest::expand("tests/expand-darwin/*.rs");
+    ensure_no_empty_files("tests/expand-darwin");
 }
 
 #[cfg(target_os = "linux")]
 #[test]
 pub fn pass_linux() {
     macrotest::expand("tests/expand-linux/*.rs");
+    ensure_no_empty_files("tests/expand-linux");
 }
 
 #[test]
