@@ -41,6 +41,8 @@ pub unsafe fn at_module_exit(cb: extern "C" fn()) {
     }
 }
 
+/// Use `at_module_exit` instead.
+#[doc(hidden)]
 #[deprecated(since = "0.11.0", note = "Use `at_module_exit` instead")]
 #[inline(always)]
 pub unsafe fn at_library_exit(cb: extern "C" fn()) {
