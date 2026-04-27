@@ -7,6 +7,7 @@ extern crate std;
 
 mod macros;
 mod parse;
+mod priority;
 pub mod statics;
 
 #[doc(hidden)]
