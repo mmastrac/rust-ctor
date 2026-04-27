@@ -164,12 +164,27 @@ in the Neon project.
 | --- | --- |
 | `anonymous` |  Make the ctor function anonymous. |
 | `crate_path = $path : pat` |  Specify a custom crate path for the `ctor` crate. Used when re-exporting the ctor macro. |
+| `link_name_prefix = $link_name_prefix_str : literal` |  Specify a custom link name prefix for the constructor function.  If specified, an export with the given prefix will be generated in the form:  `<prefix><priority>_<unique_id>` |
 | `link_section = $section : literal` |  Place the destructor function pointer in a custom link section. |
 | `unsafe` |  Marks a ctor/dtor as unsafe. |
 | `priority = $priority_value : tt` |  |
 | `used(linker)` |  Mark generated functions for this `dtor` as `used(linker)`. Requires nightly and `feature(used_with_arg)`. |
 
 # Defaults
+
+## `link_name_prefix`
+
+ ```rust
+ # #[cfg(false)] {
+#[cfg(target_os = "aix")]
+ # const _: () = { let
+link_name_prefix = "__sinit"
+ # ; };
+
+ // default
+link_name_prefix = ()
+ # }
+ ```
 
 ## `link_section`
 
@@ -200,6 +215,11 @@ link_section = ".CRT$XCU"
 #[cfg(all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc"))))]
  # const _: () = { let
 link_section = ".ctors"
+ # ; };
+
+#[cfg(all(target_os = "aix"))]
+ # const _: () = { let
+link_section = ()
  # ; };
 
  // default

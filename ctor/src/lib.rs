@@ -258,9 +258,9 @@ __declare_features!(
         example: "crate_path = ::path::to::ctor::crate";
     };
     /// Specify a custom link name prefix for the constructor function.
-    /// 
+    ///
     /// If specified, an export with the given prefix will be generated in the form:
-    /// 
+    ///
     /// `<prefix><priority>_<unique_id>`
     link_name_prefix {
         attr: [(link_name_prefix = $link_name_prefix_str:literal) => ($link_name_prefix_str)];
