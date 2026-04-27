@@ -23,8 +23,7 @@ fn shutdown() {
 The `#[dtor]` macro effectively creates a constructor that calls `libc::atexit`
 with the provided function, i.e. roughly equivalent to:
 
-```rust
-# #![cfg(false)]
+```rust,ignore
 #[ctor]
 fn dtor_atexit() {
     libc::atexit(dtor);
