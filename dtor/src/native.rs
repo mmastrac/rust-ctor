@@ -65,7 +65,7 @@ unsafe fn _run_atexit(cb: unsafe extern "C" fn()) {
 }
 
 /// Register a function scoped to the current dynamic shared object.
-#[cfg(all(not(miri), not(windows),))]
+#[cfg(all(not(miri), not(windows)))]
 #[inline(always)]
 unsafe fn _run_cxa_atexit(cb: extern "C" fn()) {
     #[allow(missing_unsafe_on_extern)] // MSRV
@@ -92,7 +92,7 @@ unsafe fn _run_atexit(_cb: extern "C" fn()) {
     // no-op on miri
 }
 
-#[cfg(all(miri, not(windows)))]
+#[cfg(miri)]
 #[inline(always)]
 unsafe fn _run_cxa_atexit(_cb: extern "C" fn()) {
     // no-op on miri
