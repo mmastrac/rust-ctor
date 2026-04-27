@@ -1,3 +1,5 @@
+//! A set of macros to test macros.
+
 /// Unit test for a macro.
 #[macro_export]
 #[doc(hidden)]
@@ -42,7 +44,6 @@ macro_rules! __test {
 }
 
 /// Calculates the length of a slice of strings.
-#[allow(unused)]
 pub const fn const_str_slice_len(s: &[&str]) -> usize {
     let mut len = 0;
     let mut i = 0;
@@ -54,8 +55,6 @@ pub const fn const_str_slice_len(s: &[&str]) -> usize {
 }
 
 /// Concatenates a slice of strings into a single string.
-#[allow(unused)]
-#[allow(clippy::incompatible_msrv)]
 pub const fn const_str_slice_concat<'a>(s: &[&str], out: &'a mut [u8]) -> &'a str {
     let mut i = 0;
     let mut j = 0;
@@ -77,7 +76,6 @@ pub const fn const_str_slice_concat<'a>(s: &[&str], out: &'a mut [u8]) -> &'a st
 }
 
 /// Compares two strings for equality.
-#[allow(unused)]
 pub const fn const_str_eq(a: &str, b: &str) -> bool {
     let mut i = 0;
     let mut j = 0;
