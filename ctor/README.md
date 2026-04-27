@@ -136,7 +136,7 @@ static FOO: extern fn() = {
 The `#[dtor]` macro effectively creates a constructor that calls `libc::atexit`
 with the provided function, ie roughly equivalent to:
 
-```rust
+```rust,ignore
 #[ctor]
 fn dtor_atexit() {
     libc::atexit(dtor);
