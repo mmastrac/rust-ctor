@@ -164,7 +164,7 @@ in the Neon project.
 | --- | --- |
 | `anonymous` |  Make the ctor function anonymous. |
 | `crate_path = $path : pat` |  Specify a custom crate path for the `ctor` crate. Used when re-exporting the ctor macro. |
-| `link_name_prefix = $link_name_prefix_str : literal` |  Specify a custom link name prefix for the constructor function.  If specified, an export with the given prefix will be generated in the form:  `<prefix><priority>_<unique_id>` |
+| `link_name_prefix = $link_name_prefix_str : literal` |  Specify a custom link name prefix for the constructor function. If specified, an export with the given prefix will be generated in the form: `<prefix><priority>_<unique_id>` |
 | `link_section = $section : literal` |  Place the destructor function pointer in a custom link section. |
 | `unsafe` |  Marks a ctor/dtor as unsafe. |
 | `priority = $priority_value : tt` |  |

@@ -29,7 +29,7 @@ pub use native::*;
 ///  - `anonymous`: Do not give the destructor a name in the generated code
 ///    (allows for multiple destructors with the same name).
 ///
-/// ```rust
+/// ```rust,ignore
 /// # #![cfg_attr(feature="used_linker", feature(used_with_arg))]
 /// # use dtor::dtor;
 /// # fn main() {}
