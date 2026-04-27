@@ -484,10 +484,10 @@ macro_rules! __ctor_parse_impl {
         item = $item:tt
     ) ) => {
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
-            features = (
+            link_args = (
                 link_name = $link_name,
                 link_section = ($link_section),
-                used_linker_meta = $used_linker_meta,
+                used = $used_linker_meta,
             ),
             meta = $meta,
             unsafe = $unsafe,
@@ -508,16 +508,17 @@ macro_rules! __ctor_parse_impl {
     ) ) => {
         #[cfg(target_vendor = "apple")]
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
-            features = (
+            link_args = (
                 link_name = $link_name,
-                link_section = ($link_section), //(concat!($link_section, ".", $priority)),
-                used_linker_meta = $used_linker_meta,
+                priority = $priority,
+                used = $used_linker_meta,
             ),
             meta = $meta,
             unsafe = $unsafe,
             item = $item
         ));
 
+        // Get a priority literal
         #[cfg(not(target_vendor = "apple"))]
         $crate::__priority_to_literal!($crate::__ctor_parse_impl,[
             @priority next=$next[$next_args],
@@ -543,10 +544,10 @@ macro_rules! __ctor_parse_impl {
         item = $item:tt
     ], ($($priority:tt)*)) => {
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
-            features = (
+            link_args = (
                 link_name = $link_name,
                 link_section = (concat!($link_section, ".", $($priority)*)),
-                used_linker_meta = $used_linker_meta,
+                used = $used_linker_meta,
             ),
             meta = $meta,
             unsafe = $unsafe,
@@ -556,11 +557,7 @@ macro_rules! __ctor_parse_impl {
 
     // Step 8: Delegate on item type
     ( @entry next=$next:path[$next_args:tt], input=(
-        features = (
-            link_name = $link_name:tt,
-            link_section = ($($link_section:tt)*),
-            used_linker_meta = (#$used_linker_meta:tt),
-        ),
+        link_args = $link_args:tt,
         meta = ($($meta:tt)*),
         unsafe = ($($unsafe:tt)*),
         item = ($vis:vis $(unsafe)? $( extern $abi:literal )? fn $name:ident () $( -> () )? {
@@ -569,28 +566,13 @@ macro_rules! __ctor_parse_impl {
     ) ) => {
         $($meta)*
         $vis $($unsafe)* $( extern $abi )? fn $name () {
-            const _: () = {
-                #[link_section = $($link_section)*]
-                #$used_linker_meta
-                #[allow(non_upper_case_globals)]
-                static __CTOR__PRIVATE__REF__: unsafe extern "C" fn() = {
-                    #[allow(non_snake_case)]
-                    extern "C" fn __ctor__private__() {
-                        unsafe { $name() }
-                    }
-                    __ctor__private__
-                };
-            };
+            $crate::__ctor_parse_impl!(@ctor $link_args body={ $name() });
             $($body)*
         }
     };
 
     ( @entry next=$next:path[$next_args:tt], input=(
-        features = (
-            link_name = $link_name:tt,
-            link_section = ($($link_section:tt)*),
-            used_linker_meta = (#$used_linker_meta:tt),
-        ),
+        link_args = $link_args:tt,
         meta = ($($meta:tt)*),
         unsafe = ($($unsafe:tt)*),
         item = ($vis:vis static $ident:ident : $ty:ty = $(unsafe)? { $($body:tt)* };)
@@ -602,18 +584,44 @@ macro_rules! __ctor_parse_impl {
             }
             unsafe { $crate::statics::Static::<$ty>::new(init) }
         };
+        $crate::__ctor_parse_impl!(@ctor $link_args body={ _ = &*$ident } );
+    };
 
+    // Declare a ctor for the given link args
+    ( @ctor (
+        link_name=$link_name:tt,
+        link_section=($link_section:tt),
+        used=(#$used_linker_meta:tt),
+     ) body=$body:tt ) => {
         const _: () = {
-            #[link_section = $($link_section)*]
+            #[link_section = $link_section]
             #$used_linker_meta
             #[allow(non_upper_case_globals)]
             static __CTOR__PRIVATE__REF__: unsafe extern "C" fn() = {
                 #[allow(non_snake_case)]
                 extern "C" fn __ctor__private__() {
-                    unsafe { _ = &*$ident; }
+                    unsafe $body
                 }
                 __ctor__private__
             };
+        };
+    };
+
+    ( @ctor (
+        link_name=$link_name:tt,
+        priority=$priority:tt,
+        used=(#$used_linker_meta:tt),
+     )
+     body=$body:tt ) => {
+        const _: () = {
+            fn __ctor__private() {
+                unsafe $body
+            }
+
+            $crate::__support::in_section!(
+                #[in_section($crate::__support::explicit_ctor::CTOR)]
+                static __CTOR__ENTRY: (fn(), u16) = (__ctor__private, $priority);
+            );
         };
     };
 }
