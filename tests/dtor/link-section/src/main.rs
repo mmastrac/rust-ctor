@@ -1,4 +1,4 @@
-use dtor::declarative::dtor;
+use dtor::dtor;
 
 /// This will not be called in all cases.
 #[dtor(method = link_section)]

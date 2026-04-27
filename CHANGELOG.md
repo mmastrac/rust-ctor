@@ -15,6 +15,7 @@ All notable changes to this project will be documented in this file.
 
 - Significant rewrite to ctor/dtor macros.
 - Renamed `at_library_exit` to `at_module_exit` in `dtor` crate.
+- Macro attributes and crate features are auto-documented.
 
 ## ctor [0.10.1] - 2026-04-22
 ## dtor [0.8.1] - 2026-04-22
