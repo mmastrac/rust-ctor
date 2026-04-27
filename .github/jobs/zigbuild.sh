@@ -7,7 +7,7 @@ cargo zigbuild --workspace --bins --examples --target "$TARGET"
 sleep .1
 echo "Running basic example..."
 sleep .1
-target/${TARGET}/debug/examples/basic
+target/${TARGET}/debug/examples/ctor-basic
 
 sleep .1
 echo "Running example..."
