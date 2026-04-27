@@ -18,6 +18,22 @@ pub mod __support {
 
     // Required for proc_macro.
     pub use crate::__ctor_parse as ctor_parse;
+
+    // Re-export link_section::TypedSection and declarative::{section, in_section}
+    #[cfg(all(feature = "priority", target_vendor = "apple"))]
+    pub use link_section::{TypedSection, declarative::{section, in_section}};
+
+    /// Define a link section when using the priority parameter on Apple
+    /// targets.
+    #[cfg(all(feature = "priority", target_vendor = "apple"))]
+    #[doc(hidden)]
+    pub mod explicit_ctor {
+        use super::*;
+        section!(
+            #[section]
+            pub static CTOR: TypedSection<(fn(), u16)>;
+        );
+    }
 }
 
 /// Declarative forms of the `#[ctor]` and `#[dtor]` macros.

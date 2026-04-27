@@ -42,6 +42,7 @@ macro_rules! __ctor_parse_impl {
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
                 anonymous = $anonymous,
+                link_name = $name,
                 link_name_prefix = $link_name_prefix,
                 link_section = $link_section,
                 no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
@@ -132,6 +133,7 @@ macro_rules! __ctor_parse_impl {
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
                 anonymous = $anonymous,
+                link_name = $ident,
                 link_name_prefix = $link_name_prefix,
                 link_section = $link_section,
                 no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
@@ -175,6 +177,7 @@ macro_rules! __ctor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             anonymous = $anonymous:tt,
+            link_name = $link_name:tt,
             link_name_prefix = $link_name_prefix:tt,
             link_section = $link_section:tt,
             no_warn_on_missing_unsafe = (),
@@ -200,12 +203,14 @@ macro_rules! __ctor_parse_impl {
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
                 anonymous = $anonymous,
+                link_name = $link_name,
                 link_name_prefix = $link_name_prefix,
                 link_section = $link_section,
                 priority = $priority,
                 used_linker = $used_linker,
             ),
             meta = $meta,
+            unsafe = (),
             item = $item
         ));
     };
@@ -213,6 +218,7 @@ macro_rules! __ctor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             anonymous = $anonymous:tt,
+            link_name = $link_name:tt,
             link_name_prefix = $link_name_prefix:tt,
             link_section = $link_section:tt,
             no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
@@ -226,116 +232,42 @@ macro_rules! __ctor_parse_impl {
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
                 anonymous = $anonymous,
+                link_name = $link_name,
                 link_name_prefix = $link_name_prefix,
                 link_section = $link_section,
                 priority = $priority,
                 used_linker = $used_linker,
             ),
             meta = $meta,
+            unsafe = $unsafe,
             item = $item
         ));
     };
 
-    // Step 2: Compute priority
+    // Step 2: Wrap in anonymous const
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
-            anonymous = $anonymous:tt,
-            link_name_prefix = $link_name_prefix:tt,
-            link_section = $link_section:tt,
-            priority = (),
-            used_linker = $used_linker:tt,
-        ),
-        meta = $meta:tt,
-        item = $item:tt
-    ) ) => {
-        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
-            features = (
-                anonymous = $anonymous,
-                link_name = (),
-                link_section = ($link_section),
-                used_linker = $used_linker,
-            ),
-            meta = $meta,
-            item = $item
-        ));
-    };
-
-    ( @entry next=$next:path[$next_args:tt], input=(
-        features = (
-            anonymous = $anonymous:tt,
+            anonymous = (),
+            link_name = $link_name:tt,
             link_name_prefix = $link_name_prefix:tt,
             link_section = $link_section:tt,
             priority = $priority:tt,
             used_linker = $used_linker:tt,
         ),
         meta = $meta:tt,
-        item = $item:tt
-    ) ) => {
-        // #[cfg(target_vendor = "apple")]
-        // $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
-        //     features = (
-        //         anonymous = $anonymous,
-        //         link_section = ($link_section), //(concat!($link_section, ".", $priority)),
-        //         used_linker = $used_linker,
-        //     ),
-        //     meta = $meta,
-        //     item = $item
-        // ));
-
-        // #[cfg(not(target_vendor = "apple"))]
-        $crate::__priority_to_literal!($crate::__ctor_parse_impl,[
-            @priority next=$next[$next_args],
-            features = (
-                anonymous = $anonymous,
-                link_name = (),
-                link_section = $link_section,
-                used_linker = $used_linker,
-            ),
-            meta = $meta,
-            item = $item
-        ] = $priority);
-    };
-
-    ( [@priority next=$next:path[$next_args:tt],
-        features = (
-            anonymous = $anonymous:tt,
-            link_name = $link_name:tt,
-            link_section = $link_section:tt,
-            used_linker = $used_linker:tt,
-        ),
-        meta = $meta:tt,
-        item = $item:tt
-    ], ($($priority:tt)*)) => {
-        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
-            features = (
-                anonymous = $anonymous,
-                link_name = $link_name,
-                link_section = (concat!($link_section, ".", $($priority)*)),
-                used_linker = $used_linker,
-            ),
-            meta = $meta,
-            item = $item
-        ));
-    };
-
-    // Step 3: Wrap in anonymous const
-    ( @entry next=$next:path[$next_args:tt], input=(
-        features = (
-            anonymous = (),
-            link_name = $link_name:tt,
-            link_section = $link_section:tt,
-            used_linker = $used_linker:tt,
-        ),
-        meta = $meta:tt,
+        unsafe = $unsafe:tt,
         item = $item:tt
     ) ) => {
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
                 link_name = $link_name,
+                link_name_prefix = $link_name_prefix,
                 link_section = $link_section,
+                priority = $priority,
                 used_linker = $used_linker,
             ),
             meta = $meta,
+            unsafe = $unsafe,
             item = $item
         ));
     };
@@ -343,42 +275,198 @@ macro_rules! __ctor_parse_impl {
         features = (
             anonymous = anonymous,
             link_name = $link_name:tt,
+            link_name_prefix = $link_name_prefix:tt,
             link_section = $link_section:tt,
+            priority = $priority:tt,
             used_linker = $used_linker:tt,
         ),
         meta = $meta:tt,
+        unsafe = $unsafe:tt,
         item = $item:tt
     ) ) => {
         const _: () = {
             $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
                 features = (
                     link_name = $link_name,
+                    link_name_prefix = $link_name_prefix,
                     link_section = $link_section,
+                    priority = $priority,
                     used_linker = $used_linker,
                 ),
                 meta = $meta,
+                unsafe = $unsafe,
                 item = $item
             ));
         };
     };
 
-    // Step 4: Compute used_linker
+    // Step 3: Compute used_linker
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             link_name = $link_name:tt,
+            link_name_prefix = $link_name_prefix:tt,
             link_section = $link_section:tt,
+            priority = $priority:tt,
             used_linker = (),
         ),
         meta = $meta:tt,
+        unsafe = $unsafe:tt,
         item = $item:tt
     ) ) => {
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
                 link_name = $link_name,
+                link_name_prefix = $link_name_prefix,
                 link_section = $link_section,
+                priority = $priority,
                 used_linker_meta = (#[used]),
             ),
             meta = $meta,
+            unsafe = $unsafe,
+            item = $item
+        ));
+    };
+
+    ( @entry next=$next:path[$next_args:tt], input=(
+        features = (
+            link_name = $link_name:tt,
+            link_name_prefix = $link_name_prefix:tt,
+            link_section = $link_section:tt,
+            priority = $priority:tt,
+            used_linker = used_linker,
+        ),
+        meta = $meta:tt,
+        unsafe = $unsafe:tt,
+        item = $item:tt
+    ) ) => {
+        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+            features = (
+                link_name = $link_name,
+                link_name_prefix = $link_name_prefix,
+                link_section = $link_section,
+                priority = $priority,
+                used_linker_meta = (#[used(linker)]),
+            ),
+            meta = $meta,
+            unsafe = $unsafe,
+            item = $item
+        ));
+    };
+
+    // Step 4: Compute link_name
+
+    // No prefix, no computation
+    ( @entry next=$next:path[$next_args:tt], input=(
+        features = (
+            link_name = $link_name:tt,
+            link_name_prefix = (),
+            link_section = $link_section:tt,
+            priority = $priority:tt,
+            used_linker_meta = $used_linker_meta:tt,
+        ),
+        meta = $meta:tt,
+        unsafe = $unsafe:tt,
+        item = $item:tt
+    ) ) => {
+        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+            features = (
+                link_name = (),
+                link_section = $link_section,
+                priority = $priority,
+                used_linker_meta = $used_linker_meta,
+            ),
+            meta = $meta,
+            unsafe = $unsafe,
+            item = $item
+        ));
+    };
+
+    ( @entry next=$next:path[$next_args:tt], input=(
+        features = (
+            link_name = $link_name:tt,
+            link_name_prefix = $link_name_prefix:tt,
+            link_section = $link_section:tt,
+            priority = (),
+            used_linker_meta = $used_linker_meta:tt,
+        ),
+        meta = $meta:tt,
+        unsafe = $unsafe:tt,
+        item = $item:tt
+    ) ) => {
+        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+            features = (
+                link_name = (
+                    concat!($link_name_prefix,
+                        "0_",
+                        env!("CARGO_PKG_NAME"), "_",
+                        ::core::module_path!(), "_",
+                        stringify!($link_name),
+                        "_L", line!(), "C", column!()))
+                ),
+                link_section = $link_section,
+                priority = $priority,
+                used_linker_meta = $used_linker_meta,
+            ),
+            meta = $meta,
+            unsafe = $unsafe,
+            item = $item
+        );
+    };
+
+    ( @entry next=$next:path[$next_args:tt], input=(
+        features = (
+            link_name = $link_name:tt,
+            link_name_prefix = $link_name_prefix:tt,
+            link_section = $link_section:tt,
+            priority = $priority:tt,
+            used_linker_meta = $used_linker_meta:tt,
+        ),
+        meta = $meta:tt,
+        unsafe = $unsafe:tt,
+        item = $item:tt
+    ) ) => {
+        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+            features = (
+                link_name = (
+                    concat!($link_name_prefix,
+                        $priority, "_",
+                        env!("CARGO_PKG_NAME"), "_",
+                        ::core::module_path!(), "_",
+                        stringify!($link_name),
+                        "_L", line!(), "C", column!()))
+                ),
+                link_section = $link_section,
+                priority = $priority,
+                used_linker_meta = $used_linker_meta,
+            ),
+            meta = $meta,
+            unsafe = $unsafe,
+            item = $item
+        );
+    };
+
+    // Step 5: Compute priority
+
+    // No priority, no prefix, flow through to used_linker_meta
+    ( @entry next=$next:path[$next_args:tt], input=(
+        features = (
+            link_name = $link_name:tt,
+            link_section = $link_section:tt,
+            priority = (),
+            used_linker_meta = $used_linker_meta:tt,
+        ),
+        meta = $meta:tt,
+        unsafe = $unsafe:tt,
+        item = $item:tt
+    ) ) => {
+        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+            features = (
+                link_name = $link_name,
+                link_section = ($link_section),
+                used_linker_meta = $used_linker_meta,
+            ),
+            meta = $meta,
+            unsafe = $unsafe,
             item = $item
         ));
     };
@@ -387,23 +475,65 @@ macro_rules! __ctor_parse_impl {
         features = (
             link_name = $link_name:tt,
             link_section = $link_section:tt,
-            used_linker = used_linker,
+            priority = $priority:tt,
+            used_linker_meta = $used_linker_meta:tt,
         ),
         meta = $meta:tt,
+        unsafe = $unsafe:tt,
         item = $item:tt
     ) ) => {
+        #[cfg(not(feature = "priority"))]
+        compile_error!("The priority feature is not enabled, so `priority = N` is not supported.");
+
+        #[cfg(target_vendor = "apple")]
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
                 link_name = $link_name,
-                link_section = $link_section,
-                used_linker_meta = (#[used(linker)]),
+                link_section = ($link_section), //(concat!($link_section, ".", $priority)),
+                used_linker_meta = $used_linker_meta,
             ),
             meta = $meta,
+            unsafe = $unsafe,
+            item = $item
+        ));
+
+        #[cfg(not(target_vendor = "apple"))]
+        $crate::__priority_to_literal!($crate::__ctor_parse_impl,[
+            @priority next=$next[$next_args],
+            features = (
+                link_name = $link_name,
+                link_section = $link_section,
+                used_linker_meta = $used_linker_meta,
+            ),
+            meta = $meta,
+            unsafe = $unsafe,
+            item = $item
+        ] = $priority);
+    };
+
+    ( [@priority next=$next:path[$next_args:tt],
+        features = (
+            link_name = $link_name:tt,
+            link_section = $link_section:tt,
+            used_linker_meta = $used_linker_meta:tt,
+        ),
+        meta = $meta:tt,
+        unsafe = $unsafe:tt,
+        item = $item:tt
+    ], ($($priority:tt)*)) => {
+        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+            features = (
+                link_name = $link_name,
+                link_section = (concat!($link_section, ".", $($priority)*)),
+                used_linker_meta = $used_linker_meta,
+            ),
+            meta = $meta,
+            unsafe = $unsafe,
             item = $item
         ));
     };
 
-    // Step 5: Delegate on item type
+    // Step 6: Delegate on item type
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             link_name = $link_name:tt,
@@ -411,12 +541,13 @@ macro_rules! __ctor_parse_impl {
             used_linker_meta = (#$used_linker_meta:tt),
         ),
         meta = ($($meta:tt)*),
-        item = ($vis:vis unsafe $( extern $abi:literal )? fn $name:ident () $( -> () )? {
+        unsafe = ($($unsafe:tt)*),
+        item = ($vis:vis $(unsafe)? $( extern $abi:literal )? fn $name:ident () $( -> () )? {
             $($body:tt)*
         })
     ) ) => {
         $($meta)*
-        $vis unsafe $( extern $abi )? fn $name () {
+        $vis $($unsafe)* $( extern $abi )? fn $name () {
             const _: () = {
                 #[link_section = $($link_section)*]
                 #$used_linker_meta
@@ -440,41 +571,13 @@ macro_rules! __ctor_parse_impl {
             used_linker_meta = (#$used_linker_meta:tt),
         ),
         meta = ($($meta:tt)*),
-        item = ($vis:vis $( extern $abi:literal )? fn $name:ident () $( -> () )? {
-            $($body:tt)*
-        })
-    ) ) => {
-        $($meta)*
-        $vis $( extern $abi )? fn $name () {
-            const _: () = {
-                #[link_section = $($link_section)*]
-                #$used_linker_meta
-                #[allow(non_upper_case_globals)]
-                static __CTOR__PRIVATE__REF__: unsafe extern "C" fn() = {
-                    #[allow(non_snake_case)]
-                    extern "C" fn __ctor__private__() {
-                        unsafe { $name() }
-                    }
-                    __ctor__private__
-                };
-            };
-            $($body)*
-        }
-    };
-
-    ( @entry next=$next:path[$next_args:tt], input=(
-        features = (
-            link_name = $link_name:tt,
-            link_section = ($($link_section:tt)*),
-            used_linker_meta = (#$used_linker_meta:tt),
-        ),
-        meta = ($($meta:tt)*),
+        unsafe = ($($unsafe:tt)*),
         item = ($vis:vis static $ident:ident : $ty:ty = $(unsafe)? { $($body:tt)* };)
     ) ) => {
         $($meta)*
         $vis static $ident: $crate::statics::Static<$ty> = {
             fn init() -> $ty {
-                $($body)*
+                $($unsafe)* {$($body)*}
             }
             unsafe { $crate::statics::Static::<$ty>::new(init) }
         };

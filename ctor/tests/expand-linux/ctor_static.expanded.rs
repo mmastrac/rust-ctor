@@ -2,8 +2,10 @@ use ctor::ctor;
 use std::collections::HashMap;
 static STATIC_CTOR: ::ctor::statics::Static<HashMap<u32, &'static str>> = {
     fn init() -> HashMap<u32, &'static str> {
-        let m = HashMap::new();
-        m
+        unsafe {
+            let m = HashMap::new();
+            m
+        }
     }
     unsafe { ::ctor::statics::Static::<HashMap<u32, &'static str>>::new(init) }
 };
