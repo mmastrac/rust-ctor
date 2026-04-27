@@ -589,12 +589,12 @@ macro_rules! __ctor_parse_impl {
 
     // Declare a ctor for the given link args
     ( @ctor (
-        link_name=$link_name:tt,
-        link_section=($link_section:tt),
+        link_name=(),
+        link_section=($($link_section:tt)*),
         used=(#$used_linker_meta:tt),
      ) body=$body:tt ) => {
         const _: () = {
-            #[link_section = $link_section]
+            #[link_section = $($link_section)*]
             #$used_linker_meta
             #[allow(non_upper_case_globals)]
             static __CTOR__PRIVATE__REF__: unsafe extern "C" fn() = {
@@ -608,11 +608,10 @@ macro_rules! __ctor_parse_impl {
     };
 
     ( @ctor (
-        link_name=$link_name:tt,
+        link_name=(),
         priority=$priority:tt,
         used=(#$used_linker_meta:tt),
-     )
-     body=$body:tt ) => {
+     ) body=$body:tt ) => {
         const _: () = {
             fn __ctor__private() {
                 unsafe $body
