@@ -1,30 +1,18 @@
-#[allow(unused)]
+use ctor::dtor;
 unsafe fn foo() {
-    #[allow(unsafe_code)]
-    {
-        #[link_section = ".init_array"]
+    const _: () = {
+        #[link_section = ".fini_array"]
         #[used]
-        #[allow(non_upper_case_globals, non_snake_case)]
-        #[doc(hidden)]
-        static __CTOR_FUNCTION: extern "C" fn() -> ::dtor::__support::CtorRetType = {
-            #[link_section = ".text.startup"]
+        #[allow(non_upper_case_globals)]
+        static __DTOR__PRIVATE__REF__: extern "C" fn() = {
             #[allow(non_snake_case)]
-            extern "C" fn __CTOR_FUNCTION_INNER() -> ::dtor::__support::CtorRetType {
-                unsafe {
-                    ::dtor::__support::at_binary_exit(__dtor);
-                };
-                ::core::default::Default::default()
+            extern "C" fn __dtor__private__() {
+                unsafe { foo() }
             }
-            __CTOR_FUNCTION_INNER
+            __dtor__private__
         };
-        #[link_section = ".text.exit"]
-        extern "C" fn __dtor() {
-            unsafe { foo() }
-        }
-    }
+    };
     {
-        {
-            ::std::io::_print(format_args!("foo\n"));
-        };
-    }
+        ::std::io::_print(format_args!("foo\n"));
+    };
 }

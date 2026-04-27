@@ -1,5 +1,5 @@
 [package]
-name = "features"
+name = "macro-magic"
 version = "0.1.0"
 edition = "2021"
 publish = false
@@ -8,6 +8,14 @@ description = "A virtual crate that helps declare macros with complex features."
 [features]
 default = ["std"]
 std = []
+
+[dependencies]
+anyhow = "1"
+tempfile = "3"
+
+[[bin]]
+name = "generate-docs"
+path = "generate_docs.rs"
 
 [lib]
 path = "src/lib.rs"

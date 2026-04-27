@@ -139,3 +139,61 @@ fn dtor_atexit() {
 Idea inspired by
 [this code](https://github.com/neon-bindings/neon/blob/2277e943a619579c144c1da543874f4a7ec39879/src/lib.rs#L42)
 in the Neon project.
+
+# Crate Features
+
+| Cargo feature | Description |
+| --- | --- |
+| `no_warn_on_missing_unsafe` |  Do not warn when a ctor or dtor is missing the `unsafe` keyword. |
+| `proc_macro` |  Enable support for the proc-macro `#[dtor]` attribute. The declarative form (`dtor!(...)`) is always available. It is recommended that crates re-exporting the `dtor` macro disable this feature and only use the declarative form. |
+| `std` |  Enable support for the standard library. |
+| `used_linker` |  Applies `used(linker)` to all `dtor`-generated functions. Requires nightly and `feature(used_with_arg)`. |
+
+# Attribute Features
+
+| Attribute | Description |
+| --- | --- |
+| `anonymous` |  Make the ctor function anonymous. |
+| `crate_path = $path : pat` |  Specify a custom crate path for the `ctor` crate. Used when re-exporting the ctor macro. |
+| `link_section = $section : literal` |  Place the destructor function pointer in a custom link section. |
+| `unsafe` |  Marks a ctor/dtor as unsafe. |
+| `priority = $priority_value : literal` |  |
+| `used(linker)` |  Mark generated functions for this `dtor` as `used(linker)`. Requires nightly and `feature(used_with_arg)`. |
+
+# Defaults
+
+## `link_section`
+
+ ```rust
+ # #[cfg(false)] {
+#[cfg(target_vendor = "apple")]
+ # const _: () = { let
+link_section = "__DATA,__mod_init_func,mod_init_funcs"
+ # ; };
+
+#[cfg(any(target_os = "linux", target_os = "android", target_os = "freebsd",
+target_os = "netbsd", target_os = "openbsd", target_os = "dragonfly",
+target_os = "illumos", target_os = "haiku", target_family = "wasm"))]
+ # const _: () = { let
+link_section = ".init_array"
+ # ; };
+
+#[cfg(target_arch = "xtensa")]
+ # const _: () = { let
+link_section = ".ctors"
+ # ; };
+
+#[cfg(all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc")))]
+ # const _: () = { let
+link_section = ".CRT$XCU"
+ # ; };
+
+#[cfg(all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc"))))]
+ # const _: () = { let
+link_section = ".ctors"
+ # ; };
+
+ // default
+link_section = (compile_error! ("Unsupported target for #[ctor]"))
+ # }
+ ```

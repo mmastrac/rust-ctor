@@ -1,18 +1,6 @@
-//! Procedural macro for defining global constructor/destructor functions.
-//!
-//! This provides module initialization/teardown functions for Rust (like
-//! `__attribute__((constructor))` in C/C++) for Linux, OSX, and Windows via
-//! the `#[ctor]` and `#[dtor]` macros.
-//!
-//! This library works and is regularly tested on Linux, OSX and Windows, with both `+crt-static` and `-crt-static`.
-//! Other platforms are supported but not tested as part of the automatic builds. This library will also work as expected in both
-//! `bin` and `cdylib` outputs, ie: the `ctor` and `dtor` will run at executable or library
-//! startup/shutdown respectively.
-//!
-//! For most platforms, this library currently has a MSRV of **Rust >= 1.60**.
-
-#![no_std]
 #![recursion_limit = "256"]
+#![no_std]
+#![doc = include_str!("../docs/GENERATED.md")]
 
 #[cfg(feature = "std")]
 extern crate std;
