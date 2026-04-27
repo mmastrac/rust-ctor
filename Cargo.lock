@@ -186,7 +186,7 @@ dependencies = [
 
 [[package]]
 name = "ctor"
-version = "0.10.1"
+version = "0.11.0"
 dependencies = [
  "ctor-proc-macro",
  "dtor",
@@ -270,7 +270,7 @@ dependencies = [
 
 [[package]]
 name = "dtor"
-version = "0.8.1"
+version = "0.11.0"
 dependencies = [
  "dtor-proc-macro",
  "libc-print",
@@ -480,7 +480,7 @@ dependencies = [
 
 [[package]]
 name = "link-section"
-version = "0.2.1"
+version = "0.11.0"
 dependencies = [
  "link-section-proc-macro",
 ]

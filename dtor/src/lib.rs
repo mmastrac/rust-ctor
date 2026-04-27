@@ -663,12 +663,22 @@ __declare_features!(
             _ => (compile_error!("Unsupported target for #[ctor]"))
         }
     };
+    /// The default method used for running a `dtor` on termination.
+    /// 
+    /// This is only used if the `method` attribute is not specified, or if the method is `term`.
+    /// 
+    /// All platforms except Apple use `link_section`. Apple platforms use `at_binary_exit` (`atexit`).
     default_term_method {
         default {
             (target_vendor = "apple") => at_binary_exit,
             _ => link_section,
         }
     };
+    /// The default method used for running a `dtor` on unload.
+    /// 
+    /// This is only used if the `method` attribute is not specified, or if the method is `unload`.
+    /// 
+    /// All platforms except Windows use `at_library_exit`. Windows uses `link_section`.
     default_unload_method {
         default {
             (target_vendor = "pc") => link_section,
@@ -703,7 +713,13 @@ __declare_features!(
             _ => (compile_error!("Unsupported target for #[dtor]"))
         }
     };
-    /// Specify the dtor method
+    /// Specify the dtor method.
+    /// 
+    ///  - `term`: Run the dtor on binary termination.
+    ///  - `unload`: Run the dtor on library unload.
+    ///  - `at_library_exit`: Run the dtor using `__cxa_atexit` (unsupported on Windows platforms).
+    ///  - `at_binary_exit`: Run the dtor using `atexit`.
+    ///  - `link_section`: Run the dtor using a custom link section (unsupported on Apple platforms).
     method {
         attr: [(method = $method_id:ident) => ($method_id)];
         example: "method = term|unload|at_library_exit|at_binary_exit|link_section";
