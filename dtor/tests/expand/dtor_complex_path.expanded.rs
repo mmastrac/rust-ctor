@@ -1,0 +1,34 @@
+fn foo() {
+    const _: () = {
+        #[link_section = ".dtors"]
+        #[used]
+        #[allow(non_upper_case_globals)]
+        static __DTOR__PRIVATE__REF__: extern "C" fn() = {
+            #[allow(non_snake_case)]
+            extern "C" fn __dtor__private__() {
+                unsafe { foo() }
+            }
+            __dtor__private__
+        };
+    };
+    {
+        ::std::io::_print(format_args!("foo\n"));
+    };
+}
+fn bar() {
+    const _: () = {
+        #[link_section = ".dtors"]
+        #[used]
+        #[allow(non_upper_case_globals)]
+        static __DTOR__PRIVATE__REF__: extern "C" fn() = {
+            #[allow(non_snake_case)]
+            extern "C" fn __dtor__private__() {
+                unsafe { bar() }
+            }
+            __dtor__private__
+        };
+    };
+    {
+        ::std::io::_print(format_args!("foo\n"));
+    };
+}

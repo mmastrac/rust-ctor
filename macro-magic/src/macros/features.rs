@@ -429,12 +429,12 @@ macro_rules! __extract_meta {
     ( @entry next=$next:path[$next_args:tt], input=(
         (
             $(
-                $name:ident $( ($($args:tt)*) )? $( = $value:tt )?
+                $name:ident $( ($($args:tt)*) )? $( = $value:tt $( $value_ident:ident )? $( :: $value_path:ident )* )?
             ),*
         )
     ), args=[$macro_path:path]) => {
         $macro_path!(@meta macro=$macro_path, next=$crate::__extract_meta[[@finish next=$next[$next_args]]] $(
-            $name $( ($( $args )*) )? $( = $value )? , , ;
+            $name $( ($( $args )*) )? $( = $value $( $value_ident )? $( :: $value_path )* )? , , ;
         )*);
     };
     ( @entry next=$next:path[$next_args:tt], input=(
@@ -442,10 +442,11 @@ macro_rules! __extract_meta {
             $($input:tt)*
         )
     ), args=[$macro_path:path]) => {
-        const _: () = { compile_error!(concat!("Unexpected type of meta argument: ",
-        stringify!($($input)*),
-        "\n\n... expected 'attr', 'attr = value', 'attr(arg)', 'attr(arg) = value'"));
-     };
+        const _: () = { 
+            compile_error!(concat!("Unexpected type of meta argument: ",
+            stringify!($($input)*),
+            "\n\n... expected 'attr', 'attr = value', 'attr(arg)', 'attr(arg) = value'"));
+        };
     };
     ( [@finish next=$next:path[$next_args:tt]],
         ($(

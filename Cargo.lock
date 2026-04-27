@@ -192,6 +192,8 @@ dependencies = [
  "dtor",
  "libc-print",
  "link-section",
+ "macrotest",
+ "trybuild",
 ]
 
 [[package]]

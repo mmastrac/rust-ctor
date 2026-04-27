@@ -630,9 +630,9 @@ __declare_features!(
     anonymous {
         attr: [(anonymous) => (anonymous)];
     };
-    /// Specify a custom crate path for the `ctor` crate. Used when re-exporting the ctor macro.
+    /// Specify a custom crate path for the `dtor` crate. Used when re-exporting the dtor macro.
     crate_path {
-        attr: [(crate_path = $path:pat) => ($path)];
+        attr: [(crate_path = $path:pat) => (($path))];
         example: "crate_path = ::path::to::dtor::crate";
     };
     /// Place the initialization function pointer in a custom link section.

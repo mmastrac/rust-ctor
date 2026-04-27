@@ -31,6 +31,12 @@ fn dtor_link_section() {
     libc_eprintln!("link_section");
 }
 
+#[cfg_attr(not(target_vendor = "apple"), dtor(unsafe, method = link_section, link_section = ".dtors", crate_path = ::dtor))]
+#[cfg_attr(target_vendor = "apple", dtor(unsafe, method = link_section, link_section = "__DATA,__manual_dtors", crate_path = ::dtor))]
+fn bar() {
+    println!("foo");
+}
+
 /// Demonstrating some of the various types of [`dtor`].
 pub fn main() {
     use libc_print::*;

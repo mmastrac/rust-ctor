@@ -124,6 +124,57 @@ pub mod __support {
                 used_linker = $used_linker:tt,
             ),
             meta = $meta:tt,
+            item = ($vis:vis static $ident:ident : $ty:ty = $(unsafe)? { $literal:literal };)
+        ) ) => {
+            compile_error!("Trivial const expressions are not supported. Remove the #[ctor] and use a regular `static`.");
+        };
+
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = $anonymous:tt,
+                crate_path = $crate_path:tt,
+                link_section = $link_section:tt,
+                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
+                priority = $priority:tt,
+                proc_macro = $proc_macro:tt,
+                std = $std:tt,
+                used_linker = $used_linker:tt,
+            ),
+            meta = $meta:tt,
+            item = ($vis:vis static $ident:ident : $ty:ty = const { $literal:literal };)
+        ) ) => {
+            compile_error!("Trivial const expressions are not supported. Remove the #[ctor] and use a regular `static`.");
+        };
+
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = $anonymous:tt,
+                crate_path = $crate_path:tt,
+                link_section = $link_section:tt,
+                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
+                priority = $priority:tt,
+                proc_macro = $proc_macro:tt,
+                std = $std:tt,
+                used_linker = $used_linker:tt,
+            ),
+            meta = $meta:tt,
+            item = ($vis:vis static $ident:ident : $ty:ty = $literal:literal;)
+        ) ) => {
+            compile_error!("Trivial const expressions are not supported. Remove the #[ctor] and use a regular `static`.");
+        };
+
+        ( @entry next=$next:path[$next_args:tt], input=(
+            features = (
+                anonymous = $anonymous:tt,
+                crate_path = $crate_path:tt,
+                link_section = $link_section:tt,
+                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
+                priority = $priority:tt,
+                proc_macro = $proc_macro:tt,
+                std = $std:tt,
+                used_linker = $used_linker:tt,
+            ),
+            meta = $meta:tt,
             item = ($vis:vis static $ident:ident : $ty:ty = unsafe { $($body:tt)* };)
         ) ) => {
             $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
@@ -162,7 +213,7 @@ pub mod __support {
                     used_linker = $used_linker,
                 ),
                 meta = $meta,
-                item = ($vis:vis static $ident : $ty = { $($body)* };)
+                item = ($vis static $ident : $ty = { $($body)* };)
             ));
         };
 
@@ -801,7 +852,7 @@ __declare_features!(
     };
     /// Specify a custom crate path for the `ctor` crate. Used when re-exporting the ctor macro.
     crate_path {
-        attr: [(crate_path = $path:pat) => ($path)];
+        attr: [(crate_path = $path:pat) => (($path))];
         example: "crate_path = ::path::to::ctor::crate";
     };
     /// Place the destructor function pointer in a custom link section.

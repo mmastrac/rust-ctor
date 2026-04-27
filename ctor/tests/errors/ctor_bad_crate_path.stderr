@@ -1,0 +1,5 @@
+error[E0433]: failed to resolve: could not find `whatever` in the list of imported crates
+ --> tests/errors/ctor_bad_crate_path.rs:3:23
+  |
+3 | #[ctor(crate_path = ::whatever)]
+  |                       ^^^^^^^^ could not find `whatever` in the list of imported crates

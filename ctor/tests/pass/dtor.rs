@@ -1,13 +1,9 @@
-use dtor::dtor;
+use ctor::dtor;
 
 /// Doc
 #[dtor]
 /// Doc
 unsafe fn foo() {
-}
-
-#[::dtor::dtor]
-unsafe fn bar() {
 }
 
 fn main() {
