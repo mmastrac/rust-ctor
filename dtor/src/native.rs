@@ -23,7 +23,7 @@ pub unsafe fn at_binary_exit(cb: extern "C" fn()) {
 /// not available.
 ///
 /// Unsupported on Windows platforms.
-/// 
+///
 /// # Safety
 ///
 /// Rust does not provide any safety guarantees about life-before-main or
@@ -51,7 +51,11 @@ unsafe fn _run_atexit(cb: unsafe extern "C" fn()) {
 }
 
 /// Register a function scoped to the current dynamic shared object.
-#[cfg(all(not(miri), not(windows), any(feature = "cxa_atexit", target_vendor = "apple")))]
+#[cfg(all(
+    not(miri),
+    not(windows),
+    any(feature = "cxa_atexit", target_vendor = "apple")
+))]
 #[inline(always)]
 unsafe fn _run_cxa_atexit(cb: extern "C" fn()) {
     #[allow(missing_unsafe_on_extern)] // MSRV
