@@ -484,6 +484,7 @@ pub mod __support {
     }
 }
 
+/// Support for static variables that are initialized at startup time.
 pub mod statics {
     #![allow(unsafe_code)]
 
