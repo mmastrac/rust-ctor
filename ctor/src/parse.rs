@@ -256,18 +256,18 @@ macro_rules! __ctor_parse_impl {
         meta = $meta:tt,
         item = $item:tt
     ) ) => {
-        #[cfg(target_vendor = "apple")]
-        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
-            features = (
-                anonymous = $anonymous,
-                link_section = ($link_section), //(concat!($link_section, ".", $priority)),
-                used_linker = $used_linker,
-            ),
-            meta = $meta,
-            item = $item
-        ));
+        // #[cfg(target_vendor = "apple")]
+        // $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+        //     features = (
+        //         anonymous = $anonymous,
+        //         link_section = ($link_section), //(concat!($link_section, ".", $priority)),
+        //         used_linker = $used_linker,
+        //     ),
+        //     meta = $meta,
+        //     item = $item
+        // ));
 
-        #[cfg(not(target_vendor = "apple"))]
+        // #[cfg(not(target_vendor = "apple"))]
         $crate::__priority_to_literal!($crate::__ctor_parse_impl, [
             @priority next=$next[$next_args],
             features = (

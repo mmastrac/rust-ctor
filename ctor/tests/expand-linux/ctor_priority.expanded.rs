@@ -1,7 +1,7 @@
 use ctor::ctor;
 fn foo() {
     const _: () = {
-        #[link_section = ".init_array"]
+        #[link_section = ".init_array.001"]
         #[used]
         #[allow(non_upper_case_globals)]
         static __CTOR__PRIVATE__REF__: unsafe extern "C" fn() = {
