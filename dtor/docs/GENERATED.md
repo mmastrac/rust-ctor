@@ -141,7 +141,7 @@ link_section = ".dtors"
 
 #[cfg(all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc")))]
  # const _: () = { let
-link_section = ".CRT$XPU"
+link_section = ".CRT$XTU"
  # ; };
 
 #[cfg(all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc"))))]

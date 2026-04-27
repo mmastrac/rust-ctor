@@ -707,7 +707,7 @@ __declare_features!(
             // xtensa targets: .dtors
             (target_arch = "xtensa") => ".dtors",
             // Windows targets: CRT$XPU
-            (all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc"))) => ".CRT$XPU",
+            (all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc"))) => ".CRT$XTU",
             // ... except GNU
             (all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc")))) => ".dtors",
             _ => (compile_error!("Unsupported target for #[dtor]"))

@@ -104,13 +104,14 @@ Print a message at shutdown time. Note that Rust may have shut down some stdlib
 services at this time.
 
 ```rust
+# #[cfg(false)]
 use libc::printf;
 use ctor::dtor;
 
 #[dtor]
 unsafe fn shutdown() {
     // Using println or eprintln here will panic as Rust has shut down
-    libc::printf("Shutting down!\n\0".as_ptr() as *const i8);
+    libc::printf(c"Shutting down!\n" as _);
 }
 ```
 

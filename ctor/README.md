@@ -110,7 +110,7 @@ use ctor::dtor;
 #[dtor]
 unsafe fn shutdown() {
     // Using println or eprintln here will panic as Rust has shut down
-    libc::printf("Shutting down!\n\0".as_ptr() as *const i8);
+    libc::printf(c"Shutting down!\n" as _);
 }
 ```
 
@@ -164,7 +164,7 @@ in the Neon project.
 | `crate_path = $path : pat` |  Specify a custom crate path for the `ctor` crate. Used when re-exporting the ctor macro. |
 | `link_section = $section : literal` |  Place the destructor function pointer in a custom link section. |
 | `unsafe` |  Marks a ctor/dtor as unsafe. |
-| `priority = $priority_value : literal` |  |
+| `priority = $priority_value : tt` |  |
 | `used(linker)` |  Mark generated functions for this `dtor` as `used(linker)`. Requires nightly and `feature(used_with_arg)`. |
 
 
