@@ -29,7 +29,7 @@ macro_rules! __ctor_parse_impl {
             link_section = $link_section:tt,
             no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
             priority = $priority:tt,
-            priority_enabled = priority_enabled,
+            priority_enabled = $priority_enabled:tt,
             proc_macro = $proc_macro:tt,
             std = $std:tt,
             used_linker = $used_linker:tt,
