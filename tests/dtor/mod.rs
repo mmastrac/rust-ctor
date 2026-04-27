@@ -24,7 +24,11 @@ cd "dtor/link-section";
 defer {
     $ cargo clean --quiet
 }
-$ cargo run --quiet
+$ rustc -vV
+%SET TARGET "$target"
+*
+! host: %{DATA:target}
+$ cargo run --quiet --target $TARGET
 ! dtor-link-section:main
 ! dtor-link-section:dtor
 "#
@@ -39,8 +43,13 @@ cd "dtor/link-section";
 defer {
     $ cargo clean --quiet
 }
-$ cargo run --quiet
+$ rustc -vV
+%SET TARGET "$target"
+*
+! host: %{DATA:target}
+$ cargo run --quiet --target $TARGET
 ! dtor-link-section:main
 ! dtor-link-section:dtor
 "#
 );
+
