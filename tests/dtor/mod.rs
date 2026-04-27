@@ -28,9 +28,12 @@ $ rustc -vV
 %SET TARGET "$target"
 *
 ! host: %{DATA:target}
+*
 $ cargo run --quiet --target $TARGET
 ! dtor-link-section:main
-! dtor-link-section:dtor
+if TARGET_OS == "linux" {
+    ! dtor-link-section:dtor
+}
 "#
 );
 
@@ -47,8 +50,14 @@ $ rustc -vV
 %SET TARGET "$target"
 *
 ! host: %{DATA:target}
+*
 $ cargo run --quiet --target $TARGET
 ! dtor-link-section:main
-! dtor-link-section:dtor
+if TARGET_OS == "linux" {
+    ! dtor-link-section:dtor
+}
+if TARGET_OS == "windows" {
+    ! dtor-link-section:dtor
+}
 "#
 );

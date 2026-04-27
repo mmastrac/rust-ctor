@@ -1,6 +1,6 @@
 //! `clitest` tests.
 
-#![cfg(not(miri))]
+// #![cfg(not(miri))]
 
 /// `ctor` tests
 #[cfg(test)]
