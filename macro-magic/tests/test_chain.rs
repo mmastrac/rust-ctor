@@ -1,4 +1,4 @@
-use ::features::*;
+use ::macro_magic::*;
 
 macro_rules! __parse_chain_input {
     ( @entry next=$next:path[$next_args:tt], input=({

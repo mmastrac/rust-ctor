@@ -1,4 +1,4 @@
-use ::features::*;
+use ::macro_magic::*;
 
 __test!(__for_each[
     __surround[prefix=[BEFORE ] suffix=[AFTER ]]

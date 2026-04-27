@@ -1,4 +1,4 @@
-use ::features::*;
+use ::macro_magic::*;
 
 __declare_features!(
     my_macro: my_macro_parse;

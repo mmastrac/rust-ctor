@@ -1,4 +1,4 @@
-use ::features::*;
+use ::macro_magic::*;
 
 macro_rules! __make_tuple {
     ( @entry next=$next:path[$next_args:tt], input=($value:literal) ) => {

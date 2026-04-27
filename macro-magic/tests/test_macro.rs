@@ -1,7 +1,7 @@
 #![allow(unexpected_cfgs)]
 #![recursion_limit = "256"]
 
-use ::features::*;
+use ::macro_magic::*;
 
 __test!(__parse_feature_input:
     (

@@ -13,6 +13,7 @@ members = [
 default-members = [
     "ctor",
     "dtor",
+    "macro-magic",
     "link-section",
     "tests"
 ]
