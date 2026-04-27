@@ -368,6 +368,7 @@ macro_rules! __test {
     };
 }
 
+/// Calculates the length of a slice of strings.
 #[allow(unused)]
 pub const fn const_str_slice_len(s: &[&str]) -> usize {
     let mut len = 0;
@@ -379,6 +380,7 @@ pub const fn const_str_slice_len(s: &[&str]) -> usize {
     len
 }
 
+/// Concatenates a slice of strings into a single string.
 #[allow(unused)]
 #[allow(clippy::incompatible_msrv)]
 pub const fn const_str_slice_concat<'a>(s: &[&str], out: &'a mut [u8]) -> &'a str {
@@ -401,6 +403,7 @@ pub const fn const_str_slice_concat<'a>(s: &[&str], out: &'a mut [u8]) -> &'a st
     }
 }
 
+/// Compares two strings for equality.
 #[allow(unused)]
 pub const fn const_str_eq(a: &str, b: &str) -> bool {
     let mut i = 0;

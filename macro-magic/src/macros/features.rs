@@ -1,3 +1,5 @@
+//! A set of macros to declare features for another macro.
+
 /// A macro that generates the appropriate feature extraction macros.
 #[macro_export]
 #[doc(hidden)]
