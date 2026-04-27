@@ -18,8 +18,6 @@ For most platforms, this library currently has a MSRV of **Rust >= 1.60**.
 Library versions 0.2.x should work for edition 2018, and 1.0 is planned to be
 released as 2021-only.
 
-Static items are supported, but require **Rust >= 1.70**.
-
 This library supports WASM targets, and the MSRV for this target is **Rust >=
 1.85**.
 
