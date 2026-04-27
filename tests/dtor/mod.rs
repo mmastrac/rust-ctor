@@ -52,4 +52,3 @@ $ cargo run --quiet --target $TARGET
 ! dtor-link-section:dtor
 "#
 );
-
