@@ -20,7 +20,7 @@ macro_rules! __ctor_parse {
 #[macro_export]
 #[doc(hidden)]
 macro_rules! __ctor_parse_impl {
-    // Step 0: Check function shape
+    // Step 1: Feature check
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             anonymous = $anonymous:tt,
@@ -29,8 +29,48 @@ macro_rules! __ctor_parse_impl {
             link_section = $link_section:tt,
             no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
             priority = $priority:tt,
+            priority_enabled = priority_enabled,
             proc_macro = $proc_macro:tt,
             std = $std:tt,
+            used_linker = $used_linker:tt,
+        ),
+        meta = $meta:tt,
+        unsafe = $unsafe:tt,
+        item = $item:tt
+    )) => {
+        $crate::__ctor_parse_impl!(@checkfail priority=$priority priority_enabled=priority_enabled);
+
+        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+            features = (
+                anonymous = $anonymous,
+                link_name_prefix = $link_name_prefix,
+                link_section = $link_section,
+                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
+                priority = $priority,
+                used_linker = $used_linker,
+            ),
+            meta = $meta,
+            unsafe = $unsafe,
+            item = $item
+        ));
+    };
+
+    ( @checkfail priority=() priority_enabled=$any:tt ) => {};
+    ( @checkfail priority=$any:tt priority_enabled=priority_enabled ) => {};
+    ( @checkfail priority=$any1:tt priority_enabled=$any2:tt ) => {
+        compile_error!("The priority feature is not enabled, so `priority = N` is not supported.");
+    };
+
+    ( @checkfail $($rest:tt)* ) => {};
+
+    // Step 2: Check function shape
+    ( @entry next=$next:path[$next_args:tt], input=(
+        features = (
+            anonymous = $anonymous:tt,
+            link_name_prefix = $link_name_prefix:tt,
+            link_section = $link_section:tt,
+            no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
+            priority = $priority:tt,
             used_linker = $used_linker:tt,
         ),
         meta = $meta:tt,
@@ -60,13 +100,10 @@ macro_rules! __ctor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             anonymous = $anonymous:tt,
-            crate_path = $crate_path:tt,
             link_name_prefix = $link_name_prefix:tt,
             link_section = $link_section:tt,
             no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
             priority = $priority:tt,
-            proc_macro = $proc_macro:tt,
-            std = $std:tt,
             used_linker = $used_linker:tt,
         ),
         meta = $meta:tt,
@@ -79,13 +116,10 @@ macro_rules! __ctor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             anonymous = $anonymous:tt,
-            crate_path = $crate_path:tt,
             link_name_prefix = $link_name_prefix:tt,
             link_section = $link_section:tt,
             no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
             priority = $priority:tt,
-            proc_macro = $proc_macro:tt,
-            std = $std:tt,
             used_linker = $used_linker:tt,
         ),
         meta = $meta:tt,
@@ -98,13 +132,10 @@ macro_rules! __ctor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             anonymous = $anonymous:tt,
-            crate_path = $crate_path:tt,
             link_name_prefix = $link_name_prefix:tt,
             link_section = $link_section:tt,
             no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
             priority = $priority:tt,
-            proc_macro = $proc_macro:tt,
-            std = $std:tt,
             used_linker = $used_linker:tt,
         ),
         meta = $meta:tt,
@@ -117,13 +148,10 @@ macro_rules! __ctor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             anonymous = $anonymous:tt,
-            crate_path = $crate_path:tt,
             link_name_prefix = $link_name_prefix:tt,
             link_section = $link_section:tt,
             no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
             priority = $priority:tt,
-            proc_macro = $proc_macro:tt,
-            std = $std:tt,
             used_linker = $used_linker:tt,
         ),
         meta = $meta:tt,
@@ -149,13 +177,10 @@ macro_rules! __ctor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             anonymous = $anonymous:tt,
-            crate_path = $crate_path:tt,
             link_name_prefix = $link_name_prefix:tt,
             link_section = $link_section:tt,
             no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
             priority = $priority:tt,
-            proc_macro = $proc_macro:tt,
-            std = $std:tt,
             used_linker = $used_linker:tt,
         ),
         meta = $meta:tt,
@@ -170,8 +195,7 @@ macro_rules! __ctor_parse_impl {
              - static $name : $ty = [unsafe] { ... };");
     };
 
-
-    // Step 1: Compute no_warn_on_missing_unsafe
+    // Step 3: Compute no_warn_on_missing_unsafe
 
     // warn iff no_warn_on_missing_unsafe is not present AND unsafe is not present
     ( @entry next=$next:path[$next_args:tt], input=(
@@ -244,7 +268,7 @@ macro_rules! __ctor_parse_impl {
         ));
     };
 
-    // Step 2: Wrap in anonymous const
+    // Step 4: Wrap in anonymous const
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             anonymous = (),
@@ -300,7 +324,7 @@ macro_rules! __ctor_parse_impl {
         };
     };
 
-    // Step 3: Compute used_linker
+    // Step 5: Compute used_linker
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             link_name = $link_name:tt,
@@ -353,7 +377,7 @@ macro_rules! __ctor_parse_impl {
         ));
     };
 
-    // Step 4: Compute link_name
+    // Step 6: Compute link_name
 
     // No prefix, no computation
     ( @entry next=$next:path[$next_args:tt], input=(
@@ -445,7 +469,7 @@ macro_rules! __ctor_parse_impl {
         );
     };
 
-    // Step 5: Compute priority
+    // Step 7: Compute priority
 
     // No priority, no prefix, flow through to used_linker_meta
     ( @entry next=$next:path[$next_args:tt], input=(
@@ -482,9 +506,6 @@ macro_rules! __ctor_parse_impl {
         unsafe = $unsafe:tt,
         item = $item:tt
     ) ) => {
-        #[cfg(not(feature = "priority"))]
-        compile_error!("The priority feature is not enabled, so `priority = N` is not supported.");
-
         #[cfg(target_vendor = "apple")]
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
@@ -533,7 +554,7 @@ macro_rules! __ctor_parse_impl {
         ));
     };
 
-    // Step 6: Delegate on item type
+    // Step 8: Delegate on item type
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             link_name = $link_name:tt,

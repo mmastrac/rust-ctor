@@ -21,7 +21,10 @@ pub mod __support {
 
     // Re-export link_section::TypedSection and declarative::{section, in_section}
     #[cfg(all(feature = "priority", target_vendor = "apple"))]
-    pub use link_section::{TypedSection, declarative::{section, in_section}};
+    pub use link_section::{
+        declarative::{in_section, section},
+        TypedSection,
+    };
 
     /// Define a link section when using the priority parameter on Apple
     /// targets.
@@ -327,6 +330,9 @@ __declare_features!(
     priority {
         attr: [(priority = $priority_value:tt) => ($priority_value)];
         validate: [(priority = $priority:literal), (priority = early), (priority = late)];
+    };
+    priority_enabled {
+        feature: "priority";
     };
     /// Enable support for the proc-macro `#[dtor]` attribute. The declarative
     /// form (`dtor!(...)`) is always available. It is recommended that crates
