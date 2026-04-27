@@ -271,6 +271,7 @@ __declare_features!(
         }
     };
     /// Place the destructor function pointer in a custom link section.
+    // NOTE: Keep in sync w/dtor::ctor_link_section!
     link_section {
         attr: [(link_section = $section:literal) => ($section)];
         example: "link_section = \".ctors\"";
@@ -291,7 +292,7 @@ __declare_features!(
             )) => ".init_array",
             // xtensa targets: .dtors
             (target_arch = "xtensa") => ".ctors",
-            // Windows targets: CRT$XPU
+            // Windows targets: .CRT$XCU
             (all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc"))) => ".CRT$XCU",
             // ... except GNU
             (all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc")))) => ".ctors",

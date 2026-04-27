@@ -656,8 +656,8 @@ __declare_features!(
             )) => ".init_array",
             // xtensa targets: .dtors
             (target_arch = "xtensa") => ".ctors",
-            // Windows targets: .CRT$XPU (requires static CRT)
-            (all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc"))) => ".CRT$XPU",
+            // Windows targets: .CRT$XCU
+            (all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc"))) => ".CRT$XCU",
             // ... except GNU
             (all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc")))) => ".ctors",
             _ => (compile_error!("Unsupported target for #[ctor]"))
@@ -707,8 +707,8 @@ __declare_features!(
             )) => ".fini_array",
             // xtensa targets: .dtors
             (target_arch = "xtensa") => ".dtors",
-            // Windows targets: CRT$XPU
-            (all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc"))) => ".CRT$XTU",
+            // Windows targets: .CRT$XPU (requires static CRT)
+            (all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc"))) => ".CRT$XPU",
             // ... except GNU
             (all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc")))) => ".dtors",
             _ => (compile_error!("Unsupported target for #[dtor]"))
