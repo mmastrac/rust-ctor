@@ -16,9 +16,7 @@ const _: () = {
     static __CTOR__PRIVATE__REF__: unsafe extern "C" fn() = {
         #[allow(non_snake_case)]
         extern "C" fn __ctor__private__() {
-            unsafe {
-                _ = &*STATIC_CTOR;
-            }
+            unsafe { _ = &*STATIC_CTOR; }
         }
         __ctor__private__
     };
