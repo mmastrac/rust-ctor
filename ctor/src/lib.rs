@@ -485,6 +485,8 @@ pub mod __support {
 }
 
 pub mod statics {
+    #![allow(unsafe_code)]
+
     use core::cell::UnsafeCell;
     use core::mem::MaybeUninit;
     use core::ops::Deref;
@@ -530,6 +532,9 @@ pub mod statics {
     const POISONED: u8 = 0x10;
     const DROPPED: u8 = 0xff;
 
+    /// SAFETY: This is safe because the static variable is either initialized
+    /// and read-only, poisoned and panicing, or initializing (and will panic if
+    /// multiple threads try to initialize it at the same time).
     unsafe impl<T: Sync> Sync for Static<T> {}
 
     impl<T: Sync> Static<T> {
@@ -547,6 +552,12 @@ pub mod statics {
             }
         }
 
+        /// Get the underlying value of the static variable without checking the
+        /// initialized state.
+        ///
+        /// # Safety
+        ///
+        /// This must only be called if the initialized state is `INITIALIZED`.
         #[inline(always)]
         unsafe fn get_unchecked(&self) -> &T {
             unsafe {
@@ -570,6 +581,9 @@ pub mod statics {
                 }
             }
 
+            // SAFETY: We only access the static variable if the initialized
+            // state is `INITIALIZED`, or if we are `UNINITIALIZED` and put the
+            // state into `INITIALIZED`.
             unsafe {
                 match self.initialized.fetch_or(INITIALIZING, Ordering::AcqRel) {
                     UNINITIALIZED => {
@@ -596,6 +610,10 @@ pub mod statics {
 
     impl<T: Sync> Drop for Static<T> {
         fn drop(&mut self) {
+            // SAFETY: We only drop if the static is in the `INITIALIZED` state,
+            // which is can never leave unless going through this drop path. We
+            // leak in all other cases (though nothing should be written in any
+            // of those cases).
             unsafe {
                 if INITIALIZED == self.initialized.fetch_or(DROPPING, Ordering::AcqRel) {
                     (UnsafeCell::raw_get(&self.storage) as *mut T).drop_in_place();
