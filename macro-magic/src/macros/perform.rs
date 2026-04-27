@@ -350,7 +350,7 @@ macro_rules! __test {
                     ]
                 );
 
-                if !$crate::perform::const_str_eq(
+                if !$crate::macros::perform::const_str_eq(
                     INPUT,
                     OUTPUT,
                 ) {
@@ -360,8 +360,8 @@ macro_rules! __test {
                         "\nIn ",
                         file!()
                     ];
-                    let mut out = [0; $crate::perform::const_str_slice_len(SLICE)];
-                    panic!("{}", $crate::perform::const_str_slice_concat(SLICE, &mut out));
+                    let mut out = [0; $crate::macros::perform::const_str_slice_len(SLICE)];
+                    panic!("{}", $crate::macros::perform::const_str_slice_concat(SLICE, &mut out));
                 }
             }
         };

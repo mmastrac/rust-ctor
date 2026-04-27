@@ -17,12 +17,12 @@
 #[cfg(feature = "std")]
 extern crate std;
 
-mod features;
+mod macros;
 
 #[doc(hidden)]
 #[allow(unused)]
 pub mod __support {
-    use crate::features::*;
+    use crate::macros::*;
 
     #[cfg(feature = "dtor")]
     pub use dtor::declarative::dtor as dtor_parse;
@@ -509,10 +509,12 @@ pub mod statics {
         }
 
         #[inline(always)]
-        const unsafe fn get_unchecked(&self) -> &T {
-            (UnsafeCell::raw_get(&self.storage) as *const T)
-                .as_ref()
-                .unwrap_unchecked()
+        unsafe fn get_unchecked(&self) -> &T {
+            unsafe {
+                (UnsafeCell::raw_get(&self.storage) as *const T)
+                    .as_ref()
+                    .unwrap_unchecked()
+            }
         }
     }
 
@@ -532,11 +534,14 @@ pub mod statics {
             unsafe {
                 match self.initialized.fetch_or(INITIALIZING, Ordering::AcqRel) {
                     UNINITIALIZED => {
-                        let panic_guard = PanicGuard { initialized: &self.initialized };
+                        let panic_guard = PanicGuard {
+                            initialized: &self.initialized,
+                        };
                         let value = (self.initializer)();
                         core::mem::forget(panic_guard);
                         ptr::write(self.storage.get() as _, value);
-                        self.initialized.fetch_or(FINISHED_INITIALIZING, Ordering::AcqRel);
+                        self.initialized
+                            .fetch_or(FINISHED_INITIALIZING, Ordering::AcqRel);
                         self.get_unchecked()
                     }
                     INITIALIZING => {

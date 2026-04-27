@@ -5,7 +5,7 @@
 #[cfg(feature = "std")]
 extern crate std;
 
-mod features;
+mod macros;
 mod native;
 
 #[cfg(feature = "export_native")]
@@ -81,7 +81,7 @@ pub mod declarative {
 #[doc(hidden)]
 #[allow(unused)]
 pub mod __support {
-    use crate::features::*;
+    use crate::macros::*;
 
     // Required for proc_macro.
     pub use crate::__dtor_parse as dtor_parse;
