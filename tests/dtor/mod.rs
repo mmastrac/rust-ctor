@@ -13,3 +13,34 @@ $ cargo run --quiet
 ! dtor-no-default-features:dtor
 "#
 );
+
+// Run link-section with and without static CRT
+clitest!(
+    link_section_no_crt_static,
+    r#"
+set RUSTFLAGS "-C target-feature=-crt-static";
+set CARGO_TARGET_DIR "target/link-section-no-crt-static";
+cd "dtor/link-section";
+defer {
+    $ cargo clean --quiet
+}
+$ cargo run --quiet
+! dtor-link-section:main
+! dtor-link-section:dtor
+"#
+);
+
+clitest!(
+    link_section_crt_static,
+    r#"
+set RUSTFLAGS "-C target-feature=+crt-static";
+set CARGO_TARGET_DIR "target/link-section-crt-static";
+cd "dtor/link-section";
+defer {
+    $ cargo clean --quiet
+}
+$ cargo run --quiet
+! dtor-link-section:main
+! dtor-link-section:dtor
+"#
+);
