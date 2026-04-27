@@ -1,16 +1,15 @@
 use ctor::ctor;
 fn foo() {
     const _: () = {
-        #[link_section = "__DATA,__mod_init_func,mod_init_funcs"]
+        fn __ctor__private() {
+            unsafe { foo() }
+        }
+        #[link_section = "__DATA,CTOR,regular,no_dead_strip"]
         #[used]
-        #[allow(non_upper_case_globals)]
-        static __CTOR__PRIVATE__REF__: unsafe extern "C" fn() = {
-            #[allow(non_snake_case)]
-            extern "C" fn __ctor__private__() {
-                unsafe { foo() }
-            }
-            __ctor__private__
-        };
+        static __CTOR__ENTRY: <::ctor::__support::explicit_ctor::CTOR as ::link_section::__support::SectionItemType>::Item = (
+            __ctor__private,
+            1,
+        );
     };
     {
         ::std::io::_print(format_args!("foo\n"));
