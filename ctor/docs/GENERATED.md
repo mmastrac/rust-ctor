@@ -104,14 +104,13 @@ Print a message at shutdown time. Note that Rust may have shut down some stdlib
 services at this time.
 
 ```rust
-# #![cfg(false)]
 use libc::printf;
 use ctor::dtor;
 
 #[dtor]
 unsafe fn shutdown() {
     // Using println or eprintln here will panic as Rust has shut down
-    libc::printf(c"Shutting down!\n" as _);
+    libc::printf("Shutting down!\n\0".as_ptr() as *const i8);
 }
 ```
 
@@ -138,7 +137,6 @@ The `#[dtor]` macro effectively creates a constructor that calls `libc::atexit`
 with the provided function, ie roughly equivalent to:
 
 ```rust
-# #![cfg(false)]
 #[ctor]
 fn dtor_atexit() {
     libc::atexit(dtor);

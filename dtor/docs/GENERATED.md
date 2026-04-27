@@ -47,7 +47,7 @@ fn dtor_atexit() {
 | `crate_path = $path : pat` |  Specify a custom crate path for the `dtor` crate. Used when re-exporting the dtor macro. |
 | `ctor(link_section = $ctor_link_section_name : literal)` |  Place the initialization function pointer in a custom link section. |
 | `link_section = $section : literal` |  Place the destructor function pointer in a custom link section. |
-| `method = $method_id : ident` |  Specify the dtor method |
+| `method = $method_id : ident` |  Specify the dtor method.  - `term`: Run the dtor on binary termination.  - `unload`: Run the dtor on library unload.  - `at_library_exit`: Run the dtor using `__cxa_atexit` (unsupported on Windows platforms).  - `at_binary_exit`: Run the dtor using `atexit`.  - `link_section`: Run the dtor using a custom link section (unsupported on Apple platforms). |
 | `unsafe` |  Marks a ctor/dtor as unsafe. |
 | `used(linker)` |  Mark generated functions for this `dtor` as `used(linker)`. Requires nightly and `feature(used_with_arg)`. |
 
@@ -107,6 +107,11 @@ default_term_method = link_section
 
  ```rust
  # #[cfg(false)] {
+#[cfg(target_vendor = "pc")]
+ # const _: () = { let
+default_unload_method = link_section
+ # ; };
+
  // default
 default_unload_method = at_library_exit
  # }
