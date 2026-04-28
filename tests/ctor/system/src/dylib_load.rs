@@ -13,12 +13,12 @@ struct Foo;
 impl Foo {
     #[ctor(unsafe)]
     fn ctor() {
-        libc_eprintln!("Foo::ctor");
+        libc_eprintln!("+ Foo::ctor");
     }
 
     #[dtor(unsafe)]
     fn dtor() {
-        libc_eprintln!("Foo::dtor");
+        libc_eprintln!("- Foo::dtor");
     }
 }
 
