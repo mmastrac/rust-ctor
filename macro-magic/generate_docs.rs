@@ -5,32 +5,11 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-struct CrateSpec {
-    /// Cargo package name (for `cargo doc -p`).
-    package: &'static str,
-    /// Rust crate name (for rustdoc JSON file + path, uses underscores).
-    crate_name: &'static str,
-    /// Path to crate directory within the workspace.
-    dir: &'static str,
-}
+const CRATES: &[&str] = &["ctor", "dtor", "link-section"];
 
-const CRATES: &[CrateSpec] = &[
-    CrateSpec {
-        package: "ctor",
-        crate_name: "ctor",
-        dir: "ctor",
-    },
-    CrateSpec {
-        package: "dtor",
-        crate_name: "dtor",
-        dir: "dtor",
-    },
-    CrateSpec {
-        package: "link-section",
-        crate_name: "link_section",
-        dir: "link-section",
-    },
-];
+fn crate_name(package: &str) -> String {
+    package.replace('-', "_")
+}
 
 fn workspace_root() -> Result<PathBuf> {
     let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
@@ -57,7 +36,7 @@ fn ensure_jq_available() -> Result<()> {
     Ok(())
 }
 
-fn rustdoc_json(root: &Path, spec: &CrateSpec) -> Result<(tempfile::TempDir, PathBuf)> {
+fn rustdoc_json(root: &Path, package: &str) -> Result<(tempfile::TempDir, PathBuf)> {
     let temp = tempfile::tempdir().context("create tempdir")?;
     let target_dir = temp.path();
 
@@ -66,17 +45,17 @@ fn rustdoc_json(root: &Path, spec: &CrateSpec) -> Result<(tempfile::TempDir, Pat
         .current_dir(root)
         .env("RUSTDOCFLAGS", "-Z unstable-options --output-format json")
         .args(["+nightly", "doc"])
-        .args(["-p", spec.package])
+        .args(["-p", package])
         .arg("--quiet")
         .arg("--all-features")
         .arg("--document-private-items")
         .arg("--target-dir")
         .arg(target_dir);
-    run(&mut cargo).with_context(|| format!("cargo doc for {}", spec.package))?;
+    run(&mut cargo).with_context(|| format!("cargo doc for {}", package))?;
 
     let json_path = target_dir
         .join("doc")
-        .join(format!("{}.json", spec.crate_name));
+        .join(format!("{}.json", crate_name(package)));
     if !json_path.exists() {
         bail!("expected rustdoc json at {}", json_path.display());
     }
@@ -120,8 +99,8 @@ fn crate_root_module_json(json_path: &Path) -> Result<String> {
     jq(json_path, &["-r", ".index[(.root | tostring)].docs"])
 }
 
-fn write_generated_docs(root: &Path, spec: &CrateSpec, docs: &str) -> Result<()> {
-    let out = root.join(spec.dir).join("docs").join("GENERATED.md");
+fn write_generated_docs(root: &Path, package: &str, docs: &str) -> Result<()> {
+    let out = root.join(package).join("docs").join("GENERATED.md");
     if let Some(parent) = out.parent() {
         fs::create_dir_all(parent).with_context(|| format!("create {}", parent.display()))?;
     }
@@ -129,8 +108,8 @@ fn write_generated_docs(root: &Path, spec: &CrateSpec, docs: &str) -> Result<()>
     Ok(())
 }
 
-fn write_readme_markdown(root: &Path, spec: &CrateSpec, docs: &str) -> Result<()> {
-    let out = root.join(spec.dir).join("README.md");
+fn write_readme_markdown(root: &Path, package: &str, docs: &str) -> Result<()> {
+    let out = root.join(package).join("README.md");
 
     // Strip "invisible" lines from examples: remove any line where left-trimmed text starts with
     // "# ", but only when inside fenced code blocks (```).
@@ -164,26 +143,27 @@ fn main() -> Result<()> {
 
     ensure_jq_available()?;
 
-    for spec in CRATES {
+    for package in CRATES {
+        let crate_name = crate_name(package);
         // Pass 1: extract just the `__generated_docs` markdown.
-        let (_temp, json_path) = rustdoc_json(&root, spec)
-            .with_context(|| format!("rustdoc json for {}", spec.package))?;
-        let docs = generated_docs_markdown(&json_path, spec.crate_name)
-            .with_context(|| format!("extract __generated_docs for {}", spec.package))?;
+        let (_temp, json_path) = rustdoc_json(&root, package)
+            .with_context(|| format!("rustdoc json for {}", package))?;
+        let docs = generated_docs_markdown(&json_path, &crate_name)
+            .with_context(|| format!("extract __generated_docs for {}", package))?;
         if !docs.trim().is_empty() {
-            write_generated_docs(&root, spec, &docs)
-                .with_context(|| format!("write __generated_docs for {}", spec.package))?;
+            write_generated_docs(&root, package, &docs)
+                .with_context(|| format!("write __generated_docs for {}", package))?;
         }
 
         // Pass 2: rerun rustdoc JSON and write the crate root docs markdown into README.
-        let (_temp, json_path) = rustdoc_json(&root, spec)
-            .with_context(|| format!("rustdoc json for {}", spec.package))?;
+        let (_temp, json_path) = rustdoc_json(&root, package)
+            .with_context(|| format!("rustdoc json for {}", package))?;
         let root_docs = crate_root_module_json(&json_path)
-            .with_context(|| format!("extract crate root docs for {}", spec.package))?;
+            .with_context(|| format!("extract crate root docs for {}", package))?;
 
         if !root_docs.trim().is_empty() {
-            write_readme_markdown(&root, spec, &root_docs)
-                .with_context(|| format!("write README markdown for {}", spec.package))?;
+            write_readme_markdown(&root, package, &root_docs)
+                .with_context(|| format!("write README markdown for {}", package))?;
         }
     }
 
