@@ -160,11 +160,11 @@ The idea for `ctor` was originally inspired by the Neon project.
 | Cargo feature | Description |
 | --- | --- |
 | `dtor` |  Enable support for the `#[dtor]` attribute. Deprecated: use the `dtor` crate directly instead. |
-| `no_warn_on_missing_unsafe` |  Do not warn when a ctor or dtor is missing the `unsafe` keyword. |
+| `no_warn_on_missing_unsafe` |  Do not warn when a ctor is missing the `unsafe` keyword. |
 | `priority_enabled` |  Enable support for the priority parameter. |
-| `proc_macro` |  Enable support for the proc-macro `#[dtor]` attribute. The declarative form (`dtor!(...)`) is always available. It is recommended that crates re-exporting the `dtor` macro disable this feature and only use the declarative form. |
+| `proc_macro` |  Enable support for the proc-macro `#[ctor]` attribute. The declarative form (`ctor!(...)`) is always available. It is recommended that crates re-exporting the `ctor` macro disable this feature and only use the declarative form. |
 | `std` |  Enable support for the standard library. |
-| `used_linker` |  Applies `used(linker)` to all `dtor`-generated functions. Requires nightly and `feature(used_with_arg)`. |
+| `used_linker` |  Applies `used(linker)` to all `ctor`-generated functions. Requires nightly and `feature(used_with_arg)`. |
 
 # Macro Attributes
 
@@ -209,7 +209,7 @@ The idea for `ctor` was originally inspired by the Neon project.
 </td></tr>
 <tr><td><code>unsafe</code></td><td>
 
- Marks a ctor/dtor as unsafe. Recommended.
+ Marks a ctor as unsafe. Recommended.
 
 
 </td></tr>
@@ -226,7 +226,7 @@ The idea for `ctor` was originally inspired by the Neon project.
 </td></tr>
 <tr><td><code>used(linker)</code></td><td>
 
- Mark generated functions for this `dtor` as `used(linker)`. Requires nightly and `feature(used_with_arg)`.
+ Mark generated functions for this `ctor` as `used(linker)`. Requires nightly and `feature(used_with_arg)`.
 
 
 </td></tr>

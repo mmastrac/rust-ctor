@@ -17,6 +17,7 @@ pub mod statics;
 #[doc(hidden)]
 #[allow(unused)]
 pub mod __support {
+    #[deprecated(since = "0.12.0", note = "Use the dtor crate directly")]
     #[cfg(feature = "dtor")]
     pub use dtor::declarative::dtor as dtor_parse;
 
@@ -95,6 +96,7 @@ pub mod declarative {
     ///
     /// This macro is deprecated. It is recommended to import and use the `dtor`
     /// crate directly.
+    #[deprecated(since = "0.12.0", note = "Use the dtor crate directly")]
     #[cfg(feature = "dtor")]
     #[doc(inline)]
     pub use crate::__support::dtor_parse as dtor;
@@ -266,6 +268,7 @@ pub use ctor_proc_macro::ctor;
 /// Re-exported `#[dtor]` proc-macro from `dtor` crate.
 ///
 /// See [`::dtor`] for more details.
+#[deprecated(since = "0.12.0", note = "Use the dtor crate directly")]
 #[doc(inline)]
 #[cfg(all(feature = "dtor", feature = "proc_macro"))]
 pub use dtor::__dtor_from_ctor as dtor; // note: this is the dtor proc macro that looks in ctor
@@ -317,7 +320,7 @@ __declare_features!(
         default {
             // This is no longer supported by Apple
             (target_vendor = "apple") => "__DATA,__mod_init_func,mod_init_funcs",
-            // Most LLVM/GCC targets can use .fini_array
+            // Most LLVM/GCC targets can use .init_array
             (any(
                 target_os = "linux",
                 target_os = "android",
@@ -333,7 +336,7 @@ __declare_features!(
             )) => ".init_array",
             // No OS
             (target_os = "none") => ".init_array",
-            // xtensa targets: .dtors
+            // xtensa targets: .ctors
             (target_arch = "xtensa") => ".ctors",
             // Windows targets: .CRT$XCU
             (all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc"))) => ".CRT$XCU",
@@ -345,10 +348,10 @@ __declare_features!(
     };
     no_warn_on_missing_unsafe {
         /// crate
-        /// Do not warn when a ctor or dtor is missing the `unsafe` keyword.
+        /// Do not warn when a ctor is missing the `unsafe` keyword.
         feature: "no_warn_on_missing_unsafe";
         /// attr
-        /// Marks a ctor/dtor as unsafe. Recommended.
+        /// Marks a ctor as unsafe. Recommended.
         attr: [(unsafe) => (no_warn_on_missing_unsafe)];
     };
     /// The priority of the constructor. Higher-`N`-priority constructors are
@@ -365,9 +368,9 @@ __declare_features!(
     priority_enabled {
         feature: "priority";
     };
-    /// Enable support for the proc-macro `#[dtor]` attribute. The declarative
-    /// form (`dtor!(...)`) is always available. It is recommended that crates
-    /// re-exporting the `dtor` macro disable this feature and only use the
+    /// Enable support for the proc-macro `#[ctor]` attribute. The declarative
+    /// form (`ctor!(...)`) is always available. It is recommended that crates
+    /// re-exporting the `ctor` macro disable this feature and only use the
     /// declarative form.
     proc_macro {
         feature: "proc_macro";
@@ -378,10 +381,10 @@ __declare_features!(
     };
     used_linker {
         /// crate
-        /// Applies `used(linker)` to all `dtor`-generated functions. Requires nightly and `feature(used_with_arg)`.
+        /// Applies `used(linker)` to all `ctor`-generated functions. Requires nightly and `feature(used_with_arg)`.
         feature: "used_linker";
         /// attr
-        /// Mark generated functions for this `dtor` as `used(linker)`. Requires nightly and `feature(used_with_arg)`.
+        /// Mark generated functions for this `ctor` as `used(linker)`. Requires nightly and `feature(used_with_arg)`.
         attr: [(used(linker)) => (used_linker)];
     };
 );
