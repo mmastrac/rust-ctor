@@ -159,7 +159,6 @@ The idea for `ctor` was originally inspired by the Neon project.
 
 | Cargo feature | Description |
 | --- | --- |
-| `dtor` |  Enable support for the `#[dtor]` attribute. Deprecated: use the `dtor` crate directly instead. |
 | `no_warn_on_missing_unsafe` |  Do not warn when a ctor is missing the `unsafe` keyword. |
 | `priority_enabled` |  Enable support for the priority parameter. |
 | `proc_macro` |  Enable support for the proc-macro `#[ctor]` attribute. The declarative form (`ctor!(...)`) is always available. It is recommended that crates re-exporting the `ctor` macro disable this feature and only use the declarative form. |

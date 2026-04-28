@@ -10,12 +10,6 @@ pub fn dtor(attribute: TokenStream, item: TokenStream) -> TokenStream {
     generate("dtor", "dtor", attribute, item)
 }
 
-#[allow(missing_docs)]
-#[proc_macro_attribute]
-pub fn __dtor_from_ctor(attribute: TokenStream, item: TokenStream) -> TokenStream {
-    generate("ctor", "dtor", attribute, item)
-}
-
 /// Generates the equivalent of this Rust code as a TokenStream:
 ///
 /// ```nocompile

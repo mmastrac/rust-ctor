@@ -34,10 +34,6 @@ pub use native::*;
 #[cfg(feature = "proc_macro")]
 pub use dtor_proc_macro::dtor;
 
-#[doc(hidden)]
-#[cfg(feature = "proc_macro")]
-pub use dtor_proc_macro::__dtor_from_ctor;
-
 /// Declarative forms of the `#[dtor]` macro.
 ///
 /// The declarative forms wrap and parse a proc_macro-like syntax like so, and

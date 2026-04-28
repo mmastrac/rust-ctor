@@ -17,10 +17,6 @@ pub mod statics;
 #[doc(hidden)]
 #[allow(unused)]
 pub mod __support {
-    #[deprecated(since = "0.12.0", note = "Use the dtor crate directly")]
-    #[cfg(feature = "dtor")]
-    pub use dtor::declarative::dtor as dtor_parse;
-
     // Required for proc_macro.
     pub use crate::__ctor_parse as ctor_parse;
 
@@ -86,20 +82,6 @@ pub mod declarative {
     /// ```
     #[doc(inline)]
     pub use crate::__support::ctor_parse as ctor;
-
-    /// Declarative form of the
-    /// [`#[dtor]`](https://docs.rs/dtor/latest/dtor/attr.dtor.html) macro.
-    ///
-    /// See
-    /// [`::dtor::declarative::dtor!`](https://docs.rs/dtor/latest/dtor/declarative/macro.dtor.html)
-    /// for more details.
-    ///
-    /// This macro is deprecated. It is recommended to import and use the `dtor`
-    /// crate directly.
-    #[deprecated(since = "0.12.0", note = "Use the dtor crate directly")]
-    #[cfg(feature = "dtor")]
-    #[doc(inline)]
-    pub use crate::__support::dtor_parse as dtor;
 }
 
 /// Marks a function or static variable as a library/executable constructor.
@@ -265,14 +247,6 @@ pub mod declarative {
 #[cfg(feature = "proc_macro")]
 pub use ctor_proc_macro::ctor;
 
-/// Re-exported `#[dtor]` proc-macro from `dtor` crate.
-///
-/// See [`::dtor`] for more details.
-#[deprecated(since = "0.12.0", note = "Use the dtor crate directly")]
-#[doc(inline)]
-#[cfg(all(feature = "dtor", feature = "proc_macro"))]
-pub use dtor::__dtor_from_ctor as dtor; // note: this is the dtor proc macro that looks in ctor
-
 __declare_features!(
     ctor: __ctor_features;
 
@@ -293,10 +267,6 @@ __declare_features!(
     crate_path {
         attr: [(crate_path = $path:pat) => (($path))];
         example: "crate_path = ::path::to::ctor::crate";
-    };
-    /// Enable support for the `#[dtor]` attribute. Deprecated: use the `dtor` crate directly instead.
-    dtor {
-        feature: "dtor";
     };
     /// Specify a custom export name prefix for the constructor function.
     ///
