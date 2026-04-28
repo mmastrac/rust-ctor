@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## ctor [0.12.0] - Unreleased
+
+### Removed
+
+- deprecated `dtor` feature and crate dependency from `ctor` crate (use the `dtor` crate directly).
+
 ## ctor [0.11.1] - 2026-04-28
 
 ### Changed

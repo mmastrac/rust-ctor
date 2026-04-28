@@ -2,7 +2,8 @@
 #![allow(dead_code, unused_imports, unused_features)]
 #![cfg_attr(feature = "used_linker", feature(used_with_arg))]
 
-use ctor::*;
+use ctor::ctor;
+use dtor::dtor;
 use libc_print::*;
 
 #[cfg(never)]

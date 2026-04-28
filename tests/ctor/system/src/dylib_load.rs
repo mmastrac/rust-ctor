@@ -2,7 +2,8 @@
 #![cfg_attr(feature = "used_linker", feature(used_with_arg))]
 #![allow(unused_imports)]
 
-use ctor::*;
+use ctor::ctor;
+use dtor::dtor;
 use dlopen::raw::Library;
 use libc_print::*;
 

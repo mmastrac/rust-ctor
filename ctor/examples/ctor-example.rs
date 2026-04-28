@@ -3,7 +3,7 @@
 
 #![cfg_attr(feature = "used_linker", feature(used_with_arg))]
 
-use ctor::{ctor, dtor};
+use ctor::ctor;
 use libc_print::*;
 use std::collections::HashMap;
 
@@ -36,12 +36,6 @@ const _: () = {
         libc_println!("ctor_anonymous (#3)");
         let _f = anonymous_ctor;
     }
-
-    #[dtor]
-    unsafe fn anonymous_dtor() {
-        libc_println!("dtor_anonymous");
-        let _f = anonymous_dtor;
-    }
 };
 
 #[ctor]
@@ -66,32 +60,6 @@ unsafe fn ctor_unsafe() {
     libc_println!("ctor_unsafe");
 }
 
-#[dtor]
-#[allow(unsafe_code)]
-unsafe fn dtor() {
-    libc_println!("dtor");
-    // We can still reference the function itself
-    let _f = dtor;
-}
-
-#[dtor]
-#[allow(unsafe_code)]
-unsafe fn dtor_unsafe() {
-    libc_println!("dtor_unsafe");
-}
-
-#[dtor(anonymous)]
-unsafe fn anonymous_dtor() {
-    libc_println!("dtor_anonymous (#1)");
-    let _f = anonymous_dtor;
-}
-
-#[dtor(anonymous)]
-unsafe fn anonymous_dtor() {
-    libc_println!("dtor_anonymous (#2)");
-    let _f = anonymous_dtor;
-}
-
 /// A module with a static ctor/dtor
 pub mod module {
     use ctor::*;
@@ -102,12 +70,6 @@ pub mod module {
         libc_println!("module::STATIC_CTOR");
         42
     };
-
-    #[dtor]
-    #[allow(unsafe_code)]
-    unsafe fn dtor_module() {
-        libc_println!("module::dtor_module");
-    }
 }
 
 /// Executable main which demonstrates the various types of ctor/dtor.

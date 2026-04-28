@@ -11,28 +11,24 @@ categories = ["no-std"]
 rust-version = "1.60"
 
 [features]
-default = ["std", "dtor", "proc_macro", "no_warn_on_missing_unsafe", "priority"]
+default = ["std", "proc_macro", "no_warn_on_missing_unsafe", "priority"]
 
-std = ["dtor?/std"]
+std = []
 
 # Enable support for the priority parameter
 priority = ["dep:link-section"]
 
-# Enable the dtor re-export
-dtor = ["dep:dtor"]
-
 # Enable the proc_macro
-proc_macro = ["dep:ctor-proc-macro", "dtor?/proc_macro"]
+proc_macro = ["dep:ctor-proc-macro"]
 
 # For nightly users, used(linker) may be a better choice
-used_linker = ["dtor?/used_linker"]
+used_linker = []
 
 # As we are warning on missing unsafe, allow users to temporarily opt out
-no_warn_on_missing_unsafe = ["dtor?/no_warn_on_missing_unsafe"]
+no_warn_on_missing_unsafe = []
 
 [dependencies]
 ctor-proc-macro = { workspace = true, optional = true }
-dtor = { workspace = true, default-features = false, optional = true }
 link-section = { workspace = true, optional = true, default-features = false }
 
 [dev-dependencies]
