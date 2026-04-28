@@ -79,7 +79,7 @@ struct Foo<T> {
 
 impl<T: Default> Foo<T> {
     fn generic(self) {
-        _ = T::default();
+        drop(T::default());
     }
 
     #[ctor(unsafe)]

@@ -4,11 +4,23 @@ All notable changes to this project will be documented in this file.
 
 ## ctor [0.12.0] - Unreleased
 
+### Added
+
+- Support for `#[ctor]` on `impl` items. To be valid, the `fn` must have no
+  `self` parameter and must not access any generic parameters from the outer
+  item.
+
 ### Removed
 
 - deprecated `dtor` feature and crate dependency from `ctor` crate (use the `dtor` crate directly).
 
 ## dtor [0.12.0] - Unreleased
+
+### Added
+
+- Support for `#[dtor]` on `impl` items. To be valid, the `fn` must have no
+  `self` parameter and must not access any generic parameters from the outer
+  item.
 
 ### Removed
 
