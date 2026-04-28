@@ -10,12 +10,13 @@ static STATIC_CTOR: ::ctor::statics::Static<HashMap<u32, &'static str>> = {
     unsafe { ::ctor::statics::Static::<HashMap<u32, &'static str>>::new(init) }
 };
 const _: () = {
+    #[allow(unsafe_code)]
     #[link_section = "__DATA,__mod_init_func,mod_init_funcs"]
     #[used]
     static __CTOR_PRIVATE_REF: unsafe extern "C" fn() = {
         #[allow(unused_unsafe)]
         extern "C" fn __ctor_private() {
-            unsafe { _ = &*STATIC_CTOR }
+            { _ = &*STATIC_CTOR }
         }
         __ctor_private
     };

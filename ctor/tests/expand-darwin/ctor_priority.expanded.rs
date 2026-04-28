@@ -3,7 +3,7 @@ fn foo() {
     const _: () = {
         #[allow(unused_unsafe)]
         fn __ctor_private() {
-            unsafe { foo() }
+            { { foo() } }
         }
         #[link_section = "__DATA,CTOR,regular,no_dead_strip"]
         #[used]
