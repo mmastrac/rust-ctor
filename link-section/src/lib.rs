@@ -1,4 +1,6 @@
-#![doc = include_str!("../README.md")]
+#![doc = include_str!("../docs/BUILD.md")]
+//! # link-section
+#![doc = include_str!("../docs/PREAMBLE.md")]
 #![allow(unsafe_code)]
 
 /// Declarative forms of the `#[section]` and `#[in_section(...)]` macros.

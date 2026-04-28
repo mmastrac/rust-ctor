@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - Added `method` attribute to `dtor` macro.
-- Added `link_section` attribute to `dtor` macro.
+- Added `link_section` and `export_name_prefix` attributes to `dtor` macro.
 - AIX support for `ctor`/`dtor` crates.
 
 ### Changed
@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 - Significant rewrite to ctor/dtor macros and documentation.
 - Renamed `at_library_exit` to `at_module_exit` in `dtor` crate.
 - Macro attributes and crate features are auto-documented.
+- Rewrote `statics` code in `ctor` to not require `std`.
 
 ### Removed
 

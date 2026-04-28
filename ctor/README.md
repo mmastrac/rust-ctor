@@ -1,3 +1,12 @@
+![Build Status](https://github.com/mmastrac/rust-ctor/actions/workflows/rust.yml/badge.svg)
+
+| crate          | docs                                                                               | version                                                                                                 |
+| -------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `ctor`         | [![docs.rs](https://docs.rs/ctor/badge.svg)](https://docs.rs/ctor)                 | [![crates.io](https://img.shields.io/crates/v/ctor.svg)](https://crates.io/crates/ctor)                 |
+| `dtor`         | [![docs.rs](https://docs.rs/dtor/badge.svg)](https://docs.rs/dtor)                 | [![crates.io](https://img.shields.io/crates/v/dtor.svg)](https://crates.io/crates/dtor)                 |
+| `link-section` | [![docs.rs](https://docs.rs/link-section/badge.svg)](https://docs.rs/link-section) | [![crates.io](https://img.shields.io/crates/v/link-section.svg)](https://crates.io/crates/link-section) |
+
+# ctor
 Module initialization functions for Rust (like `__attribute__((constructor))` in
 C/C++) for Linux, OSX, Windows, WASM, BSD-likes, and many others.
 
@@ -146,7 +155,7 @@ static FOO: extern fn() = {
 ## Inspiration
 
 The idea for `ctor` was originally inspired by the Neon project.
-
+# Crate Features
 
 | Cargo feature | Description |
 | --- | --- |
@@ -157,6 +166,7 @@ The idea for `ctor` was originally inspired by the Neon project.
 | `std` |  Enable support for the standard library. |
 | `used_linker` |  Applies `used(linker)` to all `dtor`-generated functions. Requires nightly and `feature(used_with_arg)`. |
 
+# Macro Attributes
 
 <table><tr><th>Attribute</th><th>Description</th></tr>
 <tr><td><code>anonymous</code></td><td>
@@ -222,6 +232,7 @@ The idea for `ctor` was originally inspired by the Neon project.
 </td></tr>
 </table>
 
+# Defaults
 
 ## `export_name_prefix`
 
