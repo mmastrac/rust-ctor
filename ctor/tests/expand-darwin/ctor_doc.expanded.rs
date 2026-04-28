@@ -5,13 +5,12 @@ unsafe fn foo() {
     const _: () = {
         #[link_section = "__DATA,__mod_init_func,mod_init_funcs"]
         #[used]
-        #[allow(non_upper_case_globals)]
-        static __CTOR__PRIVATE__REF__: unsafe extern "C" fn() = {
-            #[allow(non_snake_case)]
-            extern "C" fn __ctor__private__() {
+        static __CTOR_PRIVATE_REF: unsafe extern "C" fn() = {
+            #[allow(unused_unsafe)]
+            extern "C" fn __ctor_private() {
                 unsafe { foo() }
             }
-            __ctor__private__
+            __ctor_private
         };
     };
     {

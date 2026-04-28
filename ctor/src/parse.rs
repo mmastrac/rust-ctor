@@ -611,13 +611,12 @@ macro_rules! __ctor_parse_impl {
         const _: () = {
             #[link_section = $($link_section)*]
             #$used_linker_meta
-            #[allow(non_upper_case_globals)]
-            static __CTOR__PRIVATE__REF__: unsafe extern "C" fn() = {
-                #[allow(non_snake_case)]
-                extern "C" fn __ctor__private__() {
+            static __CTOR_PRIVATE_REF: unsafe extern "C" fn() = {
+                #[allow(unused_unsafe)]
+                extern "C" fn __ctor_private() {
                     unsafe $body
                 }
-                __ctor__private__
+                __ctor_private
             };
         };
     };
@@ -628,13 +627,14 @@ macro_rules! __ctor_parse_impl {
         used=(#$used_linker_meta:tt),
      ) body=$body:tt ) => {
         const _: () = {
-            fn __ctor__private() {
+            #[allow(unused_unsafe)]
+            fn __ctor_private() {
                 unsafe $body
             }
 
             $crate::__support::in_section!(
                 #[in_section(unsafe, type = (fn(), u16), name = CTOR)]
-                static __CTOR__ENTRY: (fn(), u16) = (__ctor__private, $priority);
+                static __CTOR_ENTRY: (fn(), u16) = (__ctor_private, $priority);
             );
         };
     };

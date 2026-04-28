@@ -12,13 +12,11 @@ fn foo() {
     const _: () = {
         #[link_section = ".dtors"]
         #[used]
-        #[allow(non_upper_case_globals)]
-        static __DTOR__PRIVATE__REF__: extern "C" fn() = {
-            #[allow(non_snake_case)]
-            extern "C" fn __dtor__private__() {
+        static __DTOR_PRIVATE_REF: extern "C" fn() = {
+            extern "C" fn __dtor_private() {
                 unsafe { foo() }
             }
-            __dtor__private__
+            __dtor_private
         };
     };
     {

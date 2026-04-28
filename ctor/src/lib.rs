@@ -21,14 +21,7 @@ pub mod __support {
 
     // Re-export link_section::TypedSection and declarative::{section, in_section}
     #[cfg(all(feature = "priority", target_vendor = "apple"))]
-    pub use link_section::{
-        declarative::{in_section, section},
-        TypedSection,
-    };
-
-    pub mod explicit_ctor {
-        use super::*;
-    }
+    pub use link_section::declarative::in_section;
 }
 
 #[cfg(all(feature = "priority", target_vendor = "apple"))]
@@ -37,10 +30,10 @@ crate::__ctor_parse_internal!(
     /// Define a link section when using the priority parameter on Apple
     /// targets. This is awkwardly placed in the root module because it
     /// needs to use a generated macro. (https://github.com/rust-lang/rust/issues/52234)
-    #[ctor]
+    #[ctor(unsafe)]
     fn priority_ctor() {
         link_section::declarative::section!(
-            #[section]
+            #[section(no_macro)]
             pub static CTOR: link_section::TypedSection<(fn(), u16)>;
         );
 

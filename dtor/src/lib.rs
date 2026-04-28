@@ -554,13 +554,11 @@ pub mod __support {
             const _: () = {
                 #[link_section = $link_section]
                 #$used_linker_meta
-                #[allow(non_upper_case_globals)]
-                static __DTOR__PRIVATE__REF__: extern "C" fn() = {
-                    #[allow(non_snake_case)]
-                    extern "C" fn __dtor__private__() {
+                static __DTOR_PRIVATE_REF: extern "C" fn() = {
+                    extern "C" fn __dtor_private() {
                         unsafe { $name() }
                     }
-                    __dtor__private__
+                    __dtor_private
                 };
             };
         };
@@ -577,17 +575,14 @@ pub mod __support {
             const _: () = {
                 #[link_section = $ctor_link_section]
                 #$used_linker_meta
-                #[allow(non_upper_case_globals)]
-                static __CTOR__PRIVATE__REF__: unsafe extern "C" fn() = {
-                    #[allow(non_snake_case)]
-                    unsafe extern "C" fn __ctor__private__() {
-                        $crate::__support::at_module_exit(__dtor__private__);
+                static __CTOR_PRIVATE_REF: unsafe extern "C" fn() = {
+                    unsafe extern "C" fn __ctor_private() {
+                        $crate::__support::at_module_exit(__dtor_private);
                     }
-                    #[allow(non_snake_case)]
-                    extern "C" fn __dtor__private__() {
+                    extern "C" fn __dtor_private() {
                         unsafe { $name() }
                     }
-                    __ctor__private__
+                    __ctor_private
                 };
             };
         };
@@ -604,17 +599,14 @@ pub mod __support {
             const _: () = {
                 #[link_section = $ctor_link_section]
                 #$used_linker_meta
-                #[allow(non_upper_case_globals)]
-                static __CTOR__PRIVATE__REF__: unsafe extern "C" fn() = {
-                    #[allow(non_snake_case)]
-                    unsafe extern "C" fn __ctor__private__() {
-                        $crate::__support::at_binary_exit(__dtor__private__);
+                static __CTOR_PRIVATE_REF: unsafe extern "C" fn() = {
+                    unsafe extern "C" fn __ctor_private() {
+                        $crate::__support::at_binary_exit(__dtor_private);
                     }
-                    #[allow(non_snake_case)]
-                    extern "C" fn __dtor__private__() {
+                    extern "C" fn __dtor_private() {
                         unsafe { $name() }
                     }
-                    __ctor__private__
+                    __ctor_private
                 };
             };
         };
