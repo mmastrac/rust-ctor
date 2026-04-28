@@ -1,6 +1,7 @@
 error: Unexpected meta attribute: 'unknown'
        ...expected one of:
        anonymous; crate_path = $path : pat;
+       ctor(export_name_prefix = $ctor_export_name_prefix_str : literal);
        ctor(link_section = $ctor_link_section_name : literal); export_name_prefix =
        $export_name_prefix_str : literal; link_section = $section : literal; method =
        $method_id : ident; unsafe; used(linker);
@@ -14,6 +15,7 @@ error: Unexpected meta attribute: 'unknown'
 error: Unexpected meta attribute: 'unknown'
        ...expected one of:
        anonymous; crate_path = $path : pat;
+       ctor(export_name_prefix = $ctor_export_name_prefix_str : literal);
        ctor(link_section = $ctor_link_section_name : literal); export_name_prefix =
        $export_name_prefix_str : literal; link_section = $section : literal; method =
        $method_id : ident; unsafe; used(linker);
