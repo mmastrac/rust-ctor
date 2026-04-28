@@ -1,4 +1,5 @@
 use dtor::dtor;
+#[allow(dead_code)]
 unsafe fn foo() {
     unsafe fn __dtor_private_inner() {
         {
