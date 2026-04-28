@@ -72,6 +72,21 @@ pub mod module {
     };
 }
 
+#[allow(unused)]
+struct Foo;
+
+impl Foo {
+    #[ctor(unsafe)]
+    fn ctor() {
+        libc_eprintln!("Foo::ctor");
+    }
+
+    #[ctor]
+    unsafe fn unsafe_ctor() {
+        libc_eprintln!("Foo::dtor");
+    }
+}
+
 /// Executable main which demonstrates the various types of ctor/dtor.
 pub fn main() {
     use libc_print::*;

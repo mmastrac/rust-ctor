@@ -576,9 +576,16 @@ macro_rules! __ctor_parse_impl {
         })
     ) ) => {
         $($meta)*
+        #[allow(dead_code)]
         $vis $($unsafe)* $( extern $abi )? fn $name () {
-            $crate::__ctor_parse_impl!(@ctor $link_args body={ $($unsafe)* { $name() } });
-            $($body)*
+            // The outer function may be attached to a struct, so we generate an
+            // inner function that is freestanding and call it from both places.
+            $($unsafe)* $( extern $abi )? fn __ctor_private_inner() {
+                $($body)*
+            }
+
+            $crate::__ctor_parse_impl!(@ctor $link_args body={ $($unsafe)* { __ctor_private_inner() } });
+            $($unsafe)* { __ctor_private_inner() }
         }
     };
 

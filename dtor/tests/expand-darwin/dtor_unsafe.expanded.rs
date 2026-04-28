@@ -1,5 +1,11 @@
 use dtor::dtor;
+#[allow(dead_code)]
 fn foo() {
+    fn __dtor_private_inner() {
+        {
+            ::std::io::_print(format_args!("foo\n"));
+        };
+    }
     const _: () = {
         #[link_section = "__DATA,__mod_init_func,mod_init_funcs"]
         #[used]
@@ -8,12 +14,10 @@ fn foo() {
                 ::dtor::__support::at_module_exit(__dtor_private);
             }
             extern "C" fn __dtor_private() {
-                { foo() }
+                { __dtor_private_inner() }
             }
             __ctor_private
         };
     };
-    {
-        ::std::io::_print(format_args!("foo\n"));
-    };
+    { __dtor_private_inner() }
 }

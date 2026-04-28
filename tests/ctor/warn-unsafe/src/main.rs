@@ -30,5 +30,21 @@ pub static FOO_UNSAFE: u32 = {
     42
 };
 
+
+struct Foo {
+}
+
+impl Foo {
+    #[ctor(unsafe)]
+    fn ctor() {
+        println!("Foo::ctor");
+    }
+
+    #[ctor]
+    unsafe fn unsafe_ctor() {
+        println!("Foo::dtor");
+    }
+}
+
 fn main() {
 }
