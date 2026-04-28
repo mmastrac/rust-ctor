@@ -4,13 +4,13 @@ unsafe fn foo() {
         #[link_section = ".CRT$XCU"]
         #[used]
         static __CTOR_PRIVATE_REF: unsafe extern "C" fn() = {
-            unsafe extern "C" fn __ctor__private() {
-                ::dtor::__support::at_module_exit(__dtor__private);
+            unsafe extern "C" fn __ctor_private() {
+                ::dtor::__support::at_module_exit(__dtor_private);
             }
-            extern "C" fn __dtor__private() {
+            extern "C" fn __dtor_private() {
                 unsafe { foo() }
             }
-            __ctor__private
+            __ctor_private
         };
     };
     {
