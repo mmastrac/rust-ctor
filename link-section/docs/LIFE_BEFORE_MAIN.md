@@ -1,0 +1,1 @@
+../../docs/LIFE_BEFORE_MAIN.md

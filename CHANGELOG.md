@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - Support for `#[ctor]` on `impl` items. To be valid, the `fn` must have no
   `self` parameter and must not access any generic parameters from the outer
   item.
+- Added `life before main` documentation to all crates.
 
 ### Removed
 
@@ -21,6 +22,7 @@ All notable changes to this project will be documented in this file.
 - Support for `#[dtor]` on `impl` items. To be valid, the `fn` must have no
   `self` parameter and must not access any generic parameters from the outer
   item.
+- Added `life before main` documentation to all crates.
 
 ### Removed
 

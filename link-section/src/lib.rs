@@ -3,6 +3,9 @@
 #![doc = include_str!("../docs/PREAMBLE.md")]
 #![allow(unsafe_code)]
 
+#[doc = include_str!("../docs/LIFE_BEFORE_MAIN.md")]
+pub mod life_before_main {}
+
 /// Declarative forms of the `#[section]` and `#[in_section(...)]` macros.
 ///
 /// The declarative forms wrap and parse a proc_macro-like syntax like so, and

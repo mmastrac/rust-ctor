@@ -12,6 +12,9 @@ mod macros;
 mod native;
 mod parse;
 
+#[doc = include_str!("../docs/LIFE_BEFORE_MAIN.md")]
+pub mod life_before_main {}
+
 pub use native::*;
 
 /// Marks a function as a library/executable destructor. This uses OS-specific

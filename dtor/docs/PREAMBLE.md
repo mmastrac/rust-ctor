@@ -89,6 +89,15 @@ use dtor::dtor;
 fn shutdown() {}
 ```
 
+# Warnings
+
+Rust's philosophy is that nothing happens before or after main and this library
+explicitly subverts that. The code that runs in the `ctor` and `dtor` functions
+should be careful to limit itself to `libc` functions and code that does not
+rely on Rust's stdlib services.
+
+See [`::life_before_main`](crate::life_before_main) for more information.
+
 # Under the Hood
 
 The `#[dtor]` macro effectively creates a constructor that calls `libc::atexit`
