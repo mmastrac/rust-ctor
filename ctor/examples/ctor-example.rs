@@ -72,18 +72,19 @@ pub mod module {
     };
 }
 
-#[allow(unused)]
-struct Foo;
+#[derive(Default)]
+struct Foo<T> {
+    _t: ::std::marker::PhantomData<T>,
+}
 
-impl Foo {
+impl<T: Default> Foo<T> {
+    fn generic(self) {
+        _ = T::default();
+    }
+
     #[ctor(unsafe)]
     fn ctor() {
         libc_eprintln!("Foo::ctor");
-    }
-
-    #[ctor]
-    unsafe fn unsafe_ctor() {
-        libc_eprintln!("Foo::dtor");
     }
 }
 
@@ -93,4 +94,9 @@ pub fn main() {
     libc_println!("main!");
     libc_println!("STATIC_CTOR = {:?}", *STATIC_CTOR);
     libc_println!("module::STATIC_CTOR = {:?}", *module::STATIC_CTOR);
+
+    // Only one ctor call will occur for both generic types, and no generics are
+    // available in the ctor body.
+    Foo::<u32>::default().generic();
+    Foo::<u64>::default().generic();
 }

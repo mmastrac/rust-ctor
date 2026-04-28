@@ -72,7 +72,7 @@ fn print_numbers() {
 
 ## Contributing
 
-Contributions are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file for details.
+Contributions are welcome! 
 
 ## License
 
