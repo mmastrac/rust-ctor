@@ -223,7 +223,7 @@ __declare_features!(
     ///    [link_section](#link_section) or
     ///    [export_name_prefix](#export_name_prefix) (unsupported on Apple
     ///    platforms).
-    /// 
+    ///
     /// [at_module_exit]: crate::native::at_module_exit
     /// [at_binary_exit]: crate::native::at_binary_exit
     method {
