@@ -28,6 +28,11 @@ unsafe fn priority_four() {
     println!("4");
 }
 
+#[ctor(unsafe, priority = late, anonymous)]
+unsafe fn priority_late() {
+    println!("late");
+}
+
 #[ctor(unsafe, priority = 10)]
 unsafe fn priority_10() {
     println!("10");
@@ -38,9 +43,29 @@ unsafe fn priority_five() {
     println!("5");
 }
 
+#[ctor(unsafe, priority = early, anonymous)]
+unsafe fn priority_early() {
+    println!("early");
+}
+
+#[ctor(unsafe, priority = 0)]
+unsafe fn priority_zero() {
+    println!("0");
+}
+
+#[ctor(unsafe, priority = late, anonymous)]
+unsafe fn priority_late() {
+    println!("late");
+}
+
 #[ctor(unsafe, priority = 6)]
 unsafe fn a_priority_6() {
     println!("6");
+}
+
+#[ctor(unsafe, anonymous)]
+unsafe fn priority_none() {
+    println!("no priority");
 }
 
 #[ctor(unsafe, priority = 8)]
@@ -51,6 +76,16 @@ unsafe fn priority_eight() {
 #[ctor(unsafe, priority = 9)]
 unsafe fn priority_nine() {
     println!("9");
+}
+
+#[ctor(unsafe, anonymous)]
+unsafe fn priority_none() {
+    println!("no priority");
+}
+
+#[ctor(unsafe, priority = early, anonymous)]
+unsafe fn priority_early() {
+    println!("early");
 }
 
 fn main() {
