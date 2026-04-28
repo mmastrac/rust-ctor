@@ -113,14 +113,23 @@ fn dtor_atexit() {
 
  Specify the dtor method.
 
-  - `term`: Run the dtor on binary termination. Not recommended as code
+  - `term`: Run the dtor on binary termination using the platform's
+    [default_term_method](#default_term_method). Not recommended as code
     may be unloaded before the dtor is called.
-  - `unload`: Run the dtor on module unload (library or binary).
-  - `at_module_exit`: Run the dtor using `__cxa_atexit`.
-  - `at_binary_exit`: Run the dtor using `atexit` (unsupported on Windows
+  - `unload`: Run the dtor on module unload (library or binary) using the
+    platform's [default_unload_method](#default_unload_method).
+  - `at_module_exit`: Run the dtor using the platform's
+    [`at_module_exit`][at_module_exit] (`__cxa_atexit` on all platforms
+    other than Windows, `atexit` on Windows).
+  - `at_binary_exit`: Run the dtor using the platform's
+    [`at_binary_exit`][at_binary_exit] (unsupported on Windows
     platforms).
-  - `linker`: Run the dtor using a custom link section or link name
-    (unsupported on Apple platforms).
+  - `linker`: Run the dtor using the platform's [link_section](#link_section) or
+    [export_name_prefix](#export_name_prefix) (unsupported on Apple
+    platforms).
+ 
+ [at_module_exit]: crate::native::at_module_exit
+ [at_binary_exit]: crate::native::at_binary_exit
 
 
 </td></tr>
