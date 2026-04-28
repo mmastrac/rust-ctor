@@ -581,7 +581,7 @@ macro_rules! __ctor_parse_impl {
     ) ) => {
         $($meta)*
         $vis $($unsafe)* $( extern $abi )? fn $name () {
-            $crate::__ctor_parse_impl!(@ctor $link_args body={ $name() });
+            $crate::__ctor_parse_impl!(@ctor $link_args body={ $($unsafe)* { $name() } });
             $($body)*
         }
     };
@@ -609,12 +609,13 @@ macro_rules! __ctor_parse_impl {
         used=(#$used_linker_meta:tt),
      ) body=$body:tt ) => {
         const _: () = {
+            #[allow(unsafe_code)]
             #[link_section = $($link_section)*]
             #$used_linker_meta
             static __CTOR_PRIVATE_REF: unsafe extern "C" fn() = {
                 #[allow(unused_unsafe)]
                 extern "C" fn __ctor_private() {
-                    unsafe $body
+                    $body
                 }
                 __ctor_private
             };
@@ -629,7 +630,7 @@ macro_rules! __ctor_parse_impl {
         const _: () = {
             #[allow(unused_unsafe)]
             fn __ctor_private() {
-                unsafe $body
+                $body
             }
 
             $crate::__support::in_section!(
