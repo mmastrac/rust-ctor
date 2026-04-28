@@ -98,6 +98,17 @@ jobs:
       with:
         tool: ${{ matrix.needs }}
   
+    # Miri fails to install on stable Windows Rust?
+    #
+    # info: latest update on 2026-04-16 for version 1.95.0 (59807616e 2026-04-14)
+    # error: component 'miri' for target 'x86_64-pc-windows-msvc' is unavailable for download for channel 'stable'
+    # One or many components listed above might have been permanently removed from newer versions
+    - name: Uninstall Stable Rust on Windows if not using stable
+      if: ${{ matrix.rust-toolchain != 'stable' }}
+      shell: powershell
+      run: |
+        rustup toolchain uninstall stable
+
     - name: Install Rust toolchain (${{ matrix.rust-toolchain }})
       uses: actions-rust-lang/setup-rust-toolchain@v1
       with:
