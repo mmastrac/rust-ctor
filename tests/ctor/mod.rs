@@ -24,6 +24,25 @@ $ cargo run --quiet --target $TARGET
 );
 
 clitest!(
+    doctest,
+    r#"
+set RUSTFLAGS "";
+cd "ctor/doctest";
+defer {
+    $ cargo clean --quiet
+}
+$ cargo build --quiet
+*
+$ cargo test --doc --quiet
+!
+! running 1 test
+! .
+! test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in %{DATA}
+!
+"#
+);
+
+clitest!(
     edition_2018,
     r#"
 set RUSTFLAGS "";
