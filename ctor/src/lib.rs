@@ -1,5 +1,8 @@
+#![cfg_attr(feature = "used_linker", feature(used_with_arg))]
 #![recursion_limit = "256"]
 #![no_std]
+#![doc = include_str!("../docs/BUILD.md")]
+//! # ctor
 #![doc = include_str!("../docs/GENERATED.md")]
 
 #[cfg(feature = "std")]
@@ -28,8 +31,9 @@ pub mod __support {
 crate::__ctor_parse_internal!(
     __ctor_features,
     /// Define a link section when using the priority parameter on Apple
-    /// targets. This is awkwardly placed in the root module because it
-    /// needs to use a generated macro. (https://github.com/rust-lang/rust/issues/52234)
+    /// targets. This is awkwardly placed in the root module because it needs to
+    /// use a generated macro. (see
+    /// <https://github.com/rust-lang/rust/issues/52234>)
     #[ctor(unsafe)]
     fn priority_ctor() {
         link_section::declarative::section!(
@@ -50,37 +54,48 @@ crate::__ctor_parse_internal!(
     }
 );
 
-/// Declarative forms of the `#[ctor]` and `#[dtor]` macros.
-///
-/// The declarative forms wrap and parse a proc_macro-like syntax like so, and
-/// are identical in expansion to the undecorated procedural macros. The
-/// declarative forms support the same attribute parameters as the procedural
-/// macros.
-///
-/// ```rust
-/// # #[cfg(not(miri))] mod test { use ctor::*; use libc_print::*;
-/// ctor::declarative::ctor! {
-///   #[ctor]
-///   fn foo() {
-///     libc_println!("Hello, world!");
-///   }
-/// }
-/// # }
-///
-/// // ... the above is identical to:
-///
-/// # #[cfg(not(miri))] mod test_2 { use ctor::*; use libc_print::*;
-/// #[ctor]
-/// fn foo() {
-///   libc_println!("Hello, world!");
-/// }
-/// # }
-/// ```
+///Declarative form of the `#[ctor]` macro.
 pub mod declarative {
+    /// Declarative form of the [`#[ctor]`](crate::ctor) macro.
+    ///
+    /// The declarative forms wrap and parse a proc_macro-like syntax like so, and
+    /// are identical in expansion to the undecorated procedural macros. The
+    /// declarative forms support the same attribute parameters as the procedural
+    /// macros.
+    ///
+    /// ```rust
+    /// # #[cfg(not(miri))] mod test { use ctor::*; use libc_print::*;
+    /// ctor::declarative::ctor! {
+    ///   #[ctor]
+    ///   fn foo() {
+    ///     libc_println!("Hello, world!");
+    ///   }
+    /// }
+    /// # }
+    ///
+    /// // ... the above is identical to:
+    ///
+    /// # #[cfg(not(miri))] mod test_2 { use ctor::*; use libc_print::*;
+    /// #[ctor]
+    /// fn foo() {
+    ///   libc_println!("Hello, world!");
+    /// }
+    /// # }
+    /// ```
     #[doc(inline)]
     pub use crate::__support::ctor_parse as ctor;
-    #[doc(inline)]
+
+    /// Declarative form of the
+    /// [`#[dtor]`](https://docs.rs/dtor/latest/dtor/attr.dtor.html) macro.
+    ///
+    /// See
+    /// [`::dtor::declarative::dtor!`](https://docs.rs/dtor/latest/dtor/declarative/macro.dtor.html)
+    /// for more details.
+    ///
+    /// This macro is deprecated. It is recommended to import and use the `dtor`
+    /// crate directly.
     #[cfg(feature = "dtor")]
+    #[doc(inline)]
     pub use crate::__support::dtor_parse as dtor;
 }
 
@@ -102,27 +117,6 @@ pub mod declarative {
 /// re-export `ctor` items as part of your crate, you can use the `crate_path`
 /// parameter to redirect the macro's output to the correct crate, or use the
 /// [`declarative::ctor`] form.
-///
-/// # Attribute parameters
-///
-///  - `unsafe`: Removes the requirement to mark the function as `unsafe`
-///    (recommended).
-///  - `link_section = "section"`: The section to place the constructor in.
-///  - `anonymous`: Do not give the constructor a name in the generated code
-///    (allows for multiple constructors with the same name). Equivalent to
-///    wrapping the constructor in an anonymous const (ie: `const _ = { ...
-///    };`).
-///  - `priority = N`: The priority of the constructor. Higher-N-priority
-///    constructors are run last. `N` must be between 0 and 999 for ordering
-///    guarantees (N >= 1000 ordering is platform-defined). Ordering with
-///    respect to constructors without a priority is platform-defined.
-///  - `crate_path = (Advanced) ::path::to::ctor::crate`: The path to the `ctor`
-///    crate containing the support macros. If you re-export `ctor` items as
-///    part of your crate, you can use this to redirect the macro's output to
-///    the correct crate. Using the [`declarative::ctor`] form is preferred over
-///    this parameter.
-///  - `used(linker)`: (Advanced) Mark the function as being used in the link
-///    phase.
 ///
 /// # Examples
 ///
@@ -278,14 +272,27 @@ pub use dtor::__dtor_from_ctor as dtor; // note: this is the dtor proc macro tha
 __declare_features!(
     ctor: __ctor_features;
 
-    /// Make the ctor function anonymous.
+    /// Do not give the constructor a name in the generated code (allows for
+    /// multiple constructors with the same name). Equivalent to wrapping the
+    /// constructor in an anonymous const (i.e.: `const _ = { ... };`).
     anonymous {
         attr: [(anonymous) => (anonymous)];
     };
-    /// Specify a custom crate path for the `ctor` crate. Used when re-exporting the ctor macro.
+    /// The path to the `ctor` crate containing the support macros. If you
+    /// re-export `ctor` items as part of your crate, you can use this to
+    /// redirect the macro’s output to the correct crate.
+    ///
+    /// Using the declarative [`ctor!`][c] form is
+    /// preferred over this parameter.
+    ///
+    /// [c]: crate::declarative::ctor!
     crate_path {
         attr: [(crate_path = $path:pat) => (($path))];
         example: "crate_path = ::path::to::ctor::crate";
+    };
+    /// Enable support for the `#[dtor]` attribute. Deprecated: use the `dtor` crate directly instead.
+    dtor {
+        feature: "dtor";
     };
     /// Specify a custom link name prefix for the constructor function.
     ///
@@ -300,7 +307,8 @@ __declare_features!(
             _ => (),
         }
     };
-    /// Place the destructor function pointer in a custom link section.
+    /// Place the constructor function pointer in a custom link section. By
+    /// default, this uses the appropriate platform-specific link section.
     // NOTE: Keep in sync w/dtor::ctor_link_section!
     link_section {
         attr: [(link_section = $section:literal) => ($section)];
@@ -339,13 +347,20 @@ __declare_features!(
         /// Do not warn when a ctor or dtor is missing the `unsafe` keyword.
         feature: "no_warn_on_missing_unsafe";
         /// attr
-        /// Marks a ctor/dtor as unsafe.
+        /// Marks a ctor/dtor as unsafe. Recommended.
         attr: [(unsafe) => (no_warn_on_missing_unsafe)];
     };
+    /// The priority of the constructor. Higher-`N`-priority constructors are
+    /// run last. `N` must be between 0 and 999 for ordering guarantees (`N` >=
+    /// 1000 ordering is platform-defined).
+    ///
+    /// Ordering with respect to constructors without a priority is
+    /// platform-defined.
     priority {
         attr: [(priority = $priority_value:tt) => ($priority_value)];
         validate: [(priority = $priority:literal), (priority = early), (priority = late)];
     };
+    /// Enable support for the priority parameter.
     priority_enabled {
         feature: "priority";
     };

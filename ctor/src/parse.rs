@@ -40,6 +40,7 @@ macro_rules! __ctor_parse_impl {
         features = (
             anonymous = $anonymous:tt,
             crate_path = $crate_path:tt,
+            dtor = $dtor:tt,
             link_name_prefix = $link_name_prefix:tt,
             link_section = $link_section:tt,
             no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,

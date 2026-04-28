@@ -745,12 +745,13 @@ macro_rules! __make_docs {
                     #![doc = concat!("\n| `", stringify!($feature_crate), "` | ", $( $crate_doc_lit, )* " |")]
                 )?
             )*
-            #![doc = "\n\n# Attribute Features\n\n| Attribute | Description |\n| --- | --- |"]
+            #![doc = "\n\n# Macro Attributes\n\n<table><tr><th>Attribute</th><th>Description</th></tr>\n"]
             $(
                 $(
-                    #![doc = concat!("\n| `", stringify!($($attr)*), "` | ", $( $attr_doc_lit, )*  " |")]
+                    #![doc = concat!("\n<tr><td><code>", stringify!($($attr)*), "</code></td><td>\n\n", $( $attr_doc_lit, "\n", )*  "\n\n</td></tr>")]
                 )?
             )*
+            #![doc = "</table>"]
             #![doc = "\n\n# Defaults"]
         ),
             ($(

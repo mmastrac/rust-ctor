@@ -1,42 +1,44 @@
 Module initialization/teardown functions for Rust (like
-`__attribute__((constructor))` in C/C++) for Linux, OSX, FreeBSD, NetBSD,
-Illumos, OpenBSD, DragonFlyBSD, Android, iOS, WASM, and Windows.
+`__attribute__((constructor))` in C/C++) for Linux, OSX, Windows, WASM,
+BSD-likes, and many others.
 
 ## MSRV
 
 For most platforms, this library currently has a MSRV of **Rust >= 1.60**.
-Library versions 0.2.x should work for edition 2018, and 1.0 is planned to be
-released as 2021-only.
 
-Static items are supported, but require **Rust >= 1.70**.
+MSRV for WASM targets is **Rust >= 1.85**.
 
-This library supports WASM targets, and the MSRV for this target is **Rust >=
-1.85**.
+## Lightweight
 
-## Zero Dependency
-
-As of `ctor 0.3.0+`, `ctor` has no dependencies (other than the
-`ctor-proc-macro` crate). The proc macro in this crate calls into the
-declarative macro that does the majority of the work.
+`ctor` has no dependencies other than the `ctor-proc-macro` and `link-section`
+crates. The proc-macro is only used to delegate to the declarative macro and
+should have minimal effect on compilation time.
 
 ## Support
 
 This library works and is regularly tested on Linux, OSX, Windows, and FreeBSD,
-with both `+crt-static` and `-crt-static` where possible. Other platforms are
-supported but not tested as part of the automatic builds. This library will also
-work as expected in both `bin` and `cdylib` outputs, ie: the `ctor` and `dtor`
-will run at executable or library startup/shutdown respectively.
+with both `+crt-static` and `-crt-static` and `bin`/`cdylib` outputs.
 
-## Features
+Contributions to support other platforms or improve testing are welcome.
 
-| Feature                     | Description                                                                                                            | Default |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------- |
-| `std`                       | Enable support for the standard library. This is required for static ctor variables, but not for functions.            | Yes     |
-| `proc_macro`                | Enable support for the proc macro. Required for `#[ctor]` and `#[dtor]` macros, but not for `ctor!` and `dtor!` forms. | Yes     |
-| `dtor`                      | Include `#[dtor]` support in the `ctor` crate.                                                                         | Yes     |
-| `no_warn_on_missing_unsafe` | Do not warn when a ctor or dtor is missing the `unsafe` keyword.                                                       | Yes     |
-| `priority`                  | Enable support for the priority parameter.                                                                             | Yes     |
-| `used_linker`               | Enable support for `#[used(linker)]` (nightly only).                                                                   | No      |
+| OS           | Supported | CI Tested |
+| ------------ | --------- | --------- |
+| Linux        | ✅        | ✅        |
+| OSX          | ✅        | ✅        |
+| Windows      | ✅        | ✅        |
+| FreeBSD      | ✅        | ✅        |
+| WASM         | ✅        | ✅        |
+| NetBSD       | ✅        | -         |
+| OpenBSD      | ✅        | -         |
+| DragonFlyBSD | ✅        | -         |
+| Illumos      | ✅        | -         |
+| Android      | ✅        | -         |
+| iOS          | ✅        | -         |
+| AIX          | ✅        | -         |
+| Haiku        | ✅        | -         |
+| VxWorks      | ✅        | -         |
+| Xtensa       | ✅        | -         |
+| NTO          | ✅        | -         |
 
 ## Warnings
 
@@ -133,18 +135,6 @@ static FOO: extern fn() = {
 };
 ```
 
-The `#[dtor]` macro effectively creates a constructor that calls `libc::atexit`
-with the provided function, ie roughly equivalent to:
-
-```rust,ignore
-#[ctor]
-fn dtor_atexit() {
-    libc::atexit(dtor);
-}
-```
-
 ## Inspiration
 
-Idea inspired by
-[this code](https://github.com/neon-bindings/neon/blob/2277e943a619579c144c1da543874f4a7ec39879/src/lib.rs#L42)
-in the Neon project.
+The idea for `ctor` was originally inspired by the Neon project.

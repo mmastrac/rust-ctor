@@ -22,16 +22,16 @@ fn shutdown() {
 
 | Platform | Link Section | at_binary_exit | at_module_exit |
 | --- | --- | --- | --- |
-| Linux | `.fini_array`/`.dtors` | Yes (`atexit`) | Yes (`__cxa_atexit`) |
-| MacOS | `.mod_term_func` 🍎 | Yes (`atexit`) | Yes (`__cxa_atexit`) |
-| Windows | `.CRT$XPU` 🪟 | No | Yes (`atexit`) |
-| AIX | No 🔵 | Yes | Yes |
+| Linux | `.fini_array` | Yes (`atexit`) | Yes (`__cxa_atexit`) |
+| MacOS | `.mod_term_func` <sup><sup>🍎</sup></sup> | Yes (`atexit`) | Yes (`__cxa_atexit`) |
+| Windows | `.CRT$XPU` <sup><sup>🪟</sup></sup> | No | Yes (`atexit`) |
+| AIX | No <sup><sup>🔵</sup></sup> | Yes | Yes |
 | Other POSIX-like platforms | `.fini_array`/`.dtors` | Yes (`atexit`) | Yes (`__cxa_atexit`) |
 
 Notes:
- - 🍎: Not recommended. Apple platforms no longer call `mod_term_func` functions.
- - 🪟: Not recommended. Windows platforms may not reliably call functions in link sections, unless a binary is built with a static CRT.
- - 🔵: Link sections are not supported on AIX, but `__sinit` functions can be used to call `atexit`.
+ - <sup><sup>🍎</sup></sup>: Not recommended. Apple platforms no longer call `mod_term_func` functions.
+ - <sup><sup>🪟</sup></sup>: Not recommended. Windows platforms may not reliably call functions in link sections, unless a binary is built with a static CRT.
+ - <sup><sup>🔵</sup></sup>: Link sections are not supported on AIX, but the platform calls functions with the prefix `__sinit` and `__sterm` at startup and shutdown respectively.
 
 # Under the Hood
 
@@ -54,17 +54,61 @@ fn dtor_atexit() {
 | `std` |  Enable support for the standard library. |
 | `used_linker` |  Applies `used(linker)` to all `dtor`-generated functions. Requires nightly and `feature(used_with_arg)`. |
 
-# Attribute Features
+# Macro Attributes
 
-| Attribute | Description |
-| --- | --- |
-| `anonymous` |  Make the ctor function anonymous. |
-| `crate_path = $path : pat` |  Specify a custom crate path for the `dtor` crate. Used when re-exporting the dtor macro. |
-| `ctor(link_section = $ctor_link_section_name : literal)` |  Place the initialization function pointer in a custom link section. |
-| `link_section = $section : literal` |  Place the destructor function pointer in a custom link section. |
-| `method = $method_id : ident` |  Specify the dtor method.  - `term`: Run the dtor on binary termination. Not recommended as code may be unloaded before the dtor is called.  - `unload`: Run the dtor on module unload (library or binary).  - `at_library_exit`: Run the dtor using `__cxa_atexit` (unsupported on Windows platforms).  - `at_binary_exit`: Run the dtor using `atexit`.  - `link_section`: Run the dtor using a custom link section (unsupported on Apple platforms). |
-| `unsafe` |  Marks a ctor/dtor as unsafe. |
-| `used(linker)` |  Mark generated functions for this `dtor` as `used(linker)`. Requires nightly and `feature(used_with_arg)`. |
+<table><tr><th>Attribute</th><th>Description</th></tr>
+<tr><td><code>anonymous</code></td><td>
+
+ Make the ctor function anonymous.
+
+
+</td></tr>
+<tr><td><code>crate_path = $path : pat</code></td><td>
+
+ Specify a custom crate path for the `dtor` crate. Used when re-exporting the dtor macro.
+
+
+</td></tr>
+<tr><td><code>ctor(link_section = $ctor_link_section_name : literal)</code></td><td>
+
+ Place the initialization function pointer in a custom link section.
+
+
+</td></tr>
+<tr><td><code>link_section = $section : literal</code></td><td>
+
+ Place the destructor function pointer in a custom link section.
+
+
+</td></tr>
+<tr><td><code>method = $method_id : ident</code></td><td>
+
+ Specify the dtor method.
+
+  - `term`: Run the dtor on binary termination. Not recommended as code
+    may be unloaded before the dtor is called.
+  - `unload`: Run the dtor on module unload (library or binary).
+  - `at_module_exit`: Run the dtor using `__cxa_atexit`.
+  - `at_binary_exit`: Run the dtor using `atexit` (unsupported on Windows
+    platforms).
+  - `link_section`: Run the dtor using a custom link section (unsupported
+    on Apple platforms).
+
+
+</td></tr>
+<tr><td><code>unsafe</code></td><td>
+
+ Marks a ctor/dtor as unsafe.
+
+
+</td></tr>
+<tr><td><code>used(linker)</code></td><td>
+
+ Mark generated functions for this `dtor` as `used(linker)`. Requires nightly and `feature(used_with_arg)`.
+
+
+</td></tr>
+</table>
 
 # Defaults
 
@@ -79,7 +123,13 @@ ctor_link_section = "__DATA,__mod_init_func,mod_init_funcs"
 
 #[cfg(any(target_os = "linux", target_os = "android", target_os = "freebsd",
 target_os = "netbsd", target_os = "openbsd", target_os = "dragonfly",
-target_os = "illumos", target_os = "haiku", target_family = "wasm"))]
+target_os = "illumos", target_os = "haiku", target_os = "vxworks", target_os =
+"nto", target_family = "wasm"))]
+ # const _: () = { let
+ctor_link_section = ".init_array"
+ # ; };
+
+#[cfg(target_os = "none")]
  # const _: () = { let
 ctor_link_section = ".init_array"
  # ; };
@@ -91,12 +141,17 @@ ctor_link_section = ".ctors"
 
 #[cfg(all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc")))]
  # const _: () = { let
-ctor_link_section = ".CRT$XPU"
+ctor_link_section = ".CRT$XCU"
  # ; };
 
 #[cfg(all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc"))))]
  # const _: () = { let
 ctor_link_section = ".ctors"
+ # ; };
+
+#[cfg(all(target_os = "aix"))]
+ # const _: () = { let
+ctor_link_section = ()
  # ; };
 
  // default
@@ -110,7 +165,7 @@ ctor_link_section = (compile_error! ("Unsupported target for #[ctor]"))
  # #[cfg(false)] {
 #[cfg(target_vendor = "pc")]
  # const _: () = { let
-default_term_method = at_library_exit
+default_term_method = at_module_exit
  # ; };
 
  // default
@@ -138,7 +193,13 @@ link_section = "__DATA,__mod_term_func,mod_term_funcs"
 
 #[cfg(any(target_os = "linux", target_os = "android", target_os = "freebsd",
 target_os = "netbsd", target_os = "openbsd", target_os = "dragonfly",
-target_os = "illumos", target_os = "haiku", target_family = "wasm"))]
+target_os = "illumos", target_os = "haiku", target_os = "vxworks", target_os =
+"nto", target_family = "wasm"))]
+ # const _: () = { let
+link_section = ".fini_array"
+ # ; };
+
+#[cfg(target_os = "none")]
  # const _: () = { let
 link_section = ".fini_array"
  # ; };
@@ -150,7 +211,7 @@ link_section = ".dtors"
 
 #[cfg(all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc")))]
  # const _: () = { let
-link_section = ".CRT$XTU"
+link_section = ".CRT$XPU"
  # ; };
 
 #[cfg(all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc"))))]
@@ -169,7 +230,12 @@ link_section = (compile_error! ("Unsupported target for #[dtor]"))
  # #[cfg(false)] {
 #[cfg(target_vendor = "apple")]
  # const _: () = { let
-method = at_library_exit
+method = at_module_exit
+ # ; };
+
+#[cfg(target_vendor = "pc")]
+ # const _: () = { let
+method = at_module_exit
  # ; };
 
  // default

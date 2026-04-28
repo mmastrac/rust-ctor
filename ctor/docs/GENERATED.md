@@ -1,42 +1,44 @@
 Module initialization/teardown functions for Rust (like
-`__attribute__((constructor))` in C/C++) for Linux, OSX, FreeBSD, NetBSD,
-Illumos, OpenBSD, DragonFlyBSD, Android, iOS, WASM, and Windows.
+`__attribute__((constructor))` in C/C++) for Linux, OSX, Windows, WASM,
+BSD-likes, and many others.
 
 ## MSRV
 
 For most platforms, this library currently has a MSRV of **Rust >= 1.60**.
-Library versions 0.2.x should work for edition 2018, and 1.0 is planned to be
-released as 2021-only.
 
-Static items are supported, but require **Rust >= 1.70**.
+MSRV for WASM targets is **Rust >= 1.85**.
 
-This library supports WASM targets, and the MSRV for this target is **Rust >=
-1.85**.
+## Lightweight
 
-## Zero Dependency
-
-As of `ctor 0.3.0+`, `ctor` has no dependencies (other than the
-`ctor-proc-macro` crate). The proc macro in this crate calls into the
-declarative macro that does the majority of the work.
+`ctor` has no dependencies other than the `ctor-proc-macro` and `link-section`
+crates. The proc-macro is only used to delegate to the declarative macro and
+should have minimal effect on compilation time.
 
 ## Support
 
 This library works and is regularly tested on Linux, OSX, Windows, and FreeBSD,
-with both `+crt-static` and `-crt-static` where possible. Other platforms are
-supported but not tested as part of the automatic builds. This library will also
-work as expected in both `bin` and `cdylib` outputs, ie: the `ctor` and `dtor`
-will run at executable or library startup/shutdown respectively.
+with both `+crt-static` and `-crt-static` and `bin`/`cdylib` outputs.
 
-## Features
+Contributions to support other platforms or improve testing are welcome.
 
-| Feature                     | Description                                                                                                            | Default |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------- |
-| `std`                       | Enable support for the standard library. This is required for static ctor variables, but not for functions.            | Yes     |
-| `proc_macro`                | Enable support for the proc macro. Required for `#[ctor]` and `#[dtor]` macros, but not for `ctor!` and `dtor!` forms. | Yes     |
-| `dtor`                      | Include `#[dtor]` support in the `ctor` crate.                                                                         | Yes     |
-| `no_warn_on_missing_unsafe` | Do not warn when a ctor or dtor is missing the `unsafe` keyword.                                                       | Yes     |
-| `priority`                  | Enable support for the priority parameter.                                                                             | Yes     |
-| `used_linker`               | Enable support for `#[used(linker)]` (nightly only).                                                                   | No      |
+| OS           | Supported | CI Tested |
+| ------------ | --------- | --------- |
+| Linux        | ✅        | ✅        |
+| OSX          | ✅        | ✅        |
+| Windows      | ✅        | ✅        |
+| FreeBSD      | ✅        | ✅        |
+| WASM         | ✅        | ✅        |
+| NetBSD       | ✅        | -         |
+| OpenBSD      | ✅        | -         |
+| DragonFlyBSD | ✅        | -         |
+| Illumos      | ✅        | -         |
+| Android      | ✅        | -         |
+| iOS          | ✅        | -         |
+| AIX          | ✅        | -         |
+| Haiku        | ✅        | -         |
+| VxWorks      | ✅        | -         |
+| Xtensa       | ✅        | -         |
+| NTO          | ✅        | -         |
 
 ## Warnings
 
@@ -133,42 +135,86 @@ static FOO: extern fn() = {
 };
 ```
 
-The `#[dtor]` macro effectively creates a constructor that calls `libc::atexit`
-with the provided function, ie roughly equivalent to:
-
-```rust,ignore
-#[ctor]
-fn dtor_atexit() {
-    libc::atexit(dtor);
-}
-```
-
 ## Inspiration
 
-Idea inspired by
-[this code](https://github.com/neon-bindings/neon/blob/2277e943a619579c144c1da543874f4a7ec39879/src/lib.rs#L42)
-in the Neon project.
+The idea for `ctor` was originally inspired by the Neon project.
 
 # Crate Features
 
 | Cargo feature | Description |
 | --- | --- |
+| `dtor` |  Enable support for the `#[dtor]` attribute. Deprecated: use the `dtor` crate directly instead. |
 | `no_warn_on_missing_unsafe` |  Do not warn when a ctor or dtor is missing the `unsafe` keyword. |
+| `priority_enabled` |  Enable support for the priority parameter. |
 | `proc_macro` |  Enable support for the proc-macro `#[dtor]` attribute. The declarative form (`dtor!(...)`) is always available. It is recommended that crates re-exporting the `dtor` macro disable this feature and only use the declarative form. |
 | `std` |  Enable support for the standard library. |
 | `used_linker` |  Applies `used(linker)` to all `dtor`-generated functions. Requires nightly and `feature(used_with_arg)`. |
 
-# Attribute Features
+# Macro Attributes
 
-| Attribute | Description |
-| --- | --- |
-| `anonymous` |  Make the ctor function anonymous. |
-| `crate_path = $path : pat` |  Specify a custom crate path for the `ctor` crate. Used when re-exporting the ctor macro. |
-| `link_name_prefix = $link_name_prefix_str : literal` |  Specify a custom link name prefix for the constructor function. If specified, an export with the given prefix will be generated in the form: `<prefix><priority>_<unique_id>` |
-| `link_section = $section : literal` |  Place the destructor function pointer in a custom link section. |
-| `unsafe` |  Marks a ctor/dtor as unsafe. |
-| `priority = $priority_value : tt` |  |
-| `used(linker)` |  Mark generated functions for this `dtor` as `used(linker)`. Requires nightly and `feature(used_with_arg)`. |
+<table><tr><th>Attribute</th><th>Description</th></tr>
+<tr><td><code>anonymous</code></td><td>
+
+ Do not give the constructor a name in the generated code (allows for
+ multiple constructors with the same name). Equivalent to wrapping the
+ constructor in an anonymous const (i.e.: `const _ = { ... };`).
+
+
+</td></tr>
+<tr><td><code>crate_path = $path : pat</code></td><td>
+
+ The path to the `ctor` crate containing the support macros. If you
+ re-export `ctor` items as part of your crate, you can use this to
+ redirect the macro’s output to the correct crate.
+ 
+ Using the declarative [`ctor!`][c] form is
+ preferred over this parameter.
+ 
+ [c]: crate::declarative::ctor!
+
+
+</td></tr>
+<tr><td><code>link_name_prefix = $link_name_prefix_str : literal</code></td><td>
+
+ Specify a custom link name prefix for the constructor function.
+
+ If specified, an export with the given prefix will be generated in the form:
+
+ `<prefix><priority>_<unique_id>`
+
+
+</td></tr>
+<tr><td><code>link_section = $section : literal</code></td><td>
+
+ Place the constructor function pointer in a custom link section. By
+ default, this uses the appropriate platform-specific link section.
+
+
+</td></tr>
+<tr><td><code>unsafe</code></td><td>
+
+ Marks a ctor/dtor as unsafe. Recommended.
+
+
+</td></tr>
+<tr><td><code>priority = $priority_value : tt</code></td><td>
+
+ The priority of the constructor. Higher-`N`-priority constructors are
+ run last. `N` must be between 0 and 999 for ordering guarantees (`N` >=
+ 1000 ordering is platform-defined).
+ 
+ Ordering with respect to constructors without a priority is
+ platform-defined.
+
+
+</td></tr>
+<tr><td><code>used(linker)</code></td><td>
+
+ Mark generated functions for this `dtor` as `used(linker)`. Requires nightly and `feature(used_with_arg)`.
+
+
+</td></tr>
+</table>
 
 # Defaults
 
@@ -197,7 +243,13 @@ link_section = "__DATA,__mod_init_func,mod_init_funcs"
 
 #[cfg(any(target_os = "linux", target_os = "android", target_os = "freebsd",
 target_os = "netbsd", target_os = "openbsd", target_os = "dragonfly",
-target_os = "illumos", target_os = "haiku", target_family = "wasm"))]
+target_os = "illumos", target_os = "haiku", target_os = "vxworks", target_os =
+"nto", target_family = "wasm"))]
+ # const _: () = { let
+link_section = ".init_array"
+ # ; };
+
+#[cfg(target_os = "none")]
  # const _: () = { let
 link_section = ".init_array"
  # ; };

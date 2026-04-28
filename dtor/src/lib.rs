@@ -1,5 +1,7 @@
 #![recursion_limit = "256"]
 #![no_std]
+#![doc = include_str!("../docs/BUILD.md")]
+//! # dtor
 #![doc = include_str!("../docs/GENERATED.md")]
 
 #[cfg(feature = "std")]
