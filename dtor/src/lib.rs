@@ -10,7 +10,6 @@ extern crate std;
 mod macros;
 mod native;
 
-#[cfg(feature = "export_native")]
 pub use native::*;
 
 /// Marks a function as a library/executable destructor. This uses OS-specific

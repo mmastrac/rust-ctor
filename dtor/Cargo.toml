@@ -11,15 +11,11 @@ categories = ["no-std"]
 rust-version = "1.60"
 
 [features]
-default = ["std", "proc_macro", "cxa_atexit", "export_native"]
+default = ["std", "proc_macro"]
 std = []
 proc_macro = ["dep:dtor-proc-macro"]
 used_linker = []
 no_warn_on_missing_unsafe = []
-priority = []
-# If set, use __cxa_atexit instead of atexit
-cxa_atexit = []
-export_native = []
 
 [dependencies]
 dtor-proc-macro = { workspace = true, optional = true }
