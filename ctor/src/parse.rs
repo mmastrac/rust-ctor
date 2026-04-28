@@ -15,6 +15,21 @@ macro_rules! __ctor_parse {
     };
 }
 
+#[macro_export]
+#[doc(hidden)]
+macro_rules! __ctor_parse_internal {
+    ( $features:path, $($input:tt)* ) => {
+        $crate::__perform!(
+            ($($input)*),
+            $crate::__chain[
+                $crate::__parse_item[$features],
+                $crate::__extract_unsafe,
+                $crate::__ctor_parse_impl,
+            ]
+        );
+    };
+}
+
 /// Parse a processed `ctor` item. This is intentionally verbose to avoid
 /// excessive nesting of macro calls in user code.
 #[macro_export]
@@ -618,7 +633,7 @@ macro_rules! __ctor_parse_impl {
             }
 
             $crate::__support::in_section!(
-                #[in_section($crate::__support::explicit_ctor::CTOR)]
+                #[in_section(unsafe, type = (fn(), u16), name = CTOR)]
                 static __CTOR__ENTRY: (fn(), u16) = (__ctor__private, $priority);
             );
         };
