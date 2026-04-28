@@ -3,6 +3,7 @@
 #![no_std]
 #![doc = include_str!("../docs/BUILD.md")]
 //! # ctor
+#![doc = include_str!("../docs/PREAMBLE.md")]
 #![doc = include_str!("../docs/GENERATED.md")]
 
 #[cfg(feature = "std")]

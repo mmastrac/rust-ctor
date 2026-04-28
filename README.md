@@ -1,4 +1,6 @@
-# linkability
+# linktime
+
+Cross-platform libraries for link-time initialization, finalization and collection in Rust.
 
 ![Build Status](https://github.com/mmastrac/rust-ctor/actions/workflows/rust.yml/badge.svg)
 
@@ -67,3 +69,13 @@ fn print_numbers() {
     }
 }
 ```
+
+## Contributing
+
+Contributions are welcome! Please see the [CONTRIBUTING.md](CONTRIBUTING.md) file for details.
+
+## License
+
+These projects are dual-licensed under the Apache License, Version 2.0 and the MIT License.
+
+

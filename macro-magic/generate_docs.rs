@@ -1,4 +1,4 @@
-//! Generate docs for crates.
+//! Generate docs for crates (generated artifacts).
 
 use anyhow::{anyhow, bail, Context, Result};
 use std::fs;
@@ -50,11 +50,17 @@ fn run(cmd: &mut Command) -> Result<()> {
     Ok(())
 }
 
-fn generate_for_crate(root: &Path, spec: &CrateSpec) -> Result<String> {
+fn ensure_jq_available() -> Result<()> {
+    if Command::new("jq").arg("--version").output().is_err() {
+        bail!("`jq` not found on PATH (required to extract rustdoc JSON)");
+    }
+    Ok(())
+}
+
+fn rustdoc_json(root: &Path, spec: &CrateSpec) -> Result<(tempfile::TempDir, PathBuf)> {
     let temp = tempfile::tempdir().context("create tempdir")?;
     let target_dir = temp.path();
 
-    // Generate rustdoc JSON into the temp target dir.
     let mut cargo = Command::new("cargo");
     cargo
         .current_dir(root)
@@ -74,91 +80,121 @@ fn generate_for_crate(root: &Path, spec: &CrateSpec) -> Result<String> {
         bail!("expected rustdoc json at {}", json_path.display());
     }
 
-    // Extract the docs for the __generated_docs module.
-    let module_path = format!("{}::__generated_docs", spec.crate_name);
-    let jq_filter = format!(
-        r#"
-  . as $r
-  | ($r.paths | to_entries[] | select((.value.path | join("::")) == "{module_path}") | .key) as $id
-  | $r.index[$id].docs
-"#
-    );
+    Ok((temp, json_path))
+}
 
+fn jq(json_path: &Path, args: &[&str]) -> Result<String> {
     let output = Command::new("jq")
-        .arg("-r")
-        .arg(jq_filter)
-        .arg(&json_path)
+        .args(args)
+        .arg(json_path)
         .output()
-        .context("run jq")?;
+        .with_context(|| format!("run jq on {}", json_path.display()))?;
 
     if !output.status.success() {
         bail!(
-            "jq failed for {} ({}): {}",
-            spec.package,
+            "jq failed for {}: {}",
             json_path.display(),
             String::from_utf8_lossy(&output.stderr)
         );
     }
 
-    let docs = String::from_utf8(output.stdout).context("jq output not utf-8")?;
-    Ok(docs)
+    String::from_utf8(output.stdout).context("jq output not utf-8")
 }
 
-fn write_outputs(root: &Path, spec: &CrateSpec, docs: &str) -> Result<()> {
-    let crate_dir = root.join(spec.dir);
+fn generated_docs_markdown(json_path: &Path, crate_name: &str) -> Result<String> {
+    let module_path = format!("{crate_name}::__generated_docs");
+    let filter = format!(
+        r#"
+. as $r
+| ($r.paths | to_entries[] | select((.value.path | join("::")) == "{module_path}") | .key) as $id
+| $r.index[$id].docs
+"#
+    );
+    jq(json_path, &["-r", &filter])
+}
 
-    let generated_md = crate_dir.join("docs").join("GENERATED.md");
-    if let Some(parent) = generated_md.parent() {
+fn crate_root_module_json(json_path: &Path) -> Result<String> {
+    // rustdoc JSON contains a `root` item id pointing at the crate root module.
+    // We want the crate-level docs markdown, not the full JSON entry.
+    jq(json_path, &["-r", ".index[(.root | tostring)].docs"])
+}
+
+fn write_generated_docs(root: &Path, spec: &CrateSpec, docs: &str) -> Result<()> {
+    let out = root.join(spec.dir).join("docs").join("GENERATED.md");
+    if let Some(parent) = out.parent() {
         fs::create_dir_all(parent).with_context(|| format!("create {}", parent.display()))?;
     }
-    fs::write(&generated_md, docs).with_context(|| format!("write {}", generated_md.display()))?;
+    fs::write(&out, docs).with_context(|| format!("write {}", out.display()))?;
+    Ok(())
+}
 
-    // For README, strip "invisible" lines from examples:
-    // remove any line where left-trimmed text starts with "# ".
-    let mut readme_docs = docs
+fn write_readme_markdown(root: &Path, spec: &CrateSpec, docs: &str) -> Result<()> {
+    let out = root.join(spec.dir).join("README.md");
+
+    // Strip "invisible" lines from examples: remove any line where left-trimmed text starts with "# ".
+    let mut rendered = docs
         .lines()
         .filter(|line| !line.trim_start().starts_with("# "))
         .collect::<Vec<_>>()
         .join("\n");
     if docs.ends_with('\n') {
-        readme_docs.push('\n');
+        rendered.push('\n');
+    } else if !rendered.ends_with('\n') {
+        rendered.push('\n');
     }
 
-    let readme_md = crate_dir.join("README.md");
-    fs::write(&readme_md, readme_docs).with_context(|| format!("write {}", readme_md.display()))?;
-
+    fs::write(&out, rendered).with_context(|| format!("write {}", out.display()))?;
     Ok(())
 }
 
 fn main() -> Result<()> {
     let root = workspace_root()?;
 
-    // Ensure jq is available early with a friendly message.
-    let jq_ok = Command::new("jq").arg("--version").output();
-    if jq_ok.is_err() {
-        bail!("`jq` not found on PATH (required to extract rustdoc JSON docs)");
-    }
+    ensure_jq_available()?;
 
     for spec in CRATES {
-        let mut docs = generate_for_crate(&root, spec)
-            .with_context(|| format!("generate docs for {}", spec.package))?;
+        // Pass 1: extract just the `__generated_docs` markdown.
+        let (_temp, json_path) =
+            rustdoc_json(&root, spec).with_context(|| format!("rustdoc json for {}", spec.package))?;
+        let docs = generated_docs_markdown(&json_path, spec.crate_name)
+            .with_context(|| format!("extract __generated_docs for {}", spec.package))?;
+        if !docs.trim().is_empty() {
+            write_generated_docs(&root, spec, &docs)
+                .with_context(|| format!("write __generated_docs for {}", spec.package))?;
+        }
 
-        // Some crates may not generate a __generated_docs module yet; in that case
-        // keep existing README content rather than clobbering it with empty output.
-        if docs.trim().is_empty() {
-            let readme_path = root.join(spec.dir).join("README.md");
-            docs = fs::read_to_string(&readme_path)
-                .with_context(|| format!("read fallback {}", readme_path.display()))?;
-            if docs.trim().is_empty() {
-                bail!(
-                    "no docs extracted for {} and fallback README is empty",
-                    spec.package
-                );
+        // Pass 2: rerun rustdoc JSON and write the crate root docs markdown into README.
+        let (_temp, json_path) =
+            rustdoc_json(&root, spec).with_context(|| format!("rustdoc json for {}", spec.package))?;
+        let mut root_docs = crate_root_module_json(&json_path)
+            .with_context(|| format!("extract crate root docs for {}", spec.package))?;
+
+        // Some crates may (directly or indirectly) end up with JSON-like crate docs if
+        // the docs were sourced from a previously generated artifact. Avoid writing
+        // JSON into README.
+        if root_docs.trim_start().starts_with('{') {
+            // Prefer `__generated_docs` markdown if present.
+            if !docs.trim().is_empty() {
+                root_docs = docs.clone();
+            } else {
+                // As a last resort, if the crate has a `docs/PREAMBLE.md` (common when
+                // the crate root uses `#![doc = include_str!(...)]`), use that.
+                let preamble = root
+                    .join(spec.dir)
+                    .join("docs")
+                    .join("PREAMBLE.md");
+                if preamble.exists() {
+                    root_docs = fs::read_to_string(&preamble).with_context(|| {
+                        format!("read fallback preamble {}", preamble.display())
+                    })?;
+                }
             }
         }
 
-        write_outputs(&root, spec, &docs)
-            .with_context(|| format!("write docs for {}", spec.package))?;
+        if !root_docs.trim().is_empty() {
+            write_readme_markdown(&root, spec, &root_docs)
+                .with_context(|| format!("write README markdown for {}", spec.package))?;
+        }
     }
 
     Ok(())

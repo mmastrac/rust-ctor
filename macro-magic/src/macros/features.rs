@@ -738,7 +738,6 @@ macro_rules! __make_docs {
         )*
     )) => {
         $crate::__make_docs!(@defaults accum=(
-            #![doc = include_str!("../docs/PREAMBLE.md")]
             #![doc = "\n\n# Crate Features\n\n| Cargo feature | Description |\n| --- | --- |"]
             $(
                 $(
