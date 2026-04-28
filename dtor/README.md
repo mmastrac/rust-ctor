@@ -35,18 +35,65 @@ fn shutdown() {
 
 # Platform Support
 
-| Platform | Link Section | at_binary_exit | at_module_exit |
-| --- | --- | --- | --- |
-| Linux | `.fini_array` | Yes (`atexit`) | Yes (`__cxa_atexit`) |
-| MacOS | `.mod_term_func` <sup><sup>🍎</sup></sup> | Yes (`atexit`) | Yes (`__cxa_atexit`) |
-| Windows | `.CRT$XPU` <sup><sup>🪟</sup></sup> | No | Yes (`atexit`) |
-| AIX | No <sup><sup>🔵</sup></sup> | Yes | Yes |
-| Other POSIX-like platforms | `.fini_array`/`.dtors` | Yes (`atexit`) | Yes (`__cxa_atexit`) |
+| Platform                   | Link Section                              | at_binary_exit | at_module_exit       |
+| -------------------------- | ----------------------------------------- | -------------- | -------------------- |
+| Linux                      | `.fini_array`                             | Yes (`atexit`) | Yes (`__cxa_atexit`) |
+| MacOS                      | `.mod_term_func` <sup><sup>🍎</sup></sup> | Yes (`atexit`) | Yes (`__cxa_atexit`) |
+| Windows                    | `.CRT$XPU` <sup><sup>🪟</sup></sup>       | No             | Yes (`atexit`)       |
+| AIX                        | No <sup><sup>🔵</sup></sup>               | Yes            | Yes                  |
+| Other POSIX-like platforms | `.fini_array`/`.dtors`                    | Yes (`atexit`) | Yes (`__cxa_atexit`) |
 
 Notes:
- - <sup><sup>🍎</sup></sup>: Not recommended. Apple platforms no longer call `mod_term_func` functions.
- - <sup><sup>🪟</sup></sup>: Not recommended. Windows platforms may not reliably call functions in link sections, unless a binary is built with a static CRT.
- - <sup><sup>🔵</sup></sup>: Link sections are not supported on AIX, but the platform calls functions with the prefix `__sinit` and `__sterm` at startup and shutdown respectively.
+
+- <sup><sup>🍎</sup></sup> Not recommended. Apple platforms no longer call
+  `mod_term_func` functions.
+- <sup><sup>🪟</sup></sup> Not recommended. Windows platforms may not reliably
+  call functions in link sections, unless a binary is built with a static CRT.
+- <sup><sup>🔵</sup></sup> Link sections are not supported on AIX, but the
+  platform calls functions with the prefix `__sinit` and `__sterm` at startup
+  and shutdown respectively.
+
+# Shutdown Method (`#[dtor(method = ...)]`)
+
+The `#[dtor]` macro supports multiple registration strategies via
+`#[dtor(method = ...)]`. The best choice is platform-dependent:
+
+- `#[dtor]` (no method specified): Use the platform's most reliable method:
+  `at_module_exit` on Windows and Apple platforms, and `linker` on others.
+- `unload`: Run on _module unload_ (library unload or process exit) using the
+  platform's default unload method.
+- `term`: Run on _process termination only_ using the platform's default
+  termination method. Not recommended: code may be unloaded before the dtor
+  runs.
+- `at_module_exit`: Register using `__cxa_atexit` (non-Windows) or `atexit`
+  (Windows) so the dtor runs when the module unloads.
+- `at_binary_exit`: Register to run at process exit (unsupported on Windows).
+- `linker`: Register using the platform's linker mechanism (`link_section` on
+  all platforms with the exception of `export_name_prefix` on AIX). Unsupported
+  on Apple platforms.
+
+Default:
+
+- Apple and Windows default to `at_module_exit`
+- Most other platforms default to `linker`
+
+Examples:
+
+```rust
+use dtor::dtor;
+/// Use `at_module_exit` on all platforms
+#[dtor(unsafe, method = at_module_exit)]
+fn shutdown() {}
+```
+
+```rust
+use dtor::dtor;
+
+/// Use `link_section` with a section name of `.dtors` on most platforms,
+/// and `export_name_prefix` on AIX
+#[dtor(unsafe, method = linker, link_section = ".dtors")]
+fn shutdown() {}
+```
 
 # Under the Hood
 
