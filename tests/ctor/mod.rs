@@ -163,7 +163,10 @@ $ cargo build --lib --examples --quiet
 $ find $CARGO_TARGET_DIR
 *
 $ cargo run --example dylib_load --quiet
-! + ctor bin
+unordered {
+    ! + Foo::ctor
+    ! + ctor bin
+}
 ! ++ main start
 unordered {
     ! +++ ctor STATIC_INT
@@ -173,7 +176,10 @@ unordered {
     ! -- main end
     ! --- dtor lib
 }
-! - dtor bin
+unordered {
+    ! - Foo::dtor
+    ! - dtor bin
+}
 "#
 );
 
