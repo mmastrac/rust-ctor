@@ -70,24 +70,6 @@ jobs:
         include: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
     env:
       CACHE_KEY: 2
-      TARGET: ${{ matrix.target }}
-      TOOLCHAIN: ${{ matrix.rust-toolchain }}
-      CLIPPY_LINTS: >-
-        -D clippy::all
-        -D deprecated-safe
-        -D future-incompatible
-        -D keyword-idents
-        -D let-underscore
-        -D nonstandard-style
-        -D refining-impl-trait
-        -D rust-2018-compatibility
-        -D rust-2018-idioms
-        -D rust-2021-compatibility
-        -D rust-2024-compatibility
-        -D unused
-        -D unsafe_code
-        -D unreachable-pub
-        -D missing-docs
 
     steps:
     - uses: actions/checkout@v6
@@ -98,17 +80,6 @@ jobs:
       with:
         tool: ${{ matrix.needs }}
   
-    # Miri fails to install on stable Windows Rust?
-    #
-    # info: latest update on 2026-04-16 for version 1.95.0 (59807616e 2026-04-14)
-    # error: component 'miri' for target 'x86_64-pc-windows-msvc' is unavailable for download for channel 'stable'
-    # One or many components listed above might have been permanently removed from newer versions
-    - name: Uninstall Stable Rust on Windows if not using stable
-      if: ${{ matrix.rust-toolchain != 'stable' }}
-      shell: powershell
-      run: |
-        rustup toolchain uninstall stable
-
     - name: Install Rust toolchain (${{ matrix.rust-toolchain }})
       uses: actions-rust-lang/setup-rust-toolchain@v1
       with:
@@ -136,6 +107,25 @@ jobs:
 
     - name: Run ${{ matrix.job }}
       shell: bash
+      env:
+        TOOLCHAIN: ${{ matrix.rust-toolchain }}
+        TARGET: ${{ matrix.target }}
+        CLIPPY_LINTS: >-
+          -D clippy::all
+          -D deprecated-safe
+          -D future-incompatible
+          -D keyword-idents
+          -D let-underscore
+          -D nonstandard-style
+          -D refining-impl-trait
+          -D rust-2018-compatibility
+          -D rust-2018-idioms
+          -D rust-2021-compatibility
+          -D rust-2024-compatibility
+          -D unused
+          -D unsafe_code
+          -D unreachable-pub
+          -D missing-docs
       run: ".github/jobs/${{ matrix.job }}.sh"
 
   vmactions:
