@@ -14,6 +14,9 @@ mod parse;
 mod priority;
 pub mod statics;
 
+#[doc = include_str!("../docs/LIFE_BEFORE_MAIN.md")]
+pub mod life_before_main {}
+
 #[doc(hidden)]
 #[allow(unused)]
 pub mod __support {

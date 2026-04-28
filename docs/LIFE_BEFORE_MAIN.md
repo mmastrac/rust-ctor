@@ -1,4 +1,17 @@
-# Life-before-main and Other Link-Time Hazards
+# Life-Before-Main and Other Link-Time Hazards
+
+The linker is a powerful tool that can be used to perform a number of tricks,
+but you, the developer, should be aware of the hazards that come with this
+low-level control.
+
+Rust is a systems programming language that is designed to be safe, and
+link-time tools may bend or break some safety guarantees.
+
+ - [Rust’s model vs `ctor`/`dtor`](#rusts-model-vs-ctordtor)
+    - [Panic handling](#panic-handling)
+    - [I/O and the Standard Library](#io-and-the-standard-library)
+    - [Aggressive Linker Garbage Collection](#aggressive-linker-garbage-collection)
+ - [cdylib lifecycle](#cdylib-lifecycle)
 
 ## Rust’s model vs `ctor`/`dtor`
 
@@ -19,6 +32,8 @@ catchable, or may even be undefined behavior
 ([🦀 #97049](https://github.com/rust-lang/rust/issues/97049),
 [🦀 #107381](https://github.com/rust-lang/rust/issues/107381),
 [🦀 #86030](https://github.com/rust-lang/rust/issues/86030)).
+
+_References_
 
 [🦀 #97049](https://github.com/rust-lang/rust/issues/97049) — `rust-lang/rust`; Miri and discussion of panicking inside `#[start]` before the runtime can catch unwinding.
 
@@ -41,6 +56,8 @@ The standard library does not make any particular guarantees about the state of
 the system after `main` exits or before it starts and code that works in one
 version of Rust may or may not work in another.
 
+_References_
+
 [🦀 #29488](https://github.com/rust-lang/rust/issues/29488) — `rust-lang/rust`; `println!` panics from `Drop` / TLS (`cannot access stdout during shutdown`).
 
 [SO #35980148](https://stackoverflow.com/questions/35980148/why-does-an-atexit-handler-panic-when-it-accesses-stdout) — `println!` / stdout access from a libc `atexit` handler vs Rust runtime teardown order.
@@ -60,6 +77,8 @@ Rust and `#![feature(used_with_arg)]`.
 Often a **`use` of the module** that contains the missing registration is enough
 for the linker to retain the code.
 
+_References_
+
 [rust-ctor #280](https://github.com/mmastrac/rust-ctor/issues/280) — `mmastrac/rust-ctor`; linker / LTO stripping ctor registrations.
 
 [🦀 #99721](https://github.com/rust-lang/rust/issues/99721) — `rust-lang/rust`; rustc / linkage behavior relevant to similar stripping (`used`, linker GC).
@@ -74,11 +93,13 @@ behavior can be deferred until **process exit**. The rules are described as
 arcane. **Thread-local storage on macOS** is called out as influencing this; see
 [this comment on 🦀 #28794](https://github.com/rust-lang/rust/issues/28794#issuecomment-368693049).
 
-[🦀 #28794 (comment)](https://github.com/rust-lang/rust/issues/28794#issuecomment-368693049) — `rust-lang/rust`; thread-local storage and dynamic-library unload behavior on macOS.
-
 Care should be taken to ensure that the `#[dtor]` functions are called before
 the library is unloaded. While the `#[dtor]` macro supports registering
 "termination" functions - which are called when the main binary process
 terminates - inside of `cdylib`s, it is not recommended to use them as the code
 that will perform the cleanup may have been unloaded and unmapped from memory,
 causing random crashes.
+
+_References_
+
+[🦀 #28794 (comment)](https://github.com/rust-lang/rust/issues/28794#issuecomment-368693049) — `rust-lang/rust`; thread-local storage and dynamic-library unload behavior on macOS.

@@ -55,21 +55,7 @@ explicitly subverts that. The code that runs in the `ctor` and `dtor` functions
 should be careful to limit itself to `libc` functions and code that does not
 rely on Rust's stdlib services.
 
-For example, using stdout in a `dtor` function is a guaranteed panic. Consider
-using the [`libc-print` crate](https://crates.io/crates/libc-print) for output
-to stderr/stdout during `#[ctor]` and `#[dtor]` methods. Other issues may
-involve signal processing or panic handling in that early code.
-
-Some linker configurations may cause `#[ctor]` and `#[dtor]` functions to be
-stripped from the final binary. The `used_linker` feature may prevent this, but
-is not supported outside of nightly Rust. Often, a simple `use module_with_ctor`
-is sufficient to ensure the linker does not strip the function.
-
-On some platforms, unloading of shared libraries may not actually happen until
-process exit, even if explicitly unloaded. The rules for this are arcane and
-difficult to understand. For example, thread-local storage on OSX will affect
-this (see
-[this comment](https://github.com/rust-lang/rust/issues/28794#issuecomment-368693049)).
+See [`::life_before_main`](crate::life_before_main) for more information.
 
 ## Usage
 
