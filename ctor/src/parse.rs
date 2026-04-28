@@ -610,6 +610,7 @@ macro_rules! __ctor_parse_impl {
      ) body=$body:tt ) => {
         const _: () = {
             #[allow(unsafe_code)]
+            #[cfg_attr(clippy, allow(unknown_lints, unsafe_attr_outside_unsafe))]
             #[link_section = $($link_section)*]
             #$used_linker_meta
             static __CTOR_PRIVATE_REF: unsafe extern "C" fn() = {
