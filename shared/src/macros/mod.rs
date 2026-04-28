@@ -373,7 +373,7 @@ macro_rules! __ctor_entry {
             // AIX requires special handling
             #[cfg(target_os = "aix")]
             $crate::__support::ctor_entry!(aix, features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=$($unsafe)?, item=fn $ident() $block);
-            
+
             #[cfg(not(target_os = "aix"))]
             $crate::__support::ctor_entry!(named, features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=$($unsafe)?, item=fn $ident() $block);
         });
@@ -382,7 +382,7 @@ macro_rules! __ctor_entry {
         const _: () = {
             #[cfg(target_os = "aix")]
             $crate::__support::ctor_entry!(aix, features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=$($unsafe)?, item=fn $ident() $block);
-            
+
             #[cfg(not(target_os = "aix"))]
             $crate::__support::ctor_entry!(named, features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=$($unsafe)?, item=fn $ident() $block);
         };
@@ -537,7 +537,7 @@ macro_rules! __dtor_entry {
             // AIX requires special handling
             #[cfg(target_os = "aix")]
             $crate::__support::dtor_entry!(aix, features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=$($unsafe)?, item=fn $ident() $block);
-            
+
             #[cfg(not(target_os = "aix"))]
             $crate::__support::dtor_entry!(named, features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=$($unsafe)?, item=fn $ident() $block);
         });
@@ -546,7 +546,7 @@ macro_rules! __dtor_entry {
         const _: () = {
             #[cfg(target_os = "aix")]
             $crate::__support::dtor_entry!(aix, features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=$($unsafe)?, item=fn $ident() $block);
-            
+
             #[cfg(not(target_os = "aix"))]
             $crate::__support::dtor_entry!(named, features=$features, imeta=$(#[$fnmeta])*, vis=[$($vis)*], unsafe=$($unsafe)?, item=fn $ident() $block);
         };
