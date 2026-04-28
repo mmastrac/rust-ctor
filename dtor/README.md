@@ -70,15 +70,25 @@ fn dtor_atexit() {
 
 
 </td></tr>
+<tr><td><code>ctor(export_name_prefix = $ctor_export_name_prefix_str : literal)</code></td><td>
+
+ Specify a custom export name prefix for the constructor function.
+
+ If specified, an export with the given prefix will be generated in the form:
+
+ `<prefix>_<unique_id>`
+
+
+</td></tr>
 <tr><td><code>ctor(link_section = $ctor_link_section_name : literal)</code></td><td>
 
  Place the initialization function pointer in a custom link section.
 
 
 </td></tr>
-<tr><td><code>link_name_prefix = $link_name_prefix_str : literal</code></td><td>
+<tr><td><code>export_name_prefix = $export_name_prefix_str : literal</code></td><td>
 
- Specify a custom link name prefix for the destructor function.
+ Specify a custom export name prefix for the destructor function.
 
  If specified, an export with the given prefix will be generated in the form:
 
@@ -121,6 +131,16 @@ fn dtor_atexit() {
 </td></tr>
 </table>
 
+
+## `ctor_export_name_prefix`
+
+ ```rust
+#[cfg(target_os = "aix")]
+ctor_export_name_prefix = "__sinit80000000"
+
+ // default
+ctor_export_name_prefix = ()
+ ```
 
 ## `ctor_link_section`
 
@@ -170,14 +190,14 @@ default_term_method = at_binary_exit
 default_unload_method = at_module_exit
  ```
 
-## `link_name_prefix`
+## `export_name_prefix`
 
  ```rust
 #[cfg(target_os = "aix")]
-link_name_prefix = "__sterm80000000_"
+export_name_prefix = "__sterm80000000"
 
  // default
-link_name_prefix = ()
+export_name_prefix = ()
  ```
 
 ## `link_section`

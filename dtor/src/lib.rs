@@ -91,6 +91,19 @@ __declare_features!(
         attr: [(crate_path = $path:pat) => (($path))];
         example: "crate_path = ::path::to::dtor::crate";
     };
+    /// Specify a custom export name prefix for the constructor function.
+    ///
+    /// If specified, an export with the given prefix will be generated in the form:
+    ///
+    /// `<prefix>_<unique_id>`
+    ctor_export_name_prefix {
+        attr: [(ctor(export_name_prefix = $ctor_export_name_prefix_str:literal)) => ($ctor_export_name_prefix_str)];
+        example: "ctor(export_name_prefix = \"ctor_\")";
+        default {
+            (target_os = "aix") => "__sinit80000000",
+            _ => (),
+        }
+    };
     /// Place the initialization function pointer in a custom link section.
     ctor_link_section {
         attr: [(ctor(link_section = $ctor_link_section_name:literal)) => ($ctor_link_section_name)];
@@ -120,7 +133,7 @@ __declare_features!(
             (all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc"))) => ".CRT$XCU",
             // ... except GNU
             (all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc")))) => ".ctors",
-            (all(target_os = "aix")) => (), // AIX uses link_name_prefix
+            (all(target_os = "aix")) => (), // AIX uses export_name_prefix
             _ => (compile_error!("Unsupported target for #[ctor]"))
         }
     };
@@ -147,16 +160,16 @@ __declare_features!(
             _ => at_module_exit,
         }
     };
-    /// Specify a custom link name prefix for the destructor function.
+    /// Specify a custom export name prefix for the destructor function.
     ///
     /// If specified, an export with the given prefix will be generated in the form:
     ///
     /// `<prefix>_<unique_id>`
-    link_name_prefix {
-        attr: [(link_name_prefix = $link_name_prefix_str:literal) => ($link_name_prefix_str)];
-        example: "link_name_prefix = \"ctor_\"";
+    export_name_prefix {
+        attr: [(export_name_prefix = $export_name_prefix_str:literal) => ($export_name_prefix_str)];
+        example: "export_name_prefix = \"ctor_\"";
         default {
-            (target_os = "aix") => "__sterm80000000_",
+            (target_os = "aix") => "__sterm80000000",
             _ => (),
         }
     };
@@ -189,7 +202,7 @@ __declare_features!(
             (all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc"))) => ".CRT$XPU",
             // ... except GNU
             (all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc")))) => ".dtors",
-            (all(target_os = "aix")) => (), // AIX uses link_name_prefix
+            (all(target_os = "aix")) => (), // AIX uses export_name_prefix
             _ => (compile_error!("Unsupported target for #[dtor]"))
         }
     };

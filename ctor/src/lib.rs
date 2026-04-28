@@ -294,14 +294,14 @@ __declare_features!(
     dtor {
         feature: "dtor";
     };
-    /// Specify a custom link name prefix for the constructor function.
+    /// Specify a custom export name prefix for the constructor function.
     ///
     /// If specified, an export with the given prefix will be generated in the form:
     ///
     /// `<prefix><priority>_<unique_id>`
-    link_name_prefix {
-        attr: [(link_name_prefix = $link_name_prefix_str:literal) => ($link_name_prefix_str)];
-        example: "link_name_prefix = \"ctor_\"";
+    export_name_prefix {
+        attr: [(export_name_prefix = $export_name_prefix_str:literal) => ($export_name_prefix_str)];
+        example: "export_name_prefix = \"ctor_\"";
         default {
             (target_os = "aix") => "__sinit",
             _ => (),
@@ -338,7 +338,7 @@ __declare_features!(
             (all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc"))) => ".CRT$XCU",
             // ... except GNU
             (all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc")))) => ".ctors",
-            (all(target_os = "aix")) => (), // AIX uses link_name_prefix
+            (all(target_os = "aix")) => (), // AIX uses export_name_prefix
             _ => (compile_error!("Unsupported target for #[ctor]"))
         }
     };

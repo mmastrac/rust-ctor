@@ -180,9 +180,9 @@ The idea for `ctor` was originally inspired by the Neon project.
 
 
 </td></tr>
-<tr><td><code>link_name_prefix = $link_name_prefix_str : literal</code></td><td>
+<tr><td><code>export_name_prefix = $export_name_prefix_str : literal</code></td><td>
 
- Specify a custom link name prefix for the constructor function.
+ Specify a custom export name prefix for the constructor function.
 
  If specified, an export with the given prefix will be generated in the form:
 
@@ -223,14 +223,14 @@ The idea for `ctor` was originally inspired by the Neon project.
 </table>
 
 
-## `link_name_prefix`
+## `export_name_prefix`
 
  ```rust
 #[cfg(target_os = "aix")]
-link_name_prefix = "__sinit"
+export_name_prefix = "__sinit"
 
  // default
-link_name_prefix = ()
+export_name_prefix = ()
  ```
 
 ## `link_section`

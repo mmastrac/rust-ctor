@@ -41,7 +41,7 @@ macro_rules! __ctor_parse_impl {
             anonymous = $anonymous:tt,
             crate_path = $crate_path:tt,
             dtor = $dtor:tt,
-            link_name_prefix = $link_name_prefix:tt,
+            export_name_prefix = $export_name_prefix:tt,
             link_section = $link_section:tt,
             no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
             priority = $priority:tt,
@@ -59,7 +59,7 @@ macro_rules! __ctor_parse_impl {
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
                 anonymous = $anonymous,
-                link_name_prefix = $link_name_prefix,
+                export_name_prefix = $export_name_prefix,
                 link_section = $link_section,
                 no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
                 priority = $priority,
@@ -83,7 +83,7 @@ macro_rules! __ctor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             anonymous = $anonymous:tt,
-            link_name_prefix = $link_name_prefix:tt,
+            export_name_prefix = $export_name_prefix:tt,
             link_section = $link_section:tt,
             no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
             priority = $priority:tt,
@@ -99,7 +99,7 @@ macro_rules! __ctor_parse_impl {
             features = (
                 anonymous = $anonymous,
                 link_name = $name,
-                link_name_prefix = $link_name_prefix,
+                export_name_prefix = $export_name_prefix,
                 link_section = $link_section,
                 no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
                 priority = $priority,
@@ -116,7 +116,7 @@ macro_rules! __ctor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             anonymous = $anonymous:tt,
-            link_name_prefix = $link_name_prefix:tt,
+            export_name_prefix = $export_name_prefix:tt,
             link_section = $link_section:tt,
             no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
             priority = $priority:tt,
@@ -132,7 +132,7 @@ macro_rules! __ctor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             anonymous = $anonymous:tt,
-            link_name_prefix = $link_name_prefix:tt,
+            export_name_prefix = $export_name_prefix:tt,
             link_section = $link_section:tt,
             no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
             priority = $priority:tt,
@@ -148,7 +148,7 @@ macro_rules! __ctor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             anonymous = $anonymous:tt,
-            link_name_prefix = $link_name_prefix:tt,
+            export_name_prefix = $export_name_prefix:tt,
             link_section = $link_section:tt,
             no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
             priority = $priority:tt,
@@ -164,7 +164,7 @@ macro_rules! __ctor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             anonymous = $anonymous:tt,
-            link_name_prefix = $link_name_prefix:tt,
+            export_name_prefix = $export_name_prefix:tt,
             link_section = $link_section:tt,
             no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
             priority = $priority:tt,
@@ -178,7 +178,7 @@ macro_rules! __ctor_parse_impl {
             features = (
                 anonymous = $anonymous,
                 link_name = $ident,
-                link_name_prefix = $link_name_prefix,
+                export_name_prefix = $export_name_prefix,
                 link_section = $link_section,
                 no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
                 priority = $priority,
@@ -193,7 +193,7 @@ macro_rules! __ctor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             anonymous = $anonymous:tt,
-            link_name_prefix = $link_name_prefix:tt,
+            export_name_prefix = $export_name_prefix:tt,
             link_section = $link_section:tt,
             no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
             priority = $priority:tt,
@@ -218,7 +218,7 @@ macro_rules! __ctor_parse_impl {
         features = (
             anonymous = $anonymous:tt,
             link_name = $link_name:tt,
-            link_name_prefix = $link_name_prefix:tt,
+            export_name_prefix = $export_name_prefix:tt,
             link_section = $link_section:tt,
             no_warn_on_missing_unsafe = (),
             priority = $priority:tt,
@@ -244,7 +244,7 @@ macro_rules! __ctor_parse_impl {
             features = (
                 anonymous = $anonymous,
                 link_name = $link_name,
-                link_name_prefix = $link_name_prefix,
+                export_name_prefix = $export_name_prefix,
                 link_section = $link_section,
                 priority = $priority,
                 used_linker = $used_linker,
@@ -259,7 +259,7 @@ macro_rules! __ctor_parse_impl {
         features = (
             anonymous = $anonymous:tt,
             link_name = $link_name:tt,
-            link_name_prefix = $link_name_prefix:tt,
+            export_name_prefix = $export_name_prefix:tt,
             link_section = $link_section:tt,
             no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
             priority = $priority:tt,
@@ -273,7 +273,7 @@ macro_rules! __ctor_parse_impl {
             features = (
                 anonymous = $anonymous,
                 link_name = $link_name,
-                link_name_prefix = $link_name_prefix,
+                export_name_prefix = $export_name_prefix,
                 link_section = $link_section,
                 priority = $priority,
                 used_linker = $used_linker,
@@ -289,7 +289,7 @@ macro_rules! __ctor_parse_impl {
         features = (
             anonymous = (),
             link_name = $link_name:tt,
-            link_name_prefix = $link_name_prefix:tt,
+            export_name_prefix = $export_name_prefix:tt,
             link_section = $link_section:tt,
             priority = $priority:tt,
             used_linker = $used_linker:tt,
@@ -301,7 +301,7 @@ macro_rules! __ctor_parse_impl {
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
                 link_name = $link_name,
-                link_name_prefix = $link_name_prefix,
+                export_name_prefix = $export_name_prefix,
                 link_section = $link_section,
                 priority = $priority,
                 used_linker = $used_linker,
@@ -315,7 +315,7 @@ macro_rules! __ctor_parse_impl {
         features = (
             anonymous = anonymous,
             link_name = $link_name:tt,
-            link_name_prefix = $link_name_prefix:tt,
+            export_name_prefix = $export_name_prefix:tt,
             link_section = $link_section:tt,
             priority = $priority:tt,
             used_linker = $used_linker:tt,
@@ -328,7 +328,7 @@ macro_rules! __ctor_parse_impl {
             $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
                 features = (
                     link_name = $link_name,
-                    link_name_prefix = $link_name_prefix,
+                    export_name_prefix = $export_name_prefix,
                     link_section = $link_section,
                     priority = $priority,
                     used_linker = $used_linker,
@@ -344,7 +344,7 @@ macro_rules! __ctor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             link_name = $link_name:tt,
-            link_name_prefix = $link_name_prefix:tt,
+            export_name_prefix = $export_name_prefix:tt,
             link_section = $link_section:tt,
             priority = $priority:tt,
             used_linker = (),
@@ -356,7 +356,7 @@ macro_rules! __ctor_parse_impl {
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
                 link_name = $link_name,
-                link_name_prefix = $link_name_prefix,
+                export_name_prefix = $export_name_prefix,
                 link_section = $link_section,
                 priority = $priority,
                 used_linker_meta = (#[used]),
@@ -370,7 +370,7 @@ macro_rules! __ctor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             link_name = $link_name:tt,
-            link_name_prefix = $link_name_prefix:tt,
+            export_name_prefix = $export_name_prefix:tt,
             link_section = $link_section:tt,
             priority = $priority:tt,
             used_linker = used_linker,
@@ -382,7 +382,7 @@ macro_rules! __ctor_parse_impl {
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
                 link_name = $link_name,
-                link_name_prefix = $link_name_prefix,
+                export_name_prefix = $export_name_prefix,
                 link_section = $link_section,
                 priority = $priority,
                 used_linker_meta = (#[used(linker)]),
@@ -399,7 +399,7 @@ macro_rules! __ctor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             link_name = $link_name:tt,
-            link_name_prefix = (),
+            export_name_prefix = (),
             link_section = $link_section:tt,
             priority = $priority:tt,
             used_linker_meta = $used_linker_meta:tt,
@@ -424,7 +424,7 @@ macro_rules! __ctor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             link_name = $link_name:tt,
-            link_name_prefix = $link_name_prefix:tt,
+            export_name_prefix = $export_name_prefix:tt,
             link_section = $link_section:tt,
             priority = (),
             used_linker_meta = $used_linker_meta:tt,
@@ -435,7 +435,7 @@ macro_rules! __ctor_parse_impl {
     ) ) => {
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
-                link_name = (concat!($link_name_prefix,
+                link_name = (concat!($export_name_prefix,
                     "0_",
                     env!("CARGO_PKG_NAME"), "_",
                     ::core::module_path!(), "_",
@@ -454,7 +454,7 @@ macro_rules! __ctor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             link_name = $link_name:tt,
-            link_name_prefix = $link_name_prefix:tt,
+            export_name_prefix = $export_name_prefix:tt,
             link_section = $link_section:tt,
             priority = $priority:tt,
             used_linker_meta = $used_linker_meta:tt,
@@ -465,7 +465,7 @@ macro_rules! __ctor_parse_impl {
     ) ) => {
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
-                link_name = (concat!($link_name_prefix,
+                link_name = (concat!($export_name_prefix,
                     $priority, "_",
                     env!("CARGO_PKG_NAME"), "_",
                     ::core::module_path!(), "_",

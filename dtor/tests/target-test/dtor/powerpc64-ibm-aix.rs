@@ -4,7 +4,8 @@ fn foo() {
     const _: () =
         {
             #[no_mangle]
-            #[export_name = "__sterm80000000_expand_probe_foo_L5C1"]
+            #[export_name =
+            "__sterm80000000_expand_probe_expand_probe_foo_L5C1"]
             extern "C" fn __dtor_private() { { foo() } }
         };
 }

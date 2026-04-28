@@ -25,10 +25,11 @@ macro_rules! __dtor_parse_impl {
         features = (
             anonymous = $anonymous:tt,
             crate_path = $crate_path:tt,
+            ctor_export_name_prefix = $ctor_export_name_prefix:tt,
             ctor_link_section = $ctor_link_section:tt,
             default_term_method = $default_term_method:tt,
             default_unload_method = $default_unload_method:tt,
-            link_name_prefix = $link_name_prefix:tt,
+            export_name_prefix = $export_name_prefix:tt,
             link_section = $link_section:tt,
             method = $method:tt,
             no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
@@ -47,10 +48,11 @@ macro_rules! __dtor_parse_impl {
         $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
                 anonymous = $anonymous,
+                ctor_export_name_prefix = $ctor_export_name_prefix,
                 ctor_link_section = $ctor_link_section,
                 default_term_method = $default_term_method,
                 default_unload_method = $default_unload_method,
-                link_name_prefix = $link_name_prefix,
+                export_name_prefix = $export_name_prefix,
                 link_section = $link_section,
                 method = $method,
                 no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
@@ -79,10 +81,11 @@ macro_rules! __dtor_parse_impl {
         features = (
             anonymous = $anonymous:tt,
             crate_path = $crate_path:tt,
+            ctor_export_name_prefix = $ctor_export_name_prefix:tt,
             ctor_link_section = $ctor_link_section:tt,
             default_term_method = $default_term_method:tt,
             default_unload_method = $default_unload_method:tt,
-            link_name_prefix = $link_name_prefix:tt,
+            export_name_prefix = $export_name_prefix:tt,
             link_section = $link_section:tt,
             method = $method:tt,
             no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
@@ -106,10 +109,11 @@ macro_rules! __dtor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             anonymous = $anonymous:tt,
+            ctor_export_name_prefix = $ctor_export_name_prefix:tt,
             ctor_link_section = $ctor_link_section:tt,
             default_term_method = $default_term_method:tt,
             default_unload_method = $default_unload_method:tt,
-            link_name_prefix = $link_name_prefix:tt,
+            export_name_prefix = $export_name_prefix:tt,
             link_section = $link_section:tt,
             method = term,
             no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
@@ -123,7 +127,7 @@ macro_rules! __dtor_parse_impl {
         $crate::__dtor_parse_impl(@entry next=$next[$next_args], input=(
             features = (
                 anonymous = $anonymous,
-                method = ($default_term_method $ctor_link_section $link_name_prefix $link_section),
+                method = ($default_term_method $ctor_export_name_prefix $ctor_link_section $export_name_prefix $link_section),
                 no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
                 used_linker = $used_linker,
             ),
@@ -137,10 +141,11 @@ macro_rules! __dtor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             anonymous = $anonymous:tt,
+            ctor_export_name_prefix = $ctor_export_name_prefix:tt,
             ctor_link_section = $ctor_link_section:tt,
             default_term_method = $default_term_method:tt,
             default_unload_method = $default_unload_method:tt,
-            link_name_prefix = $link_name_prefix:tt,
+            export_name_prefix = $export_name_prefix:tt,
             link_section = $link_section:tt,
             method = unload,
             no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
@@ -154,7 +159,7 @@ macro_rules! __dtor_parse_impl {
         $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
                 anonymous = $anonymous,
-                method = ($default_unload_method $ctor_link_section $link_name_prefix $link_section),
+                method = ($default_unload_method $ctor_export_name_prefix $ctor_link_section $export_name_prefix $link_section),
                 no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
                 used_linker = $used_linker,
             ),
@@ -168,10 +173,11 @@ macro_rules! __dtor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             anonymous = $anonymous:tt,
+            ctor_export_name_prefix = $ctor_export_name_prefix:tt,
             ctor_link_section = $ctor_link_section:tt,
             default_term_method = $default_term_method:tt,
             default_unload_method = $default_unload_method:tt,
-            link_name_prefix = $link_name_prefix:tt,
+            export_name_prefix = $export_name_prefix:tt,
             link_section = $link_section:tt,
             method = $method:tt,
             no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
@@ -185,7 +191,7 @@ macro_rules! __dtor_parse_impl {
         $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
                 anonymous = $anonymous,
-                method = ($method $ctor_link_section $link_name_prefix $link_section),
+                method = ($method $ctor_export_name_prefix $ctor_link_section $export_name_prefix $link_section),
                 no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
                 used_linker = $used_linker,
             ),
@@ -347,7 +353,7 @@ macro_rules! __dtor_parse_impl {
     // Step 5: Delegate on method (at_module_exit, at_binary_exit, link_section)
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
-            method = ($method:tt $ctor_link_section:tt $link_name_prefix:tt $link_section:tt),
+            method = ($method:tt $ctor_export_name_prefix:tt $ctor_link_section:tt $export_name_prefix:tt $link_section:tt),
             used_linker_meta = (#$used_linker_meta:tt),
         ),
         meta = ($($meta:tt)*),
@@ -360,8 +366,9 @@ macro_rules! __dtor_parse_impl {
         $vis $($unsafe)* $( extern $abi )? fn $name $args {
             $crate::__dtor_parse_impl!(@dtor next=$next[$next_args], input=(
                 features = (
+                    ctor_export_name_prefix = $ctor_export_name_prefix,
                     ctor_link_section = $ctor_link_section,
-                    link_name_prefix = $link_name_prefix,
+                    export_name_prefix = $export_name_prefix,
                     link_section = $link_section,
                     method = $method,
                     used_linker_meta = (#$used_linker_meta),
@@ -378,8 +385,9 @@ macro_rules! __dtor_parse_impl {
 
     ( @dtor next=$next:path[$next_args:tt], input=(
         features = (
+            ctor_export_name_prefix = $ctor_export_name_prefix:tt,
             ctor_link_section = $ctor_link_section:tt,
-            link_name_prefix = (),
+            export_name_prefix = (),
             link_section = $link_section:tt,
             method = linker,
             used_linker_meta = (#$used_linker_meta:tt),
@@ -401,60 +409,9 @@ macro_rules! __dtor_parse_impl {
 
     ( @dtor next=$next:path[$next_args:tt], input=(
         features = (
+            ctor_export_name_prefix = $ctor_export_name_prefix:tt,
             ctor_link_section = $ctor_link_section:tt,
-            link_name_prefix = (),
-            link_section = $link_section:tt,
-            method = at_module_exit,
-            used_linker_meta = (#$used_linker_meta:tt),
-        ),
-        item = $name:ident,
-        unsafe = ($($unsafe:tt)*)
-    ) ) => {
-        const _: () = {
-            #[link_section = $ctor_link_section]
-            #$used_linker_meta
-            static __CTOR_PRIVATE_REF: unsafe extern "C" fn() = {
-                unsafe extern "C" fn __ctor_private() {
-                    $crate::__support::at_module_exit(__dtor_private);
-                }
-                extern "C" fn __dtor_private() {
-                    $($unsafe)* { $name() }
-                }
-                __ctor_private
-            };
-        };
-    };
-
-    ( @dtor next=$next:path[$next_args:tt], input=(
-        features = (
-            ctor_link_section = $ctor_link_section:tt,
-            link_name_prefix = (),
-            link_section = $link_section:tt,
-            method = at_binary_exit,
-            used_linker_meta = (#$used_linker_meta:tt),
-        ),
-        item = $name:ident,
-        unsafe = ($($unsafe:tt)*)
-    ) ) => {
-        const _: () = {
-            #[link_section = $ctor_link_section]
-            #$used_linker_meta
-            static __CTOR_PRIVATE_REF: unsafe extern "C" fn() = {
-                unsafe extern "C" fn __ctor_private() {
-                    $crate::__support::at_binary_exit(__dtor_private);
-                }
-                extern "C" fn __dtor_private() {
-                    $($unsafe)* { $name() }
-                }
-                __ctor_private
-            };
-        };
-    };
-
-    ( @dtor next=$next:path[$next_args:tt], input=(
-        features = (
-            ctor_link_section = $ctor_link_section:tt,
-            link_name_prefix = $link_name_prefix:tt,
+            export_name_prefix = $export_name_prefix:tt,
             link_section = $link_section:tt,
             method = linker,
             used_linker_meta = (#$used_linker_meta:tt),
@@ -464,7 +421,9 @@ macro_rules! __dtor_parse_impl {
     ) ) => {
         const _: () = {
             #[no_mangle]
-            #[export_name = concat!($link_name_prefix,
+            #[export_name = concat!($export_name_prefix, "_",
+                env!("CARGO_PKG_NAME"),
+                "_",
                 module_path!(),
                 "_",
                 stringify!($name),
@@ -472,6 +431,67 @@ macro_rules! __dtor_parse_impl {
                 line!(),
                 "C",
                 column!())]
+            extern "C" fn __dtor_private() {
+                $($unsafe)* { $name() }
+            }
+        };
+    };
+
+    ( @dtor next=$next:path[$next_args:tt], input=(
+        features = (
+            ctor_export_name_prefix = (),
+            ctor_link_section = $ctor_link_section:tt,
+            export_name_prefix = $export_name_prefix:tt,
+            link_section = $link_section:tt,
+            method = $method:ident,
+            used_linker_meta = (#$used_linker_meta:tt),
+        ),
+        item = $name:ident,
+        unsafe = ($($unsafe:tt)*)
+    ) ) => {
+        const _: () = {
+            #[link_section = $ctor_link_section]
+            #$used_linker_meta
+            static __CTOR_PRIVATE_REF: unsafe extern "C" fn() = {
+                unsafe extern "C" fn __ctor_private() {
+                    $crate::__support::$method(__dtor_private);
+                }
+                extern "C" fn __dtor_private() {
+                    $($unsafe)* { $name() }
+                }
+                __ctor_private
+            };
+        };
+    };
+
+    ( @dtor next=$next:path[$next_args:tt], input=(
+        features = (
+            ctor_export_name_prefix = $ctor_export_name_prefix:tt,
+            ctor_link_section = $ctor_link_section:tt,
+            export_name_prefix = $export_name_prefix:tt,
+            link_section = $link_section:tt,
+            method = $method:ident,
+            used_linker_meta = (#$used_linker_meta:tt),
+        ),
+        item = $name:ident,
+        unsafe = ($($unsafe:tt)*)
+    ) ) => {
+        const _: () = {
+            #[no_mangle]
+            #[export_name = concat!($ctor_export_name_prefix, "_",
+                env!("CARGO_PKG_NAME"),
+                "_",
+                module_path!(),
+                "_",
+                stringify!($name),
+                "_L",
+                line!(),
+                "C",
+                column!())]
+            unsafe extern "C" fn __ctor_private() {
+                $crate::__support::$method(__dtor_private);
+            }
+
             extern "C" fn __dtor_private() {
                 $($unsafe)* { $name() }
             }
