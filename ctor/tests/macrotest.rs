@@ -83,6 +83,12 @@ pub fn target_test() {
     let mut count = 0;
     let mut success = 0;
 
+    let target_dir = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .unwrap()
+        .join("target")
+        .join("target-test");
+
     // Each testcase is:
     // - input:  tests/target-test/<case>.rs
     // - outputs: tests/target-test/<case>/<target-triple>.rs
@@ -138,12 +144,16 @@ ctor = {{ path = "{repo_root}/ctor", default-features = false }}
             fs::write(dir.path().join("Cargo.toml"), &base_cargo_toml).unwrap();
             // Ensure the probe crate doesn't require `std` for exotic targets.
             let input_src = fs::read_to_string(&path).unwrap();
-            fs::write(dir.path().join("src/lib.rs"), format!("#![no_std]\n// ***START MARKER***\n{input_src}")).unwrap();
+            fs::write(
+                dir.path().join("src/lib.rs"),
+                format!("#![no_std]\n// ***START MARKER***\n{input_src}"),
+            )
+            .unwrap();
 
             let out = Command::new("cargo")
                 .current_dir(dir.path())
                 .env("CARGO_TERM_COLOR", "never")
-                .env("CARGO_TARGET_DIR", dir.path().join("target"))
+                .env("CARGO_TARGET_DIR", target_dir.join(&target))
                 .args([
                     "+nightly",
                     "rustc",
@@ -177,7 +187,11 @@ ctor = {{ path = "{repo_root}/ctor", default-features = false }}
                 );
             }
 
-            let stdout = stdout.split("// ***START MARKER***\n").nth(1).unwrap().to_string();
+            let stdout = stdout
+                .split("// ***START MARKER***\n")
+                .nth(1)
+                .unwrap()
+                .to_string();
 
             if overwrite {
                 fs::write(&out_path, &stdout).unwrap();
