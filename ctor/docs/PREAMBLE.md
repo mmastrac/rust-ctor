@@ -1,6 +1,14 @@
-Module initialization/teardown functions for Rust (like
-`__attribute__((constructor))` in C/C++) for Linux, OSX, Windows, WASM,
-BSD-likes, and many others.
+Module initialization functions for Rust (like `__attribute__((constructor))` in
+C/C++) for Linux, OSX, Windows, WASM, BSD-likes, and many others.
+
+```rust
+use ctor::ctor;
+
+#[ctor(unsafe)]
+fn foo() {
+    println!("Life before main!");
+}
+```
 
 ## MSRV
 

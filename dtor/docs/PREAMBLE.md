@@ -1,7 +1,15 @@
-Shutdown functions for Rust for Linux, OSX, Windows, mobile (iOS/Android), WASM,
-BSD/BSD-likes and many other platforms.
+Shutdown functions for Rust (like `__attribute__((destructor))` in C/C++) for
+Linux, OSX, Windows, mobile (iOS/Android), WASM, BSD/BSD-likes and many other
+platforms.
 
-Like `__attribute__((destructor))` in C/C++, but for Rust.
+```rust
+use dtor::dtor;
+
+#[dtor(unsafe)]
+fn foo() {
+    println!("Life after main!");
+}
+```
 
 # Examples
 
