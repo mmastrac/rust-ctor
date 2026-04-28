@@ -156,7 +156,7 @@ __declare_features!(
         attr: [(link_name_prefix = $link_name_prefix_str:literal) => ($link_name_prefix_str)];
         example: "link_name_prefix = \"ctor_\"";
         default {
-            (target_os = "aix") => "__sterm80000000",
+            (target_os = "aix") => "__sterm80000000_",
             _ => (),
         }
     };

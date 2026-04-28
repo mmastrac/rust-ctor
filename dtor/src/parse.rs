@@ -512,7 +512,14 @@ macro_rules! __dtor_parse_impl {
     ) ) => {
         const _: () = {
             #[no_mangle]
-            #[link_name = $link_name_prefix]
+            #[link_name = concat!($link_name_prefix,
+                module_path!(),
+                "_",
+                stringify!($name),
+                "_L",
+                line!(),
+                "C",
+                column!())]
             extern "C" fn __dtor_private() {
                 $($unsafe)* { $name() }
             }
