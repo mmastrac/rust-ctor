@@ -6,6 +6,7 @@
 | `dtor`         | [![docs.rs](https://docs.rs/dtor/badge.svg)](https://docs.rs/dtor)                 | [![crates.io](https://img.shields.io/crates/v/dtor.svg)](https://crates.io/crates/dtor)                 |
 | `link-section` | [![docs.rs](https://docs.rs/link-section/badge.svg)](https://docs.rs/link-section) | [![crates.io](https://img.shields.io/crates/v/link-section.svg)](https://crates.io/crates/link-section) |
 
+# dtor
 Shutdown functions for Rust (like `__attribute__((destructor))` in C/C++) for
 Linux, OSX, Windows, mobile (iOS/Android), WASM, BSD/BSD-likes and many other
 platforms.
@@ -19,6 +20,7 @@ fn foo() {
 }
 ```
 
+# Examples
 
 Print a message at shutdown time.
 
@@ -31,6 +33,7 @@ fn shutdown() {
 }
 ```
 
+# Platform Support
 
 | Platform | Link Section | at_binary_exit | at_module_exit |
 | --- | --- | --- | --- |
@@ -45,6 +48,7 @@ Notes:
  - <sup><sup>🪟</sup></sup>: Not recommended. Windows platforms may not reliably call functions in link sections, unless a binary is built with a static CRT.
  - <sup><sup>🔵</sup></sup>: Link sections are not supported on AIX, but the platform calls functions with the prefix `__sinit` and `__sterm` at startup and shutdown respectively.
 
+# Under the Hood
 
 The `#[dtor]` macro effectively creates a constructor that calls `libc::atexit`
 with the provided function, i.e. roughly equivalent to:
@@ -55,6 +59,7 @@ fn dtor_atexit() {
     libc::atexit(dtor);
 }
 ```
+# Crate Features
 
 | Cargo feature | Description |
 | --- | --- |
@@ -63,6 +68,7 @@ fn dtor_atexit() {
 | `std` |  Enable support for the standard library. |
 | `used_linker` |  Applies `used(linker)` to all `dtor`-generated functions. Requires nightly and `feature(used_with_arg)`. |
 
+# Macro Attributes
 
 <table><tr><th>Attribute</th><th>Description</th></tr>
 <tr><td><code>anonymous</code></td><td>
@@ -148,6 +154,7 @@ fn dtor_atexit() {
 </td></tr>
 </table>
 
+# Defaults
 
 ## `ctor_export_name_prefix`
 

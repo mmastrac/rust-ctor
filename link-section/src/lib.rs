@@ -1,3 +1,5 @@
+#![doc = include_str!("../docs/BUILD.md")]
+//! # link-section
 #![doc = include_str!("../docs/PREAMBLE.md")]
 #![allow(unsafe_code)]
 

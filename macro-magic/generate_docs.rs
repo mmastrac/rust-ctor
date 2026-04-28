@@ -67,6 +67,7 @@ fn rustdoc_json(root: &Path, spec: &CrateSpec) -> Result<(tempfile::TempDir, Pat
         .env("RUSTDOCFLAGS", "-Z unstable-options --output-format json")
         .args(["+nightly", "doc"])
         .args(["-p", spec.package])
+        .arg("--quiet")
         .arg("--all-features")
         .arg("--document-private-items")
         .arg("--target-dir")
@@ -131,12 +132,25 @@ fn write_generated_docs(root: &Path, spec: &CrateSpec, docs: &str) -> Result<()>
 fn write_readme_markdown(root: &Path, spec: &CrateSpec, docs: &str) -> Result<()> {
     let out = root.join(spec.dir).join("README.md");
 
-    // Strip "invisible" lines from examples: remove any line where left-trimmed text starts with "# ".
-    let mut rendered = docs
-        .lines()
-        .filter(|line| !line.trim_start().starts_with("# "))
-        .collect::<Vec<_>>()
-        .join("\n");
+    // Strip "invisible" lines from examples: remove any line where left-trimmed text starts with
+    // "# ", but only when inside fenced code blocks (```).
+    let mut in_fence = false;
+    let mut rendered_lines = Vec::new();
+    for line in docs.lines() {
+        let trimmed = line.trim_start();
+        if trimmed.starts_with("```") {
+            in_fence = !in_fence;
+            rendered_lines.push(line);
+            continue;
+        }
+
+        if in_fence && trimmed.starts_with("# ") {
+            continue;
+        }
+        rendered_lines.push(line);
+    }
+
+    let mut rendered = rendered_lines.join("\n");
     if docs.ends_with('\n') {
         rendered.push('\n');
     } else if !rendered.ends_with('\n') {
@@ -154,8 +168,8 @@ fn main() -> Result<()> {
 
     for spec in CRATES {
         // Pass 1: extract just the `__generated_docs` markdown.
-        let (_temp, json_path) =
-            rustdoc_json(&root, spec).with_context(|| format!("rustdoc json for {}", spec.package))?;
+        let (_temp, json_path) = rustdoc_json(&root, spec)
+            .with_context(|| format!("rustdoc json for {}", spec.package))?;
         let docs = generated_docs_markdown(&json_path, spec.crate_name)
             .with_context(|| format!("extract __generated_docs for {}", spec.package))?;
         if !docs.trim().is_empty() {
@@ -164,32 +178,10 @@ fn main() -> Result<()> {
         }
 
         // Pass 2: rerun rustdoc JSON and write the crate root docs markdown into README.
-        let (_temp, json_path) =
-            rustdoc_json(&root, spec).with_context(|| format!("rustdoc json for {}", spec.package))?;
-        let mut root_docs = crate_root_module_json(&json_path)
+        let (_temp, json_path) = rustdoc_json(&root, spec)
+            .with_context(|| format!("rustdoc json for {}", spec.package))?;
+        let root_docs = crate_root_module_json(&json_path)
             .with_context(|| format!("extract crate root docs for {}", spec.package))?;
-
-        // Some crates may (directly or indirectly) end up with JSON-like crate docs if
-        // the docs were sourced from a previously generated artifact. Avoid writing
-        // JSON into README.
-        if root_docs.trim_start().starts_with('{') {
-            // Prefer `__generated_docs` markdown if present.
-            if !docs.trim().is_empty() {
-                root_docs = docs.clone();
-            } else {
-                // As a last resort, if the crate has a `docs/PREAMBLE.md` (common when
-                // the crate root uses `#![doc = include_str!(...)]`), use that.
-                let preamble = root
-                    .join(spec.dir)
-                    .join("docs")
-                    .join("PREAMBLE.md");
-                if preamble.exists() {
-                    root_docs = fs::read_to_string(&preamble).with_context(|| {
-                        format!("read fallback preamble {}", preamble.display())
-                    })?;
-                }
-            }
-        }
 
         if !root_docs.trim().is_empty() {
             write_readme_markdown(&root, spec, &root_docs)
