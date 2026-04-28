@@ -71,6 +71,7 @@ jobs:
     env:
       CACHE_KEY: 2
       TARGET: ${{ matrix.target }}
+      TOOLCHAIN: ${{ matrix.rust-toolchain }}
       CLIPPY_LINTS: >-
         -D clippy::all
         -D deprecated-safe

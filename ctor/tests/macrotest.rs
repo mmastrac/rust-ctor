@@ -68,6 +68,12 @@ pub fn trybuild() {
 
 #[test]
 pub fn target_test() {
+    let Some(toolchain) = std::env::var_os("TOOLCHAIN") else {
+        return;
+    };
+    if toolchain != "nightly" {
+        return;
+    }
     let cases_dir = Path::new("tests/target-test");
     let overwrite = std::env::var_os("MACROTEST")
         .map(|v| v == "overwrite")
