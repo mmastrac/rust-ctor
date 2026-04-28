@@ -72,10 +72,31 @@ pub mod module {
     };
 }
 
+#[derive(Default)]
+struct Foo<T> {
+    _t: ::std::marker::PhantomData<T>,
+}
+
+impl<T: Default> Foo<T> {
+    fn generic(self) {
+        drop(T::default());
+    }
+
+    #[ctor(unsafe)]
+    fn ctor() {
+        libc_eprintln!("Foo::ctor");
+    }
+}
+
 /// Executable main which demonstrates the various types of ctor/dtor.
 pub fn main() {
     use libc_print::*;
     libc_println!("main!");
     libc_println!("STATIC_CTOR = {:?}", *STATIC_CTOR);
     libc_println!("module::STATIC_CTOR = {:?}", *module::STATIC_CTOR);
+
+    // Only one ctor call will occur for both generic types, and no generics are
+    // available in the ctor body.
+    Foo::<u32>::default().generic();
+    Foo::<u64>::default().generic();
 }

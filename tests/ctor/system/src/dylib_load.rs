@@ -7,6 +7,21 @@ use dtor::dtor;
 use dlopen::raw::Library;
 use libc_print::*;
 
+#[allow(unused)]
+struct Foo;
+
+impl Foo {
+    #[ctor(unsafe)]
+    fn ctor() {
+        libc_eprintln!("+ Foo::ctor");
+    }
+
+    #[dtor(unsafe)]
+    fn dtor() {
+        libc_eprintln!("- Foo::dtor");
+    }
+}
+
 #[ctor]
 #[cfg(not(test))]
 #[allow(unsafe_code)]

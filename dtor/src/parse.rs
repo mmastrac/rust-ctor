@@ -363,7 +363,14 @@ macro_rules! __dtor_parse_impl {
         })
     ) ) => {
         $($meta)*
+        #[allow(dead_code)]
         $vis $($unsafe)* $( extern $abi )? fn $name $args {
+            // The outer function may be attached to a struct, so we generate an
+            // inner function that is freestanding and call it from both places.
+            $($unsafe)* $( extern $abi )? fn __dtor_private_inner $args {
+                $($body)*
+            }
+
             $crate::__dtor_parse_impl!(@dtor next=$next[$next_args], input=(
                 features = (
                     ctor_export_name_prefix = $ctor_export_name_prefix,
@@ -373,11 +380,10 @@ macro_rules! __dtor_parse_impl {
                     method = $method,
                     used_linker_meta = (#$used_linker_meta),
                 ),
-                item = $name,
-                unsafe = ($($unsafe)*)
+                item = ($($unsafe)* { __dtor_private_inner() })
             ));
 
-            $($body)*
+            $($unsafe)* { __dtor_private_inner() }
         }
     };
 
@@ -392,15 +398,14 @@ macro_rules! __dtor_parse_impl {
             method = linker,
             used_linker_meta = (#$used_linker_meta:tt),
         ),
-        item = $name:ident,
-        unsafe = ($($unsafe:tt)*)
+        item = ($($item:tt)*)
     ) ) => {
         const _: () = {
             #[link_section = $link_section]
             #$used_linker_meta
             static __DTOR_PRIVATE_REF: extern "C" fn() = {
                 extern "C" fn __dtor_private() {
-                    $($unsafe)* { $name() }
+                    $($item)*
                 }
                 __dtor_private
             };
@@ -416,8 +421,7 @@ macro_rules! __dtor_parse_impl {
             method = linker,
             used_linker_meta = (#$used_linker_meta:tt),
         ),
-        item = $name:ident,
-        unsafe = ($($unsafe:tt)*)
+        item = ($($item:tt)*)
     ) ) => {
         const _: () = {
             #[no_mangle]
@@ -432,7 +436,7 @@ macro_rules! __dtor_parse_impl {
                 "C",
                 column!())]
             extern "C" fn __dtor_private() {
-                $($unsafe)* { $name() }
+                $($item)*
             }
         };
     };
@@ -446,8 +450,7 @@ macro_rules! __dtor_parse_impl {
             method = $method:ident,
             used_linker_meta = (#$used_linker_meta:tt),
         ),
-        item = $name:ident,
-        unsafe = ($($unsafe:tt)*)
+        item = ($($item:tt)*)
     ) ) => {
         const _: () = {
             #[link_section = $ctor_link_section]
@@ -457,7 +460,7 @@ macro_rules! __dtor_parse_impl {
                     $crate::__support::$method(__dtor_private);
                 }
                 extern "C" fn __dtor_private() {
-                    $($unsafe)* { $name() }
+                    $($item)*
                 }
                 __ctor_private
             };
@@ -473,8 +476,7 @@ macro_rules! __dtor_parse_impl {
             method = $method:ident,
             used_linker_meta = (#$used_linker_meta:tt),
         ),
-        item = $name:ident,
-        unsafe = ($($unsafe:tt)*)
+        item = ($($item:tt)*)
     ) ) => {
         const _: () = {
             #[no_mangle]
@@ -493,7 +495,7 @@ macro_rules! __dtor_parse_impl {
             }
 
             extern "C" fn __dtor_private() {
-                $($unsafe)* { $name() }
+                $($item)*
             }
         };
     };
