@@ -279,6 +279,7 @@ dependencies = [
  "macrotest",
  "tempfile",
  "trybuild",
+ "walkdir",
 ]
 
 [[package]]

@@ -1,7 +1,7 @@
 use dtor::dtor;
 
 /// This will not be called in all cases.
-#[dtor(method = link_section)]
+#[dtor(method = linker)]
 unsafe fn _dtor_no_default_features() {
     println!("dtor-link-section:dtor");
 }

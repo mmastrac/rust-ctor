@@ -1,6 +1,6 @@
 //! This example demonstrates the various types of ctor/dtor in an executable
 //! context.
-#![recursion_limit = "80"]
+#![recursion_limit = "90"]
 #![cfg_attr(feature = "used_linker", feature(used_with_arg))]
 
 use dtor::dtor;
@@ -26,14 +26,14 @@ unsafe fn dtor_at_binary_exit() {
 }
 
 /// Custom link section (note that Apple's mach-o linker requires a specific link section format).
-#[cfg_attr(not(target_vendor = "apple"), dtor(unsafe, method = link_section, link_section = ".manual.dtor"))]
-#[cfg_attr(target_vendor = "apple", dtor(unsafe, method = link_section, link_section = "__DATA,__manual_dtors"))]
+#[cfg_attr(not(target_vendor = "apple"), dtor(unsafe, method = linker, link_section = ".manual.dtor"))]
+#[cfg_attr(target_vendor = "apple", dtor(unsafe, method = linker, link_section = "__DATA,__manual_dtors"))]
 fn dtor_link_section() {
     libc_eprintln!("link_section");
 }
 
-#[cfg_attr(not(target_vendor = "apple"), dtor(unsafe, method = link_section, link_section = ".dtors", crate_path = ::dtor))]
-#[cfg_attr(target_vendor = "apple", dtor(unsafe, method = link_section, link_section = "__DATA,__manual_dtors", crate_path = ::dtor))]
+#[cfg_attr(not(target_vendor = "apple"), dtor(unsafe, method = linker, link_section = ".dtors", crate_path = ::dtor))]
+#[cfg_attr(target_vendor = "apple", dtor(unsafe, method = linker, link_section = "__DATA,__manual_dtors", crate_path = ::dtor))]
 fn bar() {
     println!("foo");
 }
