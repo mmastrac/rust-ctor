@@ -318,8 +318,12 @@ __declare_features!(
                 target_os = "dragonfly",
                 target_os = "illumos",
                 target_os = "haiku",
+                target_os = "vxworks",
+                target_os = "nto",
                 target_family = "wasm"
             )) => ".init_array",
+            // No OS
+            (target_os = "none") => ".init_array",
             // xtensa targets: .dtors
             (target_arch = "xtensa") => ".ctors",
             // Windows targets: .CRT$XCU

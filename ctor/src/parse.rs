@@ -434,22 +434,20 @@ macro_rules! __ctor_parse_impl {
     ) ) => {
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
-                link_name = (
-                    concat!($link_name_prefix,
-                        "0_",
-                        env!("CARGO_PKG_NAME"), "_",
-                        ::core::module_path!(), "_",
-                        stringify!($link_name),
-                        "_L", line!(), "C", column!()))
-                ),
+                link_name = (concat!($link_name_prefix,
+                    "0_",
+                    env!("CARGO_PKG_NAME"), "_",
+                    ::core::module_path!(), "_",
+                    stringify!($link_name),
+                    "_L", line!(), "C", column!())),
                 link_section = $link_section,
-                priority = $priority,
+                priority = (),
                 used_linker_meta = $used_linker_meta,
             ),
             meta = $meta,
             unsafe = $unsafe,
             item = $item
-        );
+        ));
     };
 
     ( @entry next=$next:path[$next_args:tt], input=(
@@ -466,14 +464,12 @@ macro_rules! __ctor_parse_impl {
     ) ) => {
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
-                link_name = (
-                    concat!($link_name_prefix,
-                        $priority, "_",
-                        env!("CARGO_PKG_NAME"), "_",
-                        ::core::module_path!(), "_",
-                        stringify!($link_name),
-                        "_L", line!(), "C", column!()))
-                ),
+                link_name = (concat!($link_name_prefix,
+                    $priority, "_",
+                    env!("CARGO_PKG_NAME"), "_",
+                    ::core::module_path!(), "_",
+                    stringify!($link_name),
+                    "_L", line!(), "C", column!())),
                 link_section = $link_section,
                 priority = $priority,
                 used_linker_meta = $used_linker_meta,
@@ -481,7 +477,7 @@ macro_rules! __ctor_parse_impl {
             meta = $meta,
             unsafe = $unsafe,
             item = $item
-        );
+        ));
     };
 
     // Step 7: Compute priority
@@ -602,7 +598,6 @@ macro_rules! __ctor_parse_impl {
         $crate::__ctor_parse_impl!(@ctor $link_args body={ _ = &*$ident } );
     };
 
-    // Declare a ctor for the given link args
     ( @ctor (
         link_name=(),
         link_section=($($link_section:tt)*),
@@ -638,6 +633,26 @@ macro_rules! __ctor_parse_impl {
                 #[in_section(unsafe, type = (fn(), u16), name = CTOR)]
                 static __CTOR_ENTRY: (fn(), u16) = (__ctor_private, $priority);
             );
+        };
+    };
+
+    ( @ctor (
+        link_name=($($link_name:tt)*),
+        link_section=$link_section:tt,
+        used=(#$used_linker_meta:tt),
+     ) body=$body:tt ) => {
+        const _: () = {
+            #[allow(unsafe_code)]
+            #[cfg_attr(clippy, allow(unknown_lints, unsafe_attr_outside_unsafe))]
+            const _: () = {
+                #[allow(unused_unsafe)]
+                #[no_mangle]
+                #[link_name = $($link_name)*]
+                extern "C" fn __ctor_private() {
+                    $body
+                }
+                __ctor_private
+            };
         };
     };
 }

@@ -644,14 +644,19 @@ __declare_features!(
                 target_os = "dragonfly",
                 target_os = "illumos",
                 target_os = "haiku",
+                target_os = "vxworks",
+                target_os = "nto",
                 target_family = "wasm"
             )) => ".init_array",
+            // No OS
+            (target_os = "none") => ".init_array",
             // xtensa targets: .dtors
             (target_arch = "xtensa") => ".ctors",
             // Windows targets: .CRT$XCU
             (all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc"))) => ".CRT$XCU",
             // ... except GNU
             (all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc")))) => ".ctors",
+            (all(target_os = "aix")) => (), // AIX uses link_name_prefix
             _ => (compile_error!("Unsupported target for #[ctor]"))
         }
     };
@@ -695,8 +700,12 @@ __declare_features!(
                 target_os = "dragonfly",
                 target_os = "illumos",
                 target_os = "haiku",
+                target_os = "vxworks",
+                target_os = "nto",
                 target_family = "wasm"
             )) => ".fini_array",
+            // No OS
+            (target_os = "none") => ".fini_array",
             // xtensa targets: .dtors
             (target_arch = "xtensa") => ".dtors",
             // Windows targets: .CRT$XPU (requires static CRT)

@@ -39,3 +39,5 @@ link-section = { workspace = true, optional = true, default-features = false }
 libc-print = "0.1"
 macrotest = "1"
 trybuild = "1"
+walkdir = "2"
+tempfile = "3"
