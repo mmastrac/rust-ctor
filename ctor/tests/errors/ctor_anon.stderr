@@ -1,0 +1,5 @@
+error[E0425]: cannot find function `foo` in this scope
+  --> tests/errors/ctor_anon.rs:15:5
+   |
+15 |     foo();
+   |     ^^^ not found in this scope

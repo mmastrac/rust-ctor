@@ -6,5 +6,5 @@ rm Cargo.lock
 # May need to rebuild when beta/nightly changes
 cargo clean
 cargo build
-cargo run -p ctor --example example --target $TARGET
+cargo run -p ctor --example ctor-example --target $TARGET
 

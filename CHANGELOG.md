@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file.
 
+## ctor [0.11.0] - Unreleased
+## dtor [0.11.0] - Unreleased
+## link-section [0.11.0] - Unreleased
+
+### Added
+
+- Added `method` attribute to `dtor` macro.
+- Added `link_section` attribute to `dtor` macro.
+- AIX support for `ctor`/`dtor` crates.
+
+### Changed
+
+- Significant rewrite to ctor/dtor macros and documentation.
+- Renamed `at_library_exit` to `at_module_exit` in `dtor` crate.
+- Macro attributes and crate features are auto-documented.
+
+### Removed
+
+- `cxa_atexit` feature from `dtor` crate. (appropriate method is now used per-platform)
+- `export_native` feature from `dtor` crate. (natives always exported)
+
 ## ctor [0.10.1] - 2026-04-22
 ## dtor [0.8.1] - 2026-04-22
 ## link-section [0.2.1] - 2026-04-22

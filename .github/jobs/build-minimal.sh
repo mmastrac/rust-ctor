@@ -4,6 +4,10 @@ set -xeuo pipefail
 # Remove Cargo.lock for testing down-level Rust versions
 rm Cargo.lock || true
 
-# Only run the example
-cargo clean
-cargo run -p ctor --example msrv --target $TARGET
+cd tests/ctor/edition-2018
+cargo run --target $TARGET
+cd ../../..
+
+cd tests/ctor/edition-2021
+cargo run --target $TARGET
+cd ../../..

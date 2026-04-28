@@ -96,9 +96,9 @@ checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 
 [[package]]
 name = "clap"
-version = "4.6.0"
+version = "4.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b193af5b67834b676abd72466a96c1024e6a6ad978a1f484bd90b85c94041351"
+checksum = "1ddb117e43bbf7dacf0a4190fef4d345b9bad68dfc649cb349e7d17d28428e51"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -118,9 +118,9 @@ dependencies = [
 
 [[package]]
 name = "clap_derive"
-version = "4.6.0"
+version = "4.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1110bd8a634a1ab8cb04345d8d878267d57c3cf1b38d91b71af6686408bbca6a"
+checksum = "f2ce8604710f6733aa641a2b3731eaa1e8b3d9973d5e3565da11800813f997a9"
 dependencies = [
  "heck",
  "proc-macro2",
@@ -136,9 +136,9 @@ checksum = "c8d4a3bb8b1e0c1050499d1815f5ab16d04f0959b233085fb31653fbfc9d98f9"
 
 [[package]]
 name = "clitest-lib"
-version = "0.4.5"
+version = "0.4.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5edf6b0079e25999ead350546ba135908c4106fc93f16c55f29de422081741e0"
+checksum = "58fd926d88a05aec5cae9b30218db67977eb78b59b308e592828515a70f4c96a"
 dependencies = [
  "clap",
  "derive-io",
@@ -186,12 +186,16 @@ dependencies = [
 
 [[package]]
 name = "ctor"
-version = "0.10.1"
+version = "0.11.0"
 dependencies = [
  "ctor-proc-macro",
  "dtor",
  "libc-print",
  "link-section",
+ "macrotest",
+ "tempfile",
+ "trybuild",
+ "walkdir",
 ]
 
 [[package]]
@@ -268,10 +272,14 @@ dependencies = [
 
 [[package]]
 name = "dtor"
-version = "0.8.1"
+version = "0.11.0"
 dependencies = [
  "dtor-proc-macro",
  "libc-print",
+ "macrotest",
+ "tempfile",
+ "trybuild",
+ "walkdir",
 ]
 
 [[package]]
@@ -476,7 +484,7 @@ dependencies = [
 
 [[package]]
 name = "link-section"
-version = "0.2.1"
+version = "0.11.0"
 dependencies = [
  "link-section-proc-macro",
 ]
@@ -505,6 +513,14 @@ name = "log"
 version = "0.4.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5e5032e24019045c762d3c0f28f5b6b8bbf38563a65908389bf7978758920897"
+
+[[package]]
+name = "macro-magic"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "tempfile",
+]
 
 [[package]]
 name = "macrotest"
@@ -676,6 +692,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9774ba4a74de5f7b1c1451ed6cd5285a32eddb5cccb8cc655a4e50009e06477f"
 
 [[package]]
+name = "same-file"
+version = "1.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502"
+dependencies = [
+ "winapi-util",
+]
+
+[[package]]
 name = "scopeguard"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -750,17 +775,6 @@ dependencies = [
  "ryu",
  "serde",
  "unsafe-libyaml",
-]
-
-[[package]]
-name = "shared"
-version = "0.1.0"
-dependencies = [
- "ctor",
- "dtor",
- "link-section",
- "macrotest",
- "trybuild",
 ]
 
 [[package]]
@@ -1006,6 +1020,16 @@ checksum = "cdbf39d53c5a50cad8119d9cde929ecd208764e8d8d1626486b8929cbcd5f0e7"
 dependencies = [
  "hex",
  "smallvec",
+]
+
+[[package]]
+name = "walkdir"
+version = "2.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "29790946404f91d9c5d06f9874efddea1dc06c5efe94541a7d6863108e3a5e4b"
+dependencies = [
+ "same-file",
+ "winapi-util",
 ]
 
 [[package]]

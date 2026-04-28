@@ -1,20 +1,17 @@
-#![doc = include_str!("../README.md")]
+#![recursion_limit = "256"]
 #![no_std]
+#![doc = include_str!("../docs/BUILD.md")]
+//! # dtor
+#![doc = include_str!("../docs/GENERATED.md")]
 
 #[cfg(feature = "std")]
 extern crate std;
 
 mod macros;
+mod native;
+mod parse;
 
-pub use macros::features;
-
-#[doc(hidden)]
-#[allow(unused)]
-pub mod __support {
-    pub use crate::macros::__support::dtor_parse_impl as dtor_parse;
-    pub use crate::macros::__support::*;
-    pub use crate::native::*;
-}
+pub use native::*;
 
 /// Marks a function as a library/executable destructor. This uses OS-specific
 /// linker sections to call a specific function at termination time.
@@ -22,19 +19,7 @@ pub mod __support {
 /// Multiple shutdown functions are supported, but the invocation order is not
 /// guaranteed.
 ///
-/// # Attribute parameters
-///
-///  - `crate_path = ::path::to::dtor::crate`: The path to the `dtor` crate
-///    containing the support macros. If you re-export `dtor` items as part of
-///    your crate, you can use this to redirect the macro's output to the
-///    correct crate.
-///  - `used(linker)`: (Advanced) Mark the function as being used in the link
-///    phase.
-///  - `link_section = "section"`: The section to place the dtor's code in.
-///  - `anonymous`: Do not give the destructor a name in the generated code
-///    (allows for multiple destructors with the same name).
-///
-/// ```rust
+/// ```rust,ignore
 /// # #![cfg_attr(feature="used_linker", feature(used_with_arg))]
 /// # use dtor::dtor;
 /// # fn main() {}
@@ -80,94 +65,205 @@ pub use dtor_proc_macro::__dtor_from_ctor;
 /// ```
 pub mod declarative {
     #[doc(inline)]
-    pub use crate::__support::dtor_parse_impl as dtor;
+    pub use crate::__dtor_parse as dtor;
 }
 
-#[cfg(feature = "export_native")]
-pub use native::*;
+#[doc(hidden)]
+#[allow(unused)]
+pub mod __support {
+    use crate::macros::*;
 
-mod native {
-    #![allow(unsafe_code, unused_unsafe, unknown_lints)]
+    // Required for proc_macro.
+    pub use crate::__dtor_parse as dtor_parse;
 
-    /// Registers a raw function to be called at binary exit time.
-    ///
-    /// Corresponds to `atexit` in C.
-    ///
-    /// # Safety
-    ///
-    /// Rust does not provide any safety guarantees about life-before-main or
-    /// life-after-main. Ordering of destructors is not guaranteed, nor that a
-    /// destructor will be called at all.
-    #[inline(always)]
-    pub unsafe fn at_binary_exit(cb: extern "C" fn()) {
-        unsafe {
-            _run_atexit(cb);
-        }
-    }
-
-    /// Registers a raw function to be called at library (libc calls this a DSO
-    /// or "dynamic shared object") exit time.
-    ///
-    /// Corresponds to `__cxa_atexit` in C, though the exit function argument is
-    /// not available.
-    ///
-    /// # Safety
-    ///
-    /// Rust does not provide any safety guarantees about life-before-main or
-    /// life-after-main. Ordering of destructors is not guaranteed, nor that a
-    /// destructor will be called at all.
-    #[cfg(any(feature = "cxa_atexit", target_vendor = "apple"))]
-    #[inline(always)]
-    pub unsafe fn at_library_exit(cb: extern "C" fn()) {
-        unsafe {
-            _run_cxa_atexit(cb);
-        }
-    }
-
-    /// Register a function to be called at libc exit time.
-    #[cfg(not(miri))]
-    #[inline(always)]
-    unsafe fn _run_atexit(cb: unsafe extern "C" fn()) {
-        #[allow(missing_unsafe_on_extern)] // MSRV
-        extern "C" {
-            fn atexit(cb: unsafe extern "C" fn());
-        }
-        unsafe {
-            atexit(cb);
-        }
-    }
-
-    /// Register a function scoped to the current dynamic shared object.
-    #[cfg(all(not(miri), any(feature = "cxa_atexit", target_vendor = "apple")))]
-    #[inline(always)]
-    unsafe fn _run_cxa_atexit(cb: extern "C" fn()) {
-        #[allow(missing_unsafe_on_extern)] // MSRV
-        extern "C" {
-            static __dso_handle: *const u8;
-            fn __cxa_atexit(
-                cb: /*unsafe*/ extern "C" fn(_: *const u8),
-                arg: *const u8,
-                dso_handle: *const u8,
-            );
-        }
-        extern "C" fn exit_fn(fn_ptr: *const u8) {
-            let f: fn() = unsafe { ::core::mem::transmute(fn_ptr) };
-            f()
-        }
-        unsafe {
-            __cxa_atexit(exit_fn, cb as _, __dso_handle);
-        }
-    }
-
-    #[cfg(miri)]
-    #[inline(always)]
-    unsafe fn _run_atexit(_cb: extern "C" fn()) {
-        // no-op on miri
-    }
-
-    #[cfg(miri)]
-    #[inline(always)]
-    unsafe fn _run_cxa_atexit(_cb: extern "C" fn()) {
-        // no-op on miri
-    }
+    pub use crate::native::*;
 }
+
+__declare_features!(
+    dtor: __dtor_features;
+
+    /// Make the ctor function anonymous.
+    anonymous {
+        attr: [(anonymous) => (anonymous)];
+    };
+    /// Specify a custom crate path for the `dtor` crate. Used when re-exporting the dtor macro.
+    crate_path {
+        attr: [(crate_path = $path:pat) => (($path))];
+        example: "crate_path = ::path::to::dtor::crate";
+    };
+    /// Specify a custom export name prefix for the constructor function.
+    ///
+    /// If specified, an export with the given prefix will be generated in the form:
+    ///
+    /// `<prefix>_<unique_id>`
+    ctor_export_name_prefix {
+        attr: [(ctor(export_name_prefix = $ctor_export_name_prefix_str:literal)) => ($ctor_export_name_prefix_str)];
+        example: "ctor(export_name_prefix = \"ctor_\")";
+        default {
+            (target_os = "aix") => "__sinit80000000",
+            _ => (),
+        }
+    };
+    /// Place the initialization function pointer in a custom link section.
+    ctor_link_section {
+        attr: [(ctor(link_section = $ctor_link_section_name:literal)) => ($ctor_link_section_name)];
+        example: "ctor(link_section = \".ctors\")";
+        default {
+            // This is no longer supported by Apple
+            (target_vendor = "apple") => "__DATA,__mod_init_func,mod_init_funcs",
+            // Most LLVM/GCC targets can use .fini_array
+            (any(
+                target_os = "linux",
+                target_os = "android",
+                target_os = "freebsd",
+                target_os = "netbsd",
+                target_os = "openbsd",
+                target_os = "dragonfly",
+                target_os = "illumos",
+                target_os = "haiku",
+                target_os = "vxworks",
+                target_os = "nto",
+                target_family = "wasm"
+            )) => ".init_array",
+            // No OS
+            (target_os = "none") => ".init_array",
+            // xtensa targets: .dtors
+            (target_arch = "xtensa") => ".ctors",
+            // Windows targets: .CRT$XCU
+            (all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc"))) => ".CRT$XCU",
+            // ... except GNU
+            (all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc")))) => ".ctors",
+            (all(target_os = "aix")) => (), // AIX uses export_name_prefix
+            _ => (compile_error!("Unsupported target for #[ctor]"))
+        }
+    };
+    /// The default method used for running a `dtor` on termination. This is
+    /// generally not recommended as code may be unloaded before the dtor is
+    /// called.
+    ///
+    /// This is only used if the specified `dtor` method is `term`.
+    ///
+    /// All platforms use `at_binary_exit` except Windows, which uses
+    /// `at_module_exit`.
+    default_term_method {
+        default {
+            (target_vendor = "pc") => at_module_exit,
+            _ => at_binary_exit,
+        }
+    };
+    /// The default method used for running a `dtor` on module unload.
+    ///
+    /// This is only used if the `method` attribute is not specified, or if the
+    /// method is `unload`.
+    default_unload_method {
+        default {
+            _ => at_module_exit,
+        }
+    };
+    /// Specify a custom export name prefix for the destructor function.
+    ///
+    /// If specified, an export with the given prefix will be generated in the form:
+    ///
+    /// `<prefix>_<unique_id>`
+    export_name_prefix {
+        attr: [(export_name_prefix = $export_name_prefix_str:literal) => ($export_name_prefix_str)];
+        example: "export_name_prefix = \"ctor_\"";
+        default {
+            (target_os = "aix") => "__sterm80000000",
+            _ => (),
+        }
+    };
+    /// Place the destructor function pointer in a custom link section.
+    link_section {
+        attr: [(link_section = $section:literal) => ($section)];
+        example: "link_section = \".dtors\"";
+        default {
+            // This is no longer supported by Apple
+            (target_vendor = "apple") => "__DATA,__mod_term_func,mod_term_funcs",
+            // Most LLVM/GCC targets can use .fini_array
+            (any(
+                target_os = "linux",
+                target_os = "android",
+                target_os = "freebsd",
+                target_os = "netbsd",
+                target_os = "openbsd",
+                target_os = "dragonfly",
+                target_os = "illumos",
+                target_os = "haiku",
+                target_os = "vxworks",
+                target_os = "nto",
+                target_family = "wasm"
+            )) => ".fini_array",
+            // No OS
+            (target_os = "none") => ".fini_array",
+            // xtensa targets: .dtors
+            (target_arch = "xtensa") => ".dtors",
+            // Windows targets: .CRT$XPU (requires static CRT)
+            (all(target_vendor = "pc", any(target_env = "gnu", target_env = "msvc"))) => ".CRT$XPU",
+            // ... except GNU
+            (all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc")))) => ".dtors",
+            (all(target_os = "aix")) => (), // AIX uses export_name_prefix
+            _ => (compile_error!("Unsupported target for #[dtor]"))
+        }
+    };
+    /// Specify the dtor method.
+    ///
+    ///  - `term`: Run the dtor on binary termination using the platform's
+    ///    [default_term_method](#default_term_method). Not recommended as code
+    ///    may be unloaded before the dtor is called.
+    ///  - `unload`: Run the dtor on module unload (library or binary) using the
+    ///    platform's [default_unload_method](#default_unload_method).
+    ///  - `at_module_exit`: Run the dtor using the platform's
+    ///    [`at_module_exit`][at_module_exit] (`__cxa_atexit` on all platforms
+    ///    other than Windows, `atexit` on Windows).
+    ///  - `at_binary_exit`: Run the dtor using the platform's
+    ///    [`at_binary_exit`][at_binary_exit] (unsupported on Windows
+    ///    platforms).
+    ///  - `linker`: Register the dtor using the platform's
+    ///    [link_section](#link_section) or
+    ///    [export_name_prefix](#export_name_prefix) (unsupported on Apple
+    ///    platforms).
+    ///
+    /// [at_module_exit]: crate::native::at_module_exit
+    /// [at_binary_exit]: crate::native::at_binary_exit
+    method {
+        attr: [(method = $method_id:ident) => ($method_id)];
+        example: "method = term|unload|at_module_exit|at_binary_exit|linker";
+        validate: [(method = term), (method = unload), (method = at_module_exit), (method = at_binary_exit), (method = linker)];
+        default {
+            (target_vendor = "apple") => at_module_exit,
+            (target_vendor = "pc") => at_module_exit,
+            _ => linker,
+        }
+    };
+    no_warn_on_missing_unsafe {
+        /// crate
+        /// Do not warn when a ctor or dtor is missing the `unsafe` keyword.
+        feature: "no_warn_on_missing_unsafe";
+        /// attr
+        /// Marks a ctor/dtor as unsafe.
+        attr: [(unsafe) => (no_warn_on_missing_unsafe)];
+    };
+    /// Enable support for the proc-macro `#[dtor]` attribute. The declarative
+    /// form (`dtor!(...)`) is always available. It is recommended that crates
+    /// re-exporting the `dtor` macro disable this feature and only use the
+    /// declarative form.
+    proc_macro {
+        feature: "proc_macro";
+    };
+    /// Enable support for the standard library.
+    std {
+        feature: "std";
+    };
+    used_linker {
+        /// crate
+        /// Applies `used(linker)` to all `dtor`-generated functions. Requires nightly and `feature(used_with_arg)`.
+        feature: "used_linker";
+        /// attr
+        /// Mark generated functions for this `dtor` as `used(linker)`. Requires nightly and `feature(used_with_arg)`.
+        attr: [(used(linker)) => (used_linker)];
+    };
+);
+
+#[cfg(doc)]
+__generate_docs!(__dtor_features);
