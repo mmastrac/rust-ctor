@@ -151,9 +151,7 @@ fn write_readme_markdown(root: &Path, spec: &CrateSpec, docs: &str) -> Result<()
     }
 
     let mut rendered = rendered_lines.join("\n");
-    if docs.ends_with('\n') {
-        rendered.push('\n');
-    } else if !rendered.ends_with('\n') {
+    if !rendered.ends_with('\n') {
         rendered.push('\n');
     }
 
