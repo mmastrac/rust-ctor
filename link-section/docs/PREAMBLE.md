@@ -132,3 +132,7 @@ mod my_registry {
     }
 }
 ```
+
+## Inspiration
+
+`link-section` was originally inspired by the `linkme` project.
