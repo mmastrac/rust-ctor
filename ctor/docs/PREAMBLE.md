@@ -71,10 +71,13 @@ difficult to understand. For example, thread-local storage on OSX will affect
 this (see
 [this comment](https://github.com/rust-lang/rust/issues/28794#issuecomment-368693049)).
 
-## Examples
+## Usage
 
-Marks the function `foo` as a module constructor, called when a static library
-is loaded or an executable is started:
+`#[ctor]` decorates a function item to be called as a module constructor. Both
+free (a global `fn()`) and impl functions (`Self::method()`) are supported.
+
+The example below marks the function `foo` as a module constructor, called when
+a static library is loaded or an executable is started:
 
 ```rust
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -82,24 +85,47 @@ use ctor::ctor;
 
 static INITED: AtomicBool = AtomicBool::new(false);
 
-#[ctor]
+#[ctor(unsafe)]
 fn foo() {
+    // ... (do something)
     INITED.store(true, Ordering::SeqCst);
 }
 ```
 
-Creates a `HashMap` populated with strings when a static library is loaded or an
-executable is started (new in `0.1.7`):
+Implementation methods can also be decorated with `#[ctor]`, as long as they
+have no `self` parameter:
 
-`static` items are equivalent to `std::sync::OnceLock`, with an automatic deref
-implementation and eager initialization at startup time. `#[ctor]` on `static`
-items requires the default `std` feature.
+```rust
+use ctor::ctor;
+
+struct MyStruct {
+    // ...
+}
+
+impl MyStruct {
+    /// Ensure the required C library is loaded at startup time.
+    #[ctor(unsafe)]
+    fn load_required_c_library() {
+        // ... (do something)
+    }
+}
+```
+
+### `static` items
+
+The `#[ctor]` macro also supports decorating `static` items, which are
+initialized at startup time. `static` items declared in this way must not be
+accessed from other threads before the module constructors have run (if this is
+done without caution, the initializer may panic).
+
+The below example creates a `HashMap` populated with strings, which would
+normally not be possible with `const` items:
 
 ```rust
 use std::collections::HashMap;
 use ctor::ctor;
 
-#[ctor]
+#[ctor(unsafe)]
 /// This is an immutable static, evaluated at init time
 static STATIC_CTOR: HashMap<u32, &'static str> = {
     let mut m = HashMap::new();
@@ -108,20 +134,6 @@ static STATIC_CTOR: HashMap<u32, &'static str> = {
     m.insert(2, "baz");
     m
 };
-```
-
-Print a message at shutdown time. Note that Rust may have shut down some stdlib
-services at this time.
-
-```rust,ignore
-use libc::printf;
-use ctor::dtor;
-
-#[dtor]
-unsafe fn shutdown() {
-    // Using println or eprintln here will panic as Rust has shut down
-    libc::printf(c"Shutting down!\n" as _);
-}
 ```
 
 ## Under the Hood
