@@ -512,7 +512,7 @@ macro_rules! __dtor_parse_impl {
     ) ) => {
         const _: () = {
             #[no_mangle]
-            #[link_name = concat!($link_name_prefix,
+            #[export_name = concat!($link_name_prefix,
                 module_path!(),
                 "_",
                 stringify!($name),

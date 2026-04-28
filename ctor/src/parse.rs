@@ -648,7 +648,7 @@ macro_rules! __ctor_parse_impl {
             const _: () = {
                 #[allow(unused_unsafe)]
                 #[no_mangle]
-                #[link_name = $($link_name)*]
+                #[export_name = $($link_name)*]
                 extern "C" fn __ctor_private() {
                     $body
                 }
