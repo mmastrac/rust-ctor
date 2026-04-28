@@ -186,7 +186,7 @@ dependencies = [
 
 [[package]]
 name = "ctor"
-version = "0.11.0"
+version = "0.11.1"
 dependencies = [
  "ctor-proc-macro",
  "dtor",

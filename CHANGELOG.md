@@ -2,9 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
-## ctor [0.11.0] - Unreleased
-## dtor [0.11.0] - Unreleased
-## link-section [0.11.0] - Unreleased
+## ctor [0.11.1] - 2026-04-28
+
+### Changed
+
+- Deprecated ``dtor` macros in favor of `dtor` crate.
+
+### Fixed
+
+- Fixed some stray `dtor` references in ctor docs.
+
+## ctor [0.11.0] - 2026-04-28
+## dtor [0.11.0] - 2026-04-28
+## link-section [0.11.0] - 2026-04-28
 
 ### Added
 
