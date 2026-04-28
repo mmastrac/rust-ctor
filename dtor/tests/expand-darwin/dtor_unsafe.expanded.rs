@@ -8,7 +8,7 @@ fn foo() {
                 ::dtor::__support::at_module_exit(__dtor_private);
             }
             extern "C" fn __dtor_private() {
-                unsafe { foo() }
+                { foo() }
             }
             __ctor_private
         };

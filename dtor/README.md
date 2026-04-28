@@ -1,7 +1,15 @@
-Shutdown functions for Rust for Linux, OSX, Windows, mobile (iOS/Android), WASM,
-BSD/BSD-likes and many other platforms.
+Shutdown functions for Rust (like `__attribute__((destructor))` in C/C++) for
+Linux, OSX, Windows, mobile (iOS/Android), WASM, BSD/BSD-likes and many other
+platforms.
 
-Like `__attribute__((destructor))` in C/C++, but for Rust.
+```rust
+use dtor::dtor;
+
+#[dtor(unsafe)]
+fn foo() {
+    println!("Life after main!");
+}
+```
 
 
 Print a message at shutdown time.
@@ -68,6 +76,16 @@ fn dtor_atexit() {
 
 
 </td></tr>
+<tr><td><code>link_name_prefix = $link_name_prefix_str : literal</code></td><td>
+
+ Specify a custom link name prefix for the destructor function.
+
+ If specified, an export with the given prefix will be generated in the form:
+
+ `<prefix>_<unique_id>`
+
+
+</td></tr>
 <tr><td><code>link_section = $section : literal</code></td><td>
 
  Place the destructor function pointer in a custom link section.
@@ -84,8 +102,8 @@ fn dtor_atexit() {
   - `at_module_exit`: Run the dtor using `__cxa_atexit`.
   - `at_binary_exit`: Run the dtor using `atexit` (unsupported on Windows
     platforms).
-  - `link_section`: Run the dtor using a custom link section (unsupported
-    on Apple platforms).
+  - `linker`: Run the dtor using a custom link section or link name
+    (unsupported on Apple platforms).
 
 
 </td></tr>
@@ -152,6 +170,16 @@ default_term_method = at_binary_exit
 default_unload_method = at_module_exit
  ```
 
+## `link_name_prefix`
+
+ ```rust
+#[cfg(target_os = "aix")]
+link_name_prefix = "__sterm80000000_"
+
+ // default
+link_name_prefix = ()
+ ```
+
 ## `link_section`
 
  ```rust
@@ -176,6 +204,9 @@ link_section = ".CRT$XPU"
 #[cfg(all(target_vendor = "pc", not(any(target_env = "gnu", target_env = "msvc"))))]
 link_section = ".dtors"
 
+#[cfg(all(target_os = "aix"))]
+link_section = ()
+
  // default
 link_section = (compile_error! ("Unsupported target for #[dtor]"))
  ```
@@ -190,5 +221,5 @@ method = at_module_exit
 method = at_module_exit
 
  // default
-method = link_section
+method = linker
  ```

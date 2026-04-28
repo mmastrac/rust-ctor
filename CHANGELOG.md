@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 
 - Added `method` attribute to `dtor` macro.
 - Added `link_section` attribute to `dtor` macro.
-- AIX support for `ctor` crate.
+- AIX support for `ctor`/`dtor` crates.
 
 ### Changed
 

@@ -18,7 +18,7 @@ macro_rules! __dtor_parse {
 #[macro_export]
 #[doc(hidden)]
 macro_rules! __dtor_parse_impl {
-    // Step 0: Check function shape
+    // Step 0: Check function shape and features
 
     // fn
     ( @entry next=$next:path[$next_args:tt], input=(
@@ -123,10 +123,7 @@ macro_rules! __dtor_parse_impl {
         $crate::__dtor_parse_impl(@entry next=$next[$next_args], input=(
             features = (
                 anonymous = $anonymous,
-                ctor_link_section = $ctor_link_section,
-                link_name_prefix = $link_name_prefix,
-                link_section = $link_section,
-                method = $default_term_method,
+                method = ($default_term_method $ctor_link_section $link_name_prefix $link_section),
                 no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
                 used_linker = $used_linker,
             ),
@@ -157,10 +154,7 @@ macro_rules! __dtor_parse_impl {
         $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
                 anonymous = $anonymous,
-                ctor_link_section = $ctor_link_section,
-                link_name_prefix = $link_name_prefix,
-                link_section = $link_section,
-                method = $default_unload_method,
+                method = ($default_unload_method $ctor_link_section $link_name_prefix $link_section),
                 no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
                 used_linker = $used_linker,
             ),
@@ -191,10 +185,7 @@ macro_rules! __dtor_parse_impl {
         $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
                 anonymous = $anonymous,
-                ctor_link_section = $ctor_link_section,
-                link_name_prefix = $link_name_prefix,
-                link_section = $link_section,
-                method = $method,
+                method = ($method $ctor_link_section $link_name_prefix $link_section),
                 no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
                 used_linker = $used_linker,
             ),
@@ -210,9 +201,6 @@ macro_rules! __dtor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             anonymous = $anonymous:tt,
-            ctor_link_section = $ctor_link_section:tt,
-            link_name_prefix = $link_name_prefix:tt,
-            link_section = $link_section:tt,
             method = $method:tt,
             no_warn_on_missing_unsafe = (),
             used_linker = $used_linker:tt,
@@ -236,9 +224,6 @@ macro_rules! __dtor_parse_impl {
         $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
                 anonymous = $anonymous,
-                ctor_link_section = $ctor_link_section,
-                link_name_prefix = $link_name_prefix,
-                link_section = $link_section,
                 method = $method,
                 used_linker = $used_linker,
             ),
@@ -252,9 +237,6 @@ macro_rules! __dtor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             anonymous = $anonymous:tt,
-            ctor_link_section = $ctor_link_section:tt,
-            link_name_prefix = $link_name_prefix:tt,
-            link_section = $link_section:tt,
             method = $method:tt,
             no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
             used_linker = $used_linker:tt,
@@ -266,9 +248,6 @@ macro_rules! __dtor_parse_impl {
         $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
                 anonymous = $anonymous,
-                ctor_link_section = $ctor_link_section,
-                link_name_prefix = $link_name_prefix,
-                link_section = $link_section,
                 method = $method,
                 used_linker = $used_linker,
             ),
@@ -282,9 +261,6 @@ macro_rules! __dtor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             anonymous = anonymous,
-            ctor_link_section = $ctor_link_section:tt,
-            link_name_prefix = $link_name_prefix:tt,
-            link_section = $link_section:tt,
             method = $method:tt,
             used_linker = $used_linker:tt,
         ),
@@ -296,9 +272,6 @@ macro_rules! __dtor_parse_impl {
         const _: () = {
             $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
                 features = (
-                    ctor_link_section = $ctor_link_section,
-                    link_name_prefix = $link_name_prefix,
-                    link_section = $link_section,
                     method = $method,
                     used_linker = $used_linker,
                 ),
@@ -312,9 +285,6 @@ macro_rules! __dtor_parse_impl {
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             anonymous = (),
-            ctor_link_section = $ctor_link_section:tt,
-            link_name_prefix = $link_name_prefix:tt,
-            link_section = $link_section:tt,
             method = $method:tt,
             used_linker = $used_linker:tt,
         ),
@@ -324,9 +294,6 @@ macro_rules! __dtor_parse_impl {
     ) ) => {
         $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
-                ctor_link_section = $ctor_link_section,
-                link_name_prefix = $link_name_prefix,
-                link_section = $link_section,
                 method = $method,
                 used_linker = $used_linker,
             ),
@@ -339,9 +306,6 @@ macro_rules! __dtor_parse_impl {
     // Step 4: Compute used_linker
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
-            ctor_link_section = $ctor_link_section:tt,
-            link_name_prefix = $link_name_prefix:tt,
-            link_section = $link_section:tt,
             method = $method:tt,
             used_linker = (),
         ),
@@ -351,9 +315,6 @@ macro_rules! __dtor_parse_impl {
     ) ) => {
         $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
-                ctor_link_section = $ctor_link_section,
-                link_name_prefix = $link_name_prefix,
-                link_section = $link_section,
                 method = $method,
                 used_linker_meta = (#[used]),
             ),
@@ -365,9 +326,6 @@ macro_rules! __dtor_parse_impl {
 
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
-            ctor_link_section = $ctor_link_section:tt,
-            link_name_prefix = $link_name_prefix:tt,
-            link_section = $link_section:tt,
             method = $method:tt,
             used_linker = used_linker,
         ),
@@ -377,9 +335,6 @@ macro_rules! __dtor_parse_impl {
     ) ) => {
         $crate::__dtor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
-                ctor_link_section = $ctor_link_section,
-                link_name_prefix = $link_name_prefix,
-                link_section = $link_section,
                 method = $method,
                 used_linker_meta = (#[used(linker)]),
             ),
@@ -392,10 +347,7 @@ macro_rules! __dtor_parse_impl {
     // Step 5: Delegate on method (at_module_exit, at_binary_exit, link_section)
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
-            ctor_link_section = $ctor_link_section:tt,
-            link_name_prefix = $link_name_prefix:tt,
-            link_section = $link_section:tt,
-            method = $method:tt,
+            method = ($method:tt $ctor_link_section:tt $link_name_prefix:tt $link_section:tt),
             used_linker_meta = (#$used_linker_meta:tt),
         ),
         meta = ($($meta:tt)*),

@@ -1,6 +1,14 @@
-Module initialization/teardown functions for Rust (like
-`__attribute__((constructor))` in C/C++) for Linux, OSX, Windows, WASM,
-BSD-likes, and many others.
+Module initialization functions for Rust (like `__attribute__((constructor))` in
+C/C++) for Linux, OSX, Windows, WASM, BSD-likes, and many others.
+
+```rust
+use ctor::ctor;
+
+#[ctor(unsafe)]
+fn foo() {
+    println!("Life before main!");
+}
+```
 
 ## MSRV
 
@@ -166,10 +174,10 @@ The idea for `ctor` was originally inspired by the Neon project.
  The path to the `ctor` crate containing the support macros. If you
  re-export `ctor` items as part of your crate, you can use this to
  redirect the macro’s output to the correct crate.
- 
+
  Using the declarative [`ctor!`][c] form is
  preferred over this parameter.
- 
+
  [c]: crate::declarative::ctor!
 
 
@@ -202,7 +210,7 @@ The idea for `ctor` was originally inspired by the Neon project.
  The priority of the constructor. Higher-`N`-priority constructors are
  run last. `N` must be between 0 and 999 for ordering guarantees (`N` >=
  1000 ordering is platform-defined).
- 
+
  Ordering with respect to constructors without a priority is
  platform-defined.
 

@@ -4,7 +4,7 @@ fn foo() {
         #[used]
         static __DTOR_PRIVATE_REF: extern "C" fn() = {
             extern "C" fn __dtor_private() {
-                unsafe { foo() }
+                { foo() }
             }
             __dtor_private
         };
@@ -19,7 +19,7 @@ fn bar() {
         #[used]
         static __DTOR_PRIVATE_REF: extern "C" fn() = {
             extern "C" fn __dtor_private() {
-                unsafe { bar() }
+                { bar() }
             }
             __dtor_private
         };

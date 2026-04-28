@@ -5,7 +5,7 @@ fn foo() {
         #[used(linker)]
         static __DTOR_PRIVATE_REF: extern "C" fn() = {
             extern "C" fn __dtor_private() {
-                unsafe { foo() }
+                { foo() }
             }
             __dtor_private
         };
