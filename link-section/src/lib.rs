@@ -148,7 +148,7 @@ pub mod __support {
         VALID_SECTION_CHARS = "_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     }
 
-    #[cfg(any(target_vendor = "pc", target_os = "aix"))]
+    #[cfg(any(target_vendor = "pc"))]
     def_section_name! {
         {
             data bare =>    (".data", "$") __ ();
@@ -159,6 +159,24 @@ pub mod __support {
             code section => (".text", "$") __ ("$b");
             code start =>   (".text", "$") __ ("$a");
             code end =>     (".text", "$") __ ("$c");
+        }
+        AUXILIARY = "$d$";
+        MAX_LENGTH = 64;
+        HASH_LENGTH = 10;
+        VALID_SECTION_CHARS = "_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    }
+
+    #[cfg(any(target_os = "aix"))]
+    def_section_name! {
+        {
+            data bare =>    (".data", ".link_section.") __ ();
+            data section => (".data", ".link_section.") __ ("$b");
+            data start =>   (".data", ".link_section.") __ ("$a");
+            data end =>     (".data", ".link_section.") __ ("$c");
+            code bare =>    (".text", ".link_section.") __ ();
+            code section => (".text", ".link_section.") __ ("$b");
+            code start =>   (".text", ".link_section.") __ ("$a");
+            code end =>     (".text", ".link_section.") __ ("$c");
         }
         AUXILIARY = "$d$";
         MAX_LENGTH = 64;
