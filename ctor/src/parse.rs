@@ -36,6 +36,44 @@ macro_rules! __ctor_parse_internal {
 #[doc(hidden)]
 macro_rules! __ctor_parse_impl {
     // Step 1: Feature check
+
+    // If priority disabled and no priority, treat as naked
+    ( @entry next=$next:path[$next_args:tt], input=(
+        features = (
+            anonymous = $anonymous:tt,
+            crate_path = $crate_path:tt,
+            export_name_prefix = $export_name_prefix:tt,
+            link_section = $link_section:tt,
+            no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
+            priority = (),
+            priority_enabled = (),
+            proc_macro = $proc_macro:tt,
+            std = $std:tt,
+            used_linker = $used_linker:tt,
+        ),
+        meta = $meta:tt,
+        unsafe = $unsafe:tt,
+        item = $item:tt
+    )) => {
+        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+            features = (
+                anonymous = $anonymous,
+                crate_path = $crate_path,
+                export_name_prefix = $export_name_prefix,
+                link_section = $link_section,
+                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
+                priority = naked,
+                priority_enabled = priority_enabled,
+                proc_macro = $proc_macro,
+                std = $std,
+                used_linker = $used_linker,
+            ),
+            meta = $meta,
+            unsafe = $unsafe,
+            item = $item
+        ));
+    };
+
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             anonymous = $anonymous:tt,
@@ -434,7 +472,7 @@ macro_rules! __ctor_parse_impl {
     ) ) => {
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
-                export_name = ($export_name_prefix, (concat!(env!("CARGO_PKG_NAME"), "_",
+                export_name = (($export_name_prefix), ("_", concat!(env!("CARGO_PKG_NAME"), "_",
                     ::core::module_path!(), "_",
                     stringify!($link_name),
                     "_L", line!(), "C", column!()))),
@@ -450,7 +488,7 @@ macro_rules! __ctor_parse_impl {
 
     // Step 7: Compute priority
 
-    // No priority, treat as early
+    // No priority, treat as early or naked
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             export_name = $export_name:tt,
@@ -502,7 +540,7 @@ macro_rules! __ctor_parse_impl {
     // naked with export name: use 0 priority (AIX requires this, could probably be improved)
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
-            export_name = ($($prefix:tt)*, $($suffix:tt)*),
+            export_name = (($($prefix:tt)*), ($($suffix:tt)*)),
             link_section = $link_section:tt,
             priority = naked,
             used_linker_meta = $used_linker_meta:tt,
@@ -661,7 +699,7 @@ macro_rules! __ctor_parse_impl {
 
     ( [@priority next=$next:path[$next_args:tt],
         features = (
-            export_name = ($($prefix:tt)*, $($suffix:tt)*),
+            export_name = (($($prefix:tt)*), ($($suffix:tt)*)),
             link_section = $link_section:tt,
             used_linker_meta = $used_linker_meta:tt,
         ),
@@ -774,5 +812,9 @@ macro_rules! __ctor_parse_impl {
                 __ctor_private
             };
         };
+    };
+
+    (@ctor $features:tt body=$body:tt) => {
+        compile_error!(concat!("Invalid ctor features: ", stringify!($features)));
     };
 }
