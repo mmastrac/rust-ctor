@@ -45,7 +45,7 @@ crate::__ctor_parse_internal!(
 #[cfg(all(feature = "priority", target_vendor = "apple"))]
 #[doc(hidden)]
 pub mod collect {
-    use core::sync::atomic::{Ordering, AtomicU8};
+    use core::sync::atomic::{AtomicU8, Ordering};
 
     const PROCESSED: isize = isize::MIN;
     #[doc(hidden)]
@@ -68,12 +68,12 @@ pub mod collect {
     /// Run all constructors in the CTOR section. It is assumed that there is
     /// only ever one of these calls active at any time, regardless of how many
     /// versions of the ctor crate are in use.
-    /// 
+    ///
     /// # Safety
-    /// 
+    ///
     /// We use a guard section to ensure that only one version of the ctor crate
     /// is running constructors at any time.
-    /// 
+    ///
     /// If another copy of this function is running, we will return early, but
     /// the constructors will not have been guaranteed to have run.
     #[allow(unsafe_code)]
@@ -86,7 +86,12 @@ pub mod collect {
 
         // In the unlikely case we are racing multiple threads, one will win.
         loop {
-            match guard.compare_exchange_weak(GUARD_NOT_RUN, GUARD_RUNNING,  Ordering::AcqRel, Ordering::Acquire) {
+            match guard.compare_exchange_weak(
+                GUARD_NOT_RUN,
+                GUARD_RUNNING,
+                Ordering::AcqRel,
+                Ordering::Acquire,
+            ) {
                 Ok(_) => break,
                 Err(GUARD_NOT_RUN) => {
                     // Spurious failure, try again
@@ -447,9 +452,9 @@ __declare_features!(
     /// unprocessed. `naked` indicates that the constructor should not use a
     /// priority value, and should use the low-level platform-specific
     /// unprioritized mechanism.
-    /// 
+    ///
     /// Priority is applied as follows:
-    /// 
+    ///
     ///  - `early` is the default, and is run first (constructors annotated with
     ///    `early` and those with no priority attribute are run in the same
     ///    phase).
@@ -457,7 +462,7 @@ __declare_features!(
     ///  - `late` is run last, and will be positioned to run after most
     ///    constructors, even outside the range 0 <= N <= 999.
     ///  - `main` is run, for binary targets.
-    /// 
+    ///
     /// Ordering outside of `0 <= N <= 999` is platform-defined with respect to
     /// the list above, however platforms will order constructors within a given
     /// length range in ascending order (ie: 10000 will run before 20000).
