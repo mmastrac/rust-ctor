@@ -96,12 +96,12 @@ macro_rules! __parse_item {
 #[doc(hidden)]
 macro_rules! __finish_item {
     ( @entry next=$next:path[$next_args:tt], input=(
-        $($feature:ident = $feature_value:tt,)*
+        $($feature:ident = $feature_value:tt $feature_value_what:ident,)*
         ($(#[$other_meta:meta])*)
         $($item:tt)*
     ) ) => {
         $next ! ( $next_args, (
-            features = ($($feature = $feature_value,)*),
+            features = ($($feature = $feature_value: $feature_value_what,)*),
             meta = ($(#[$other_meta])*),
             item = ($($item)*)
         ) );
@@ -496,18 +496,18 @@ macro_rules! __extract_meta {
     };
     ( [@finish next=$next:path[$next_args:tt]],
         ($(
-            ( $name:ident = $value:tt $( , $def_value:tt )? )
+            ( $name:ident = $value:tt $value_what:ident $( , $def_value:tt $def_value_what:ident )? )
         )*)
     ) => {
         $next ! ( $next_args, (
             $(
-                $name = $value,
+                $name = $value $value_what,
             )*
         ) );
     };
     ( [@finish next=$next:path[$next_args:tt]],
         (
-            $(( $name:ident = $value:tt $( , $def_value:tt $( $comma:tt $($rest:tt)* )? )? ))*
+            $(( $name:ident = $value:tt $value_what:ident $( , $def_value:tt $def_value_what:ident $( $comma:tt $($rest:tt)* )? )? ))*
         )
     ) => {
         // TODO: This should show the underlying attribute rather than the internal name.
@@ -626,8 +626,8 @@ macro_rules! __make_macros {
                 )*
             ) => {
                 $next_macro ! ( $next_macro_args, ( $(($feature = $(
-                    $dollar ( $dollar( $($attr_output)* $dollar $feature )? )*
-                )? $default_value))* ) );
+                    $dollar ( $dollar( $($attr_output)* value $dollar $feature )? )*
+                )? $default_value default))* ) );
             };
 
             // Unrecognized, munch until end of recognized input.

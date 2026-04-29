@@ -10,10 +10,19 @@ All notable changes to this project will be documented in this file.
   `self` parameter and must not access any generic parameters from the outer
   item.
 - Added `life before main` documentation to all crates.
+- `early` and `late` priority values are now supported on all platforms.
 
 ### Removed
 
 - deprecated `dtor` feature and crate dependency from `ctor` crate (use the `dtor` crate directly).
+
+### Changed
+
+- If the `priority` feature is enabled, `ctor` priority sorting is now stable
+  and consistent across platforms: `early`/`0`/`unspecified`, then `1 <= N <
+  1000`, then `late`.
+- If a `link_section` or `export_name_prefix` is specified, a `priority` value
+  must not be specified (now a compiler error).
 
 ## dtor [0.12.0] - Unreleased
 

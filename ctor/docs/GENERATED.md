@@ -59,11 +59,29 @@
 <tr><td><code>priority = $priority_value : tt</code></td><td>
 
  The priority of the constructor. Higher-`N`-priority constructors are
- run last. `N` must be between 0 and 999 for ordering guarantees (`N` >=
- 1000 ordering is platform-defined).
+ run last. `N` must be between 0 and 999 inclusive for ordering
+ guarantees (`N` >= 1000 ordering is platform-defined).
 
- Ordering with respect to constructors without a priority is
- platform-defined.
+ Priority is specified as an isize, string literal, or the identifiers
+ `early`, `late`, or `naked`. The integer value will be clamped to a
+ platform-defined range (typically 0-65535), while the string value will
+ unprocessed. `naked` indicates that the constructor should not use a
+ priority value, and should use the low-level platform-specific
+ unprioritized mechanism.
+
+ Priority is applied as follows:
+
+  - `early` is the default, and is run first (constructors annotated with
+    `early` and those with no priority attribute are run in the same
+    phase).
+  - `N` is run in increasing order, from 0 <= N <= 999.
+  - `late` is run last, and will be positioned to run after most
+    constructors, even outside the range 0 <= N <= 999.
+  - `main` is run, for binary targets.
+
+ Ordering outside of `0 <= N <= 999` is platform-defined with respect to
+ the list above, however platforms will order constructors within a given
+ length range in ascending order (ie: 10000 will run before 20000).
 
 
 </td></tr>
@@ -135,5 +153,19 @@ link_section = ()
 
  // default
 link_section = (compile_error! ("Unsupported target for #[ctor]"))
+ # }
+ ```
+
+## `priority`
+
+ ```rust
+ # #[cfg(false)] {
+#[cfg(feature = "priority")]
+ # const _: () = { let
+priority = early
+ # ; };
+
+ // default
+priority = naked
  # }
  ```

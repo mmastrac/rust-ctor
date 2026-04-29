@@ -28,10 +28,11 @@ initializing (constructors) or still being valid (destructors).
 ### Panic handling
 
 Panic handlers may not be set up in early code, so a `panic!()` may not be
-catchable, or may even be undefined behavior
-([🦀 #97049](https://github.com/rust-lang/rust/issues/97049),
-[🦀 #107381](https://github.com/rust-lang/rust/issues/107381),
-[🦀 #86030](https://github.com/rust-lang/rust/issues/86030)).
+catchable, or may even result in undefined behavior. Generally, code that runs
+before main must take great pains not to panic ([🦀
+#97049](https://github.com/rust-lang/rust/issues/97049), [🦀
+#107381](https://github.com/rust-lang/rust/issues/107381), [🦀
+#86030](https://github.com/rust-lang/rust/issues/86030)).
 
 _References_
 

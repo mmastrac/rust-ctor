@@ -122,6 +122,55 @@ static STATIC_CTOR: HashMap<u32, &'static str> = {
 };
 ```
 
+### As a building block
+
+The `#[ctor]` macro can be used as a building block for more complex
+initialization logic. Use the [`declarative::ctor`](crate::declarative::ctor) to
+easily export macros that re-use `ctor` functionality.
+
+```rust
+use ctor::ctor;
+
+trait Driver: 'static + Send + Sync {
+    // ...
+}
+
+static DRIVERS: ::std::sync::Mutex<Vec<Box<dyn Driver>>> = ::std::sync::Mutex::new(Vec::new());
+
+fn register_driver(name: &'static str, driver: impl Driver) {
+    DRIVERS.lock().unwrap().push(Box::new(driver));
+}
+
+#[ctor(priority = late)]
+fn walk_drivers() {
+    for driver in DRIVERS.lock().unwrap().iter() {
+        // ...
+    }
+}
+
+macro_rules! register_driver {
+    ($name:expr, $driver:expr) => {
+        $crate::ctor::declarative::ctor!(
+            #[ctor(unsafe, anonymous, priority = 1)]
+            fn register() {
+                register_driver($name, $driver);
+            }
+        );
+    };
+}
+
+struct MyDriver {
+    // ...
+}
+
+impl Driver for MyDriver {
+    // ...
+}
+
+register_driver!("my_driver", MyDriver {});
+
+```
+
 ## Under the Hood
 
 The `#[ctor]` macro makes use of linker sections to ensure that a function is

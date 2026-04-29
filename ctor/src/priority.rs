@@ -24,6 +24,16 @@ macro_rules! __make_priority_literal {
     };
 }
 
+#[cfg(target_os = "aix")]
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __priority_to_literal {
+    ($n:path, $a:tt=$priority:tt) => {
+        $n!($a, ($priority));
+    };
+}
+
+#[cfg(not(target_os = "aix"))]
 __make_priority_literal! { $
     (00 0 1 2 3 4 5 6 7 8 9)
     (0 10 11 12 13 14 15 16 17 18 19)
