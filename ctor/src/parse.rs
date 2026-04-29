@@ -506,6 +506,30 @@ macro_rules! __ctor_parse_impl {
         ));
     };
 
+    // naked - no processing
+    ( @entry next=$next:path[$next_args:tt], input=(
+        features = (
+            link_name = $link_name:tt,
+            link_section = $link_section:tt,
+            priority = naked,
+            used_linker_meta = $used_linker_meta:tt,
+        ),
+        meta = $meta:tt,
+        unsafe = $unsafe:tt,
+        item = $item:tt
+    ) ) => {
+        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+            link_args = (
+                link_name = $link_name,
+                link_section = ($link_section),
+                used = $used_linker_meta,
+            ),
+            meta = $meta,
+            unsafe = $unsafe,
+            item = $item
+        ));
+    };
+
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             link_name = $link_name:tt,
@@ -632,14 +656,11 @@ macro_rules! __ctor_parse_impl {
      ) body=$body:tt ) => {
         const _: () = {
             #[allow(unused_unsafe)]
-            fn __ctor_private() {
+            extern "C" fn __ctor_private() {
                 $body
             }
 
-            $crate::__support::in_section!(
-                #[in_section(unsafe, type = (fn(), u16), name = CTOR)]
-                static __CTOR_ENTRY: (fn(), u16) = (__ctor_private, $priority);
-            );
+            $crate::__register_ctor!(priority = $priority, fn = __ctor_private);
         };
     };
 

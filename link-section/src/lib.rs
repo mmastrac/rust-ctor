@@ -790,6 +790,14 @@ impl<T: 'static> TypedSection<T> {
             unsafe { ::core::slice::from_raw_parts_mut(self.start_ptr() as *mut T, self.len()) }
         }
     }
+
+    pub fn start_ptr_mut(&self) -> *mut T {
+        self.start_ptr() as *mut T
+    }
+
+    pub fn end_ptr_mut(&self) -> *mut T {
+        self.end_ptr() as *mut T
+    }
 }
 
 impl<'a, T> ::core::iter::IntoIterator for &'a TypedSection<T> {

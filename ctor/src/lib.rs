@@ -33,27 +33,137 @@ crate::__ctor_parse_internal!(
     __ctor_features,
     /// Define a link section when using the priority parameter on Apple
     /// targets. This is awkwardly placed in the root module because it needs to
-    /// use a generated macro. (see
+    /// use a generated macro and we cannot use an absolute path to it. (see
     /// <https://github.com/rust-lang/rust/issues/52234>)
-    #[ctor(unsafe)]
-    fn priority_ctor() {
-        link_section::declarative::section!(
-            #[section(no_macro)]
-            pub static CTOR: link_section::TypedSection<(fn(), u16)>;
-        );
-
-        // SAFETY: The CTOR section is only accessed in this function, and
-        // this function is only ever called once.
-        #[allow(unsafe_code)]
-        unsafe {
-            CTOR.as_mut_slice()
-                .sort_unstable_by_key(|(_, priority)| *priority);
-        }
-        for (ctor, _) in CTOR {
-            ctor();
-        }
+    #[ctor(unsafe, priority = naked)]
+    unsafe fn priority_ctor() {
+        crate::collect::run_constructors();
     }
 );
+
+/// Collected constructors for platforms requiring manual invocation.
+#[cfg(all(feature = "priority", target_vendor = "apple"))]
+#[doc(hidden)]
+pub mod collect {
+    use core::sync::atomic::{Ordering, AtomicU8};
+
+    const PROCESSED: isize = isize::MIN;
+    #[doc(hidden)]
+    pub const EARLY: isize = -1;
+    #[doc(hidden)]
+    pub const LATE: isize = isize::MAX;
+
+    const GUARD_NOT_RUN: u8 = 0;
+    const GUARD_RUNNING: u8 = 1;
+    const GUARD_FINISHED: u8 = 2;
+
+    /// A constructor record.
+    #[derive(Copy, Clone)]
+    #[repr(C)]
+    pub struct Constructor {
+        pub priority: isize,
+        pub ctor: unsafe extern "C" fn(),
+    }
+
+    /// Run all constructors in the CTOR section. It is assumed that there is
+    /// only ever one of these calls active at any time, regardless of how many
+    /// versions of the ctor crate are in use.
+    /// 
+    /// # Safety
+    /// 
+    /// We use a guard section to ensure that only one version of the ctor crate
+    /// is running constructors at any time.
+    /// 
+    /// If another copy of this function is running, we will return early, but
+    /// the constructors will not have been guaranteed to have run.
+    #[allow(unsafe_code)]
+    pub(crate) unsafe fn run_constructors() {
+        // Mutliple ctor crates may contribute multiple guards, but there will
+        // only ever be one "first" guard.
+        let Some(guard) = _CTR0GR_ISIZE_FN.get(0) else {
+            return;
+        };
+
+        // In the unlikely case we are racing multiple threads, one will win.
+        loop {
+            match guard.compare_exchange_weak(GUARD_NOT_RUN, GUARD_RUNNING,  Ordering::AcqRel, Ordering::Acquire) {
+                Ok(_) => break,
+                Err(GUARD_NOT_RUN) => {
+                    // Spurious failure, try again
+                    continue;
+                }
+                Err(_) => return,
+            }
+        }
+
+        // SAFETY: Limit the scope of the mutable slice. This slice is only ever
+        // accessed under the guard.
+        unsafe {
+            let slice = _CTOR0_ISIZE_FN.as_mut_slice();
+            slice.sort_unstable_by_key(|constructor| constructor.priority);
+        }
+
+        unsafe {
+            let start = _CTOR0_ISIZE_FN.start_ptr_mut();
+            let end = _CTOR0_ISIZE_FN.end_ptr_mut();
+            let mut ptr = start;
+            while ptr < end {
+                let mut constructor = ptr.read();
+                if constructor.priority != crate::collect::PROCESSED {
+                    constructor.priority = crate::collect::PROCESSED;
+                    ptr.write(constructor);
+                    (constructor.ctor)();
+                }
+                ptr = ptr.add(1);
+            }
+        }
+
+        guard.store(GUARD_FINISHED, Ordering::Release);
+    }
+
+    // Note: The section names must be <= 16 characters long to fit in the mach-o limits.
+    // These sections are shared between multiple versions of the ctor crate.
+
+    #[doc(hidden)]
+    link_section::declarative::section!(
+        #[section(no_macro)]
+        pub static _CTOR0_ISIZE_FN: link_section::TypedSection<Constructor>;
+    );
+
+    #[macro_export]
+    #[doc(hidden)]
+    macro_rules! __register_ctor {
+        (priority = (), fn = $fn:ident) => {
+            $crate::__register_ctor!(priority = ($crate::collect::EARLY), fn = $fn);
+        };
+        (priority = early, fn = $fn:ident) => {
+            $crate::__register_ctor!(priority = ($crate::collect::EARLY), fn = $fn);
+        };
+        (priority = late, fn = $fn:ident) => {
+            $crate::__register_ctor!(priority = ($crate::collect::LATE), fn = $fn);
+        };
+        (priority = $priority:tt, fn = $fn:ident) => {
+            $crate::__support::in_section!(
+                #[in_section(unsafe, type = $crate::collect::Constructor, name = _CTOR0_ISIZE_FN)]
+                pub static CTOR: $crate::collect::Constructor = $crate::collect::Constructor {
+                    priority: $priority,
+                    ctor: $fn,
+                };
+            );
+        };
+    }
+
+    #[doc(hidden)]
+    link_section::declarative::section!(
+        #[section(no_macro)]
+        pub static _CTR0GR_ISIZE_FN: link_section::TypedSection<AtomicU8>;
+    );
+
+    link_section::declarative::in_section!(
+        #[in_section(unsafe, type = AtomicU8, name = _CTR0GR_ISIZE_FN)]
+        pub static GUARD_ATOMIC: AtomicU8 = AtomicU8::new(GUARD_NOT_RUN);
+    );
+}
 
 ///Declarative form of the `#[ctor]` macro.
 pub mod declarative {
@@ -328,11 +438,27 @@ __declare_features!(
         attr: [(unsafe) => (no_warn_on_missing_unsafe)];
     };
     /// The priority of the constructor. Higher-`N`-priority constructors are
-    /// run last. `N` must be between 0 and 999 for ordering guarantees (`N` >=
-    /// 1000 ordering is platform-defined).
+    /// run last. `N` must be between 0 and 999 inclusive for ordering
+    /// guarantees (`N` >= 1000 ordering is platform-defined).
     ///
-    /// Ordering with respect to constructors without a priority is
-    /// platform-defined.
+    /// Priority is specified as an isize, string literal, or the identifiers
+    /// `early` and `late`. The integer value will be clamped to a
+    /// platform-defined range (typically 0-65535), while the string value will
+    /// unprocessed.
+    /// 
+    /// Priority is applied as follows:
+    /// 
+    ///  - `early` is the default, and is run first (constructors annotated with
+    ///    `early` and those with no priority attribute are run in the same
+    ///    phase).
+    ///  - `N` is run in increasing order, from 0 <= N <= 999.
+    ///  - `late` is run last, and will be positioned to run after most
+    ///    constructors, even outside the range 0 <= N <= 999.
+    ///  - `main` is run, for binary targets.
+    /// 
+    /// Ordering outside of `0 <= N <= 999` is platform-defined with respect to
+    /// the list above, however platforms will order constructors within a given
+    /// length range in ascending order (ie: 10000 will run before 20000).
     priority {
         attr: [(priority = $priority_value:tt) => ($priority_value)];
         validate: [(priority = $priority:literal), (priority = early), (priority = late)];
