@@ -7,10 +7,9 @@ use ctor::declarative::ctor;
 #[allow(dead_code)]
 fn early() {
     fn __ctor_private_inner() {}
-    #[allow(unsafe_code)]
     const _: () =
         {
-            #[allow(unused_unsafe)]
+            #[allow(unused_unsafe, unsafe_code)]
             #[no_mangle]
             #[export_name =
             "__sinit80000000_expand_probe_expand_probe_early_L5C1"]
@@ -21,10 +20,9 @@ fn early() {
 #[allow(dead_code)]
 fn priority1() {
     fn __ctor_private_inner() {}
-    #[allow(unsafe_code)]
     const _: () =
         {
-            #[allow(unused_unsafe)]
+            #[allow(unused_unsafe, unsafe_code)]
             #[no_mangle]
             #[export_name =
             "__sinit80000001_expand_probe_expand_probe_priority1_L10C1"]
@@ -35,10 +33,9 @@ fn priority1() {
 #[allow(dead_code)]
 fn priority900() {
     fn __ctor_private_inner() {}
-    #[allow(unsafe_code)]
     const _: () =
         {
-            #[allow(unused_unsafe)]
+            #[allow(unused_unsafe, unsafe_code)]
             #[no_mangle]
             #[export_name =
             "__sinit80000900_expand_probe_expand_probe_priority900_L15C1"]
@@ -49,10 +46,9 @@ fn priority900() {
 #[allow(dead_code)]
 fn late() {
     fn __ctor_private_inner() {}
-    #[allow(unsafe_code)]
     const _: () =
         {
-            #[allow(unused_unsafe)]
+            #[allow(unused_unsafe, unsafe_code)]
             #[no_mangle]
             #[export_name =
             "__sinit89999999_expand_probe_expand_probe_late_L20C1"]
@@ -63,10 +59,9 @@ fn late() {
 #[allow(dead_code)]
 fn naked() {
     fn __ctor_private_inner() {}
-    #[allow(unsafe_code)]
     const _: () =
         {
-            #[allow(unused_unsafe)]
+            #[allow(unused_unsafe, unsafe_code)]
             #[no_mangle]
             #[export_name =
             "__sinit80000000_expand_probe_expand_probe_naked_L25C1"]
