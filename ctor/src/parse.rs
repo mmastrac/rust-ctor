@@ -392,7 +392,7 @@ macro_rules! __ctor_parse_impl {
         ));
     };
 
-    // Step 6: Compute link_name
+    // Step 6: Compute export name suffix
 
     // No prefix, no computation
     ( @entry next=$next:path[$next_args:tt], input=(
@@ -409,39 +409,9 @@ macro_rules! __ctor_parse_impl {
     ) ) => {
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
-                link_name = (),
+                export_name = (),
                 link_section = $link_section,
                 priority = $priority,
-                used_linker_meta = $used_linker_meta,
-            ),
-            meta = $meta,
-            unsafe = $unsafe,
-            item = $item
-        ));
-    };
-
-    ( @entry next=$next:path[$next_args:tt], input=(
-        features = (
-            link_name = $link_name:tt,
-            export_name_prefix = $export_name_prefix:tt,
-            link_section = $link_section:tt,
-            priority = (),
-            used_linker_meta = $used_linker_meta:tt,
-        ),
-        meta = $meta:tt,
-        unsafe = $unsafe:tt,
-        item = $item:tt
-    ) ) => {
-        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
-            features = (
-                link_name = (concat!($export_name_prefix,
-                    "0_",
-                    env!("CARGO_PKG_NAME"), "_",
-                    ::core::module_path!(), "_",
-                    stringify!($link_name),
-                    "_L", line!(), "C", column!())),
-                link_section = $link_section,
-                priority = (),
                 used_linker_meta = $used_linker_meta,
             ),
             meta = $meta,
@@ -464,12 +434,10 @@ macro_rules! __ctor_parse_impl {
     ) ) => {
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
-                link_name = (concat!($export_name_prefix,
-                    $priority, "_",
-                    env!("CARGO_PKG_NAME"), "_",
+                export_name = ($export_name_prefix, (concat!(env!("CARGO_PKG_NAME"), "_",
                     ::core::module_path!(), "_",
                     stringify!($link_name),
-                    "_L", line!(), "C", column!())),
+                    "_L", line!(), "C", column!()))),
                 link_section = $link_section,
                 priority = $priority,
                 used_linker_meta = $used_linker_meta,
@@ -482,10 +450,10 @@ macro_rules! __ctor_parse_impl {
 
     // Step 7: Compute priority
 
-    // No priority, no prefix, flow through to used_linker_meta
+    // No priority, treat as early
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
-            link_name = $link_name:tt,
+            export_name = $export_name:tt,
             link_section = $link_section:tt,
             priority = (),
             used_linker_meta = $used_linker_meta:tt,
@@ -495,10 +463,11 @@ macro_rules! __ctor_parse_impl {
         item = $item:tt
     ) ) => {
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
-            link_args = (
-                link_name = $link_name,
-                link_section = ($link_section),
-                used = $used_linker_meta,
+            features = (
+                export_name = $export_name,
+                link_section = $link_section,
+                priority = early,
+                used_linker_meta = $used_linker_meta,
             ),
             meta = $meta,
             unsafe = $unsafe,
@@ -509,7 +478,7 @@ macro_rules! __ctor_parse_impl {
     // naked - no processing
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
-            link_name = $link_name:tt,
+            export_name = (),
             link_section = $link_section:tt,
             priority = naked,
             used_linker_meta = $used_linker_meta:tt,
@@ -520,7 +489,31 @@ macro_rules! __ctor_parse_impl {
     ) ) => {
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             link_args = (
-                link_name = $link_name,
+                export_name = (),
+                link_section = ($link_section),
+                used = $used_linker_meta,
+            ),
+            meta = $meta,
+            unsafe = $unsafe,
+            item = $item
+        ));
+    };
+
+    // naked with export name: use 0 priority (AIX requires this, could probably be improved)
+    ( @entry next=$next:path[$next_args:tt], input=(
+        features = (
+            export_name = ($($prefix:tt)*, $($suffix:tt)*),
+            link_section = $link_section:tt,
+            priority = naked,
+            used_linker_meta = $used_linker_meta:tt,
+        ),
+        meta = $meta:tt,
+        unsafe = $unsafe:tt,
+        item = $item:tt
+    ) ) => {
+        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+            link_args = (
+                export_name = (concat!($($prefix)*, "0", $($suffix)*)),
                 link_section = ($link_section),
                 used = $used_linker_meta,
             ),
@@ -532,7 +525,7 @@ macro_rules! __ctor_parse_impl {
 
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
-            link_name = $link_name:tt,
+            export_name = $export_name:tt,
             link_section = $link_section:tt,
             priority = $priority:tt,
             used_linker_meta = $used_linker_meta:tt,
@@ -544,7 +537,7 @@ macro_rules! __ctor_parse_impl {
         #[cfg(target_vendor = "apple")]
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             link_args = (
-                link_name = $link_name,
+                export_name = $export_name,
                 priority = $priority,
                 used = $used_linker_meta,
             ),
@@ -558,7 +551,7 @@ macro_rules! __ctor_parse_impl {
         $crate::__priority_to_literal!($crate::__ctor_parse_impl,[
             @priority next=$next[$next_args],
             features = (
-                link_name = $link_name,
+                export_name = $export_name,
                 link_section = $link_section,
                 used_linker_meta = $used_linker_meta,
             ),
@@ -570,7 +563,7 @@ macro_rules! __ctor_parse_impl {
 
     ( [@priority next=$next:path[$next_args:tt],
         features = (
-            link_name = $link_name:tt,
+            export_name = (),
             link_section = $link_section:tt,
             used_linker_meta = $used_linker_meta:tt,
         ),
@@ -580,7 +573,29 @@ macro_rules! __ctor_parse_impl {
     ], ($($priority:tt)*)) => {
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             link_args = (
-                link_name = $link_name,
+                export_name = (),
+                link_section = (concat!($link_section, ".", $($priority)*)),
+                used = $used_linker_meta,
+            ),
+            meta = $meta,
+            unsafe = $unsafe,
+            item = $item
+        ));
+    };
+
+    ( [@priority next=$next:path[$next_args:tt],
+        features = (
+            export_name = ($($prefix:tt)*, $($suffix:tt)*),
+            link_section = $link_section:tt,
+            used_linker_meta = $used_linker_meta:tt,
+        ),
+        meta = $meta:tt,
+        unsafe = $unsafe:tt,
+        item = $item:tt
+    ], ($($priority:tt)*)) => {
+        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+            link_args = (
+                export_name = (concat!($($prefix)*, $($priority)*, $($suffix)*)),
                 link_section = (concat!($link_section, ".", $($priority)*)),
                 used = $used_linker_meta,
             ),
@@ -629,8 +644,9 @@ macro_rules! __ctor_parse_impl {
         $crate::__ctor_parse_impl!(@ctor $link_args body={ _ = &*$ident } );
     };
 
+    // ctor definitions
     ( @ctor (
-        link_name=(),
+        export_name=(),
         link_section=($($link_section:tt)*),
         used=(#$used_linker_meta:tt),
      ) body=$body:tt ) => {
@@ -650,7 +666,7 @@ macro_rules! __ctor_parse_impl {
     };
 
     ( @ctor (
-        link_name=(),
+        export_name=(),
         priority=$priority:tt,
         used=(#$used_linker_meta:tt),
      ) body=$body:tt ) => {
@@ -665,7 +681,7 @@ macro_rules! __ctor_parse_impl {
     };
 
     ( @ctor (
-        link_name=($($link_name:tt)*),
+        export_name=($($link_name:tt)*),
         link_section=$link_section:tt,
         used=(#$used_linker_meta:tt),
      ) body=$body:tt ) => {

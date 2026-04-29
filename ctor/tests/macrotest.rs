@@ -1,11 +1,11 @@
 #![cfg(not(miri))]
 
-//! To overwrite the Linux expansion tests on macOS, run:
-//!
-//! ```bash
-//! docker run --rm -v "$(pwd):/src" -w /src rust:latest \
-//!   bash -lc 'export PATH="/usr/local/cargo/bin:$PATH" && cargo install cargo-expand && export MACROTEST=overwrite && cargo test -p ctor --test macrotest'
-//! ```
+/* To overwrite the Linux expansion tests on macOS, run:
+```bash
+docker run --rm -v "$(pwd):/src" -w /src rust:1.88 \
+  bash -lc 'export CARGO_TARGET_DIR=/src/target/target-docker && export PATH="/usr/local/cargo/bin:$PATH" && cargo install cargo-expand && MACROTEST=overwrite cargo test -p ctor --test macrotest'
+```
+*/
 
 use std::{
     fs,

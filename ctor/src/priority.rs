@@ -20,14 +20,6 @@ macro_rules! __make_priority_literal {
             ($n:path, $a:tt=$dollar priority:tt) => {
                 $n!($a, ($dollar priority));
             };
-
-            ($n:path, $a:tt=early) => {
-                $n!($a, ("0"));
-            };
-
-            ($n:path, $a:tt=late) => {
-                $n!($a, ("65535"));
-            };
         }
     };
 }
