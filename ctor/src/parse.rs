@@ -534,7 +534,7 @@ macro_rules! __ctor_parse_impl {
         ));
     };
 
-    // naked with export name: use 0 priority (AIX requires this, could probably be improved)
+    // naked with export name
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             export_name = (($($prefix:tt)*), ($($suffix:tt)*)),
@@ -546,6 +546,7 @@ macro_rules! __ctor_parse_impl {
         unsafe = $unsafe:tt,
         item = $item:tt
     ) ) => {
+        // AIX uses 80000000 as the priority
         #[cfg(target_os = "aix")]
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             link_args = (
@@ -557,6 +558,7 @@ macro_rules! __ctor_parse_impl {
             unsafe = $unsafe,
             item = $item
         ));
+
         #[cfg(not(target_os = "aix"))]
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             link_args = (
@@ -809,10 +811,9 @@ macro_rules! __ctor_parse_impl {
         link_section=$link_section:tt,
         used=(#$used_linker_meta:tt),
      ) body=$body:tt ) => {
-        #[allow(unsafe_code)]
-        #[cfg_attr(clippy, allow(unknown_lints, unsafe_attr_outside_unsafe))]
         const _: () = {
-            #[allow(unused_unsafe)]
+            #[cfg_attr(clippy, allow(unknown_lints, unsafe_attr_outside_unsafe))]
+            #[allow(unused_unsafe, unsafe_code)]
             #[no_mangle]
             #[export_name = $($link_name)*]
             extern "C" fn __ctor_private() {
