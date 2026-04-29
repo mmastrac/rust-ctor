@@ -128,6 +128,7 @@ pub mod __support {
     #[cfg(all(
         not(target_vendor = "apple"),
         not(target_vendor = "pc"),
+        not(target_os = "aix"),
         not(target_family = "wasm")
     ))]
     def_section_name! {
