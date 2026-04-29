@@ -1,10 +1,11 @@
 #![cfg(not(miri))]
 
-/* To overwrite the Linux expansion tests on macOS, run:
-```bash
+/* 
+
+To overwrite the Linux expansion tests on macOS, run:
+
 docker run --rm -v "$(pwd):/src" -w /src rust:1.88 \
   bash -lc 'export CARGO_TARGET_DIR=/src/target/target-docker && export PATH="/usr/local/cargo/bin:$PATH" && cargo install cargo-expand && MACROTEST=overwrite cargo test -p ctor --test macrotest'
-```
 */
 
 use std::{
@@ -180,6 +181,11 @@ ctor = {{ path = "{repo_root}/ctor", default-features = false }}
             // For debugging, include stderr on mismatch.
             let stdout = String::from_utf8_lossy(&out.stdout).to_string();
             let stderr = String::from_utf8_lossy(&out.stderr).to_string();
+            eprintln!("{stderr}");
+
+            if stderr.contains("error") {
+                panic!("compilation failed for testcase={case_name}, target={target}\n\n--- stderr ---\n{stderr}\n");
+            }
 
             if stdout.trim().is_empty() {
                 panic!(

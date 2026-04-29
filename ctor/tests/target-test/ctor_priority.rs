@@ -2,15 +2,20 @@ use ctor::declarative::ctor;
 
 ctor!(
     #[ctor(unsafe, priority = early)]
-    fn foo() {}
+    fn early() {}
 );
 
 ctor!(
     #[ctor(unsafe, priority = 1)]
-    fn foo() {}
+    fn priority1() {}
 );
 
 ctor!(
     #[ctor(unsafe, priority = late)]
-    fn foo() {}
+    fn late() {}
+);
+
+ctor!(
+    #[ctor(unsafe, priority = naked)]
+    fn naked() {}
 );

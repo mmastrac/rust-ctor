@@ -488,7 +488,32 @@ macro_rules! __ctor_parse_impl {
 
     // Step 7: Compute priority
 
-    // No priority, treat as early or naked
+    // No priority, treat as early if no link section
+    ( @entry next=$next:path[$next_args:tt], input=(
+        features = (
+            export_name = $export_name:tt,
+            link_section = (),
+            priority = (),
+            used_linker_meta = $used_linker_meta:tt,
+        ),
+        meta = $meta:tt,
+        unsafe = $unsafe:tt,
+        item = $item:tt
+    ) ) => {
+        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+            features = (
+                export_name = $export_name,
+                link_section = $link_section,
+                priority = early,
+                used_linker_meta = $used_linker_meta,
+            ),
+            meta = $meta,
+            unsafe = $unsafe,
+            item = $item
+        ));
+    };
+
+    // No priority, treat as naked if link section
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             export_name = $export_name:tt,
@@ -504,7 +529,7 @@ macro_rules! __ctor_parse_impl {
             features = (
                 export_name = $export_name,
                 link_section = $link_section,
-                priority = early,
+                priority = naked,
                 used_linker_meta = $used_linker_meta,
             ),
             meta = $meta,

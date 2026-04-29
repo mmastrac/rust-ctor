@@ -8,15 +8,15 @@ const _: () = {
             };
         }
         const _: () = {
-            #[allow(unsafe_code, unused_unsafe)]
-            extern "C" fn __ctor_private() {
-                { unsafe { __ctor_private_inner() } }
-            }
-            #[link_section = "__DATA,_CTOR0_ISIZE_FN,regular,no_dead_strip"]
+            #[allow(unsafe_code)]
+            #[link_section = "__DATA,__mod_init_func,mod_init_funcs"]
             #[used]
-            pub static CTOR: ::ctor::collect::Constructor = ::ctor::collect::Constructor {
-                priority: (::ctor::collect::EARLY),
-                ctor: __ctor_private,
+            static __CTOR_PRIVATE_REF: unsafe extern "C" fn() = {
+                #[allow(unused_unsafe)]
+                extern "C" fn __ctor_private() {
+                    { unsafe { __ctor_private_inner() } }
+                }
+                __ctor_private
             };
         };
         unsafe { __ctor_private_inner() }
@@ -31,15 +31,15 @@ const _: () = {
             };
         }
         const _: () = {
-            #[allow(unsafe_code, unused_unsafe)]
-            extern "C" fn __ctor_private() {
-                { unsafe { __ctor_private_inner() } }
-            }
-            #[link_section = "__DATA,_CTOR0_ISIZE_FN,regular,no_dead_strip"]
+            #[allow(unsafe_code)]
+            #[link_section = "__DATA,__mod_init_func,mod_init_funcs"]
             #[used]
-            pub static CTOR: ::ctor::collect::Constructor = ::ctor::collect::Constructor {
-                priority: (::ctor::collect::EARLY),
-                ctor: __ctor_private,
+            static __CTOR_PRIVATE_REF: unsafe extern "C" fn() = {
+                #[allow(unused_unsafe)]
+                extern "C" fn __ctor_private() {
+                    { unsafe { __ctor_private_inner() } }
+                }
+                __ctor_private
             };
         };
         unsafe { __ctor_private_inner() }
