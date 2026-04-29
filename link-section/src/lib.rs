@@ -392,9 +392,10 @@ pub mod __support {
                     //     unsafe { &raw const __START as $crate::__support::SectionPtr<$generic_ty> },
                     //     unsafe { &raw const __END as $crate::__support::SectionPtr<$generic_ty> },
                     // )
-
+                    (
                     std::ptr::null_mut() as $crate::__support::SectionPtr<$generic_ty>,
                     std::ptr::null_mut() as $crate::__support::SectionPtr<$generic_ty>,
+                    )
                 }
             }
         }
