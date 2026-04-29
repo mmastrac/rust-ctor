@@ -399,12 +399,12 @@ pub mod __support {
                     $crate::__support::add_section_link_attribute!(
                         data start $ident $($aux)?
                         #[link_section = __]
-                        static __START: [$generic_ty; 0] = [];
+                        static __START: ::core::mem::MaybeUninit<[$generic_ty; 0]> = ::core::mem::MaybeUninit::uninit();
                     );
                     $crate::__support::add_section_link_attribute!(
                         data end $ident $($aux)?
                         #[link_section = __]
-                        static __END: [$generic_ty; 0] = [];
+                        static __END:  ::core::mem::MaybeUninit<[$generic_ty; 0]> = ::core::mem::MaybeUninit::uninit();
                     );
 
                     (
