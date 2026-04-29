@@ -707,11 +707,13 @@ impl<T: 'static> TypedSection<T> {
 #[cfg(not(target_family = "wasm"))]
 impl<T: 'static> TypedSection<T> {
     /// The start address of the section.
+    #[inline(always)]
     pub fn start_ptr(&self) -> *const T {
         self.start as usize as *const T
     }
 
     /// The end address of the section.
+    #[inline(always)]
     pub fn end_ptr(&self) -> *const T {
         self.end as *const T
     }
@@ -791,10 +793,14 @@ impl<T: 'static> TypedSection<T> {
         }
     }
 
+    /// The start address of the section.
+    #[inline(always)]
     pub fn start_ptr_mut(&self) -> *mut T {
         self.start_ptr() as *mut T
     }
 
+    /// The start address of the section.
+    #[inline(always)]
     pub fn end_ptr_mut(&self) -> *mut T {
         self.end_ptr() as *mut T
     }
