@@ -12,6 +12,9 @@ extern crate std;
 mod macros;
 mod parse;
 mod priority;
+#[cfg(target_os = "aix")]
+mod priority_aix;
+
 pub mod statics;
 
 #[doc = include_str!("../docs/LIFE_BEFORE_MAIN.md")]

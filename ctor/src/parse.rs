@@ -546,9 +546,21 @@ macro_rules! __ctor_parse_impl {
         unsafe = $unsafe:tt,
         item = $item:tt
     ) ) => {
+        #[cfg(target_os = "aix")]
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             link_args = (
-                export_name = (concat!($($prefix)*, "0", $($suffix)*)),
+                export_name = (concat!($($prefix)*, "80000000", $($suffix)*)),
+                link_section = ($link_section),
+                used = $used_linker_meta,
+            ),
+            meta = $meta,
+            unsafe = $unsafe,
+            item = $item
+        ));
+        #[cfg(not(target_os = "aix"))]
+        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+            link_args = (
+                export_name = (concat!($($prefix)*, $($suffix)*)),
                 link_section = ($link_section),
                 used = $used_linker_meta,
             ),
@@ -606,13 +618,27 @@ macro_rules! __ctor_parse_impl {
             item = $item
         ));
 
-        // Treat late as 65535 for all other platforms
-        #[cfg(not(target_vendor = "apple"))]
+        // Treat late as 65535 for all other platforms except AIX
+        #[cfg(not(any(target_vendor = "apple", target_os = "aix")))]
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
                 export_name = $export_name,
                 link_section = $link_section,
                 priority = (65535, value, $($rest:tt)*),
+                used_linker_meta = $used_linker_meta,
+            ),
+            meta = $meta,
+            unsafe = $unsafe,
+            item = $item
+        ));
+
+        // Treat late as 89999999 for AIX
+        #[cfg(target_os = "aix")]
+        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+            features = (
+                export_name = $export_name,
+                link_section = $link_section,
+                priority = (89999999, value, $($rest:tt)*),
                 used_linker_meta = $used_linker_meta,
             ),
             meta = $meta,
@@ -783,18 +809,15 @@ macro_rules! __ctor_parse_impl {
         link_section=$link_section:tt,
         used=(#$used_linker_meta:tt),
      ) body=$body:tt ) => {
+        #[allow(unsafe_code)]
+        #[cfg_attr(clippy, allow(unknown_lints, unsafe_attr_outside_unsafe))]
         const _: () = {
-            #[allow(unsafe_code)]
-            #[cfg_attr(clippy, allow(unknown_lints, unsafe_attr_outside_unsafe))]
-            const _: () = {
-                #[allow(unused_unsafe)]
-                #[no_mangle]
-                #[export_name = $($link_name)*]
-                extern "C" fn __ctor_private() {
-                    $body
-                }
-                __ctor_private
-            };
+            #[allow(unused_unsafe)]
+            #[no_mangle]
+            #[export_name = $($link_name)*]
+            extern "C" fn __ctor_private() {
+                $body
+            }
         };
     };
 
