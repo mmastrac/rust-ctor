@@ -155,3 +155,17 @@ link_section = ()
 link_section = (compile_error! ("Unsupported target for #[ctor]"))
  # }
  ```
+
+## `priority`
+
+ ```rust
+ # #[cfg(false)] {
+#[cfg(feature = "priority")]
+ # const _: () = { let
+priority = early
+ # ; };
+
+ // default
+priority = naked
+ # }
+ ```

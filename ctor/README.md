@@ -338,3 +338,13 @@ link_section = ()
  // default
 link_section = (compile_error! ("Unsupported target for #[ctor]"))
  ```
+
+## `priority`
+
+ ```rust
+#[cfg(feature = "priority")]
+priority = early
+
+ // default
+priority = naked
+ ```
