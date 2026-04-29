@@ -470,6 +470,10 @@ __declare_features!(
     priority {
         attr: [(priority = $priority_value:tt) => ($priority_value)];
         validate: [(priority = $priority:literal), (priority = early), (priority = late)];
+        default {
+            (feature = "priority") => early,
+            _ => naked
+        }
     };
     /// Enable support for the priority parameter.
     priority_enabled {
