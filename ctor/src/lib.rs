@@ -38,7 +38,9 @@ crate::__ctor_parse_internal!(
     #[ctor(unsafe, priority = naked)]
     #[allow(unsafe_code)]
     fn priority_ctor() {
-        unsafe { crate::collect::run_constructors(); }
+        unsafe {
+            crate::collect::run_constructors();
+        }
     }
 );
 
