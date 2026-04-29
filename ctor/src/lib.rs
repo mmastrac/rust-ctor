@@ -52,7 +52,7 @@ pub mod collect {
 
     const PROCESSED: isize = isize::MIN;
     #[doc(hidden)]
-    pub const EARLY: isize = -1;
+    pub const EARLY: isize = 0;
     #[doc(hidden)]
     pub const LATE: isize = isize::MAX;
 
