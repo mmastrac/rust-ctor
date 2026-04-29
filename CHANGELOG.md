@@ -16,6 +16,11 @@ All notable changes to this project will be documented in this file.
 
 - deprecated `dtor` feature and crate dependency from `ctor` crate (use the `dtor` crate directly).
 
+### Fixed
+
+- AIX uses "standard" priority values from 0 to 999, early and late (mapped to
+  80000000 to 80000999).
+
 ### Changed
 
 - If the `priority` feature is enabled, `ctor` priority sorting is now stable

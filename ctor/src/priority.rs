@@ -25,12 +25,26 @@ macro_rules! __make_priority_literal {
 }
 
 #[cfg(target_os = "aix")]
-#[doc(hidden)]
-#[macro_export]
-macro_rules! __priority_to_literal {
-    ($n:path, $a:tt=$priority:tt) => {
-        $n!($a, ($priority));
-    };
+pub(crate) mod aix {
+    macro_rules! __make_aix_priority_literal {
+        ( $dollar:tt $($priority:tt $d0:tt $d1:tt $d2:tt)* ) => {
+            #[doc(hidden)]
+            #[macro_export]
+            macro_rules! __priority_to_literal {
+                $(
+                    ($dollar n:path, $dollar a:tt = $priority ) => {
+                        $n!($a, (concat!("80000", $d0, $d1, $d2)));
+                    };
+                )*
+
+                ($n:path, $a:tt=$dollar priority:tt) => {
+                    $n!($a, ($dollar priority));
+                };
+            }
+        }
+    }
+
+    pub(crate) use __make_aix_priority_literal;
 }
 
 #[cfg(not(target_os = "aix"))]

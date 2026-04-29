@@ -11,6 +11,11 @@ ctor!(
 );
 
 ctor!(
+    #[ctor(unsafe, priority = 900)]
+    fn priority900() {}
+);
+
+ctor!(
     #[ctor(unsafe, priority = late)]
     fn late() {}
 );
