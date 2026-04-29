@@ -370,7 +370,42 @@ pub mod __support {
         pub type SectionPtr<T> = *const [T; 0];
     }
 
-    #[cfg(all(not(miri), not(target_family = "wasm"), not(target_vendor = "pc")))]
+    #[cfg(all(not(miri), target_os = "aix"))]
+    mod section {
+        #[doc(hidden)]
+        #[macro_export]
+        macro_rules! __get_section {
+            (name=$ident:ident, type=$generic_ty:ty, aux=$($aux:ident)?) => {
+                {
+                    // $crate::__support::add_section_link_attribute!(
+                    //     data start $ident $($aux)?
+                    //     #[link_section = __]
+                    //     static __START: [$generic_ty; 0] = [];
+                    // );
+                    // $crate::__support::add_section_link_attribute!(
+                    //     data end $ident $($aux)?
+                    //     #[link_section = __]
+                    //     static __END: [$generic_ty; 0] = [];
+                    // );
+
+                    // (
+                    //     unsafe { &raw const __START as $crate::__support::SectionPtr<$generic_ty> },
+                    //     unsafe { &raw const __END as $crate::__support::SectionPtr<$generic_ty> },
+                    // )
+
+                    std::ptr::null_mut() as $crate::__support::SectionPtr<$generic_ty>,
+                    std::ptr::null_mut() as $crate::__support::SectionPtr<$generic_ty>,
+                }
+            }
+        }
+
+        /// On Windows platforms we don't have start/end symbols, but we do have
+        /// section sorting so we drop a [T; 0] at the start and end of the
+        /// section.
+        pub type SectionPtr<T> = *const [T; 0];
+    }
+
+    #[cfg(all(not(miri), not(target_family = "wasm"), not(target_vendor = "pc"), not(target_os = "aix")))]
     mod section {
         #[doc(hidden)]
         #[macro_export]
