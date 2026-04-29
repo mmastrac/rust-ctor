@@ -170,15 +170,15 @@ pub mod __support {
     def_section_name! {
         {
             data bare =>    (".data", ".link_section.") __ ();
-            data section => (".data", ".link_section.") __ ("$b");
-            data start =>   (".data", ".link_section.") __ ("$a");
-            data end =>     (".data", ".link_section.") __ ("$c");
+            data section => (".data", ".link_section.") __ (".b");
+            data start =>   (".data", ".link_section.") __ (".a");
+            data end =>     (".data", ".link_section.") __ (".c");
             code bare =>    (".text", ".link_section.") __ ();
-            code section => (".text", ".link_section.") __ ("$b");
-            code start =>   (".text", ".link_section.") __ ("$a");
-            code end =>     (".text", ".link_section.") __ ("$c");
+            code section => (".text", ".link_section.") __ (".b");
+            code start =>   (".text", ".link_section.") __ (".a");
+            code end =>     (".text", ".link_section.") __ (".c");
         }
-        AUXILIARY = "$d$";
+        AUXILIARY = ".d.";
         MAX_LENGTH = 64;
         HASH_LENGTH = 10;
         VALID_SECTION_CHARS = "_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
