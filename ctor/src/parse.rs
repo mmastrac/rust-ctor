@@ -527,6 +527,80 @@ macro_rules! __ctor_parse_impl {
         features = (
             export_name = $export_name:tt,
             link_section = $link_section:tt,
+            priority = early,
+            used_linker_meta = $used_linker_meta:tt,
+        ),
+        meta = $meta:tt,
+        unsafe = $unsafe:tt,
+        item = $item:tt
+    ) ) => {
+        #[cfg(target_vendor = "apple")]
+        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+            link_args = (
+                export_name = $export_name,
+                priority = early,
+                used = $used_linker_meta,
+            ),
+            meta = $meta,
+            unsafe = $unsafe,
+            item = $item
+        ));
+
+        // Treat early as naked for all other platforms
+        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+            features = (
+                export_name = $export_name,
+                link_section = $link_section,
+                priority = naked,
+                used_linker_meta = $used_linker_meta,
+            ),
+            meta = $meta,
+            unsafe = $unsafe,
+            item = $item
+        ));
+    };
+
+    ( @entry next=$next:path[$next_args:tt], input=(
+        features = (
+            export_name = $export_name:tt,
+            link_section = $link_section:tt,
+            priority = late,
+            used_linker_meta = $used_linker_meta:tt,
+        ),
+        meta = $meta:tt,
+        unsafe = $unsafe:tt,
+        item = $item:tt
+    ) ) => {
+        #[cfg(target_vendor = "apple")]
+        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+            link_args = (
+                export_name = $export_name,
+                priority = late,
+                used = $used_linker_meta,
+            ),
+            meta = $meta,
+            unsafe = $unsafe,
+            item = $item
+        ));
+
+        // Treat late as 65535 for all other platforms
+        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+            features = (
+                export_name = $export_name,
+                link_section = $link_section,
+                priority = 65535,
+                used_linker_meta = $used_linker_meta,
+            ),
+            meta = $meta,
+            unsafe = $unsafe,
+            item = $item
+        ));
+    };
+
+    ( @entry next=$next:path[$next_args:tt], input=(
+        features = (
+            export_name = $export_name:tt,
+            link_section = $link_section:tt,
             priority = $priority:tt,
             used_linker_meta = $used_linker_meta:tt,
         ),
