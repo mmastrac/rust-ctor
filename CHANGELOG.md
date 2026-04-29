@@ -18,7 +18,8 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- AIX uses "standard" priority values from 0 to 99, early and late (mapped to 80000000 to 80000099).
+- AIX uses "standard" priority values from 0 to 999, early and late (mapped to
+  80000000 to 80000999).
 
 ### Changed
 
