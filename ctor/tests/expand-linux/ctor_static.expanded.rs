@@ -11,7 +11,7 @@ static STATIC_CTOR: ::ctor::statics::Static<HashMap<u32, &'static str>> = {
 };
 const _: () = {
     #[allow(unsafe_code)]
-    #[link_section = ".init_array"]
+    #[link_section = ".init_array.000"]
     #[used]
     static __CTOR_PRIVATE_REF: unsafe extern "C" fn() = {
         #[allow(unused_unsafe)]
