@@ -7,7 +7,7 @@ fn foo() {
         };
     }
     const _: () = {
-        #[allow(unused_unsafe)]
+        #[allow(unsafe_code, unused_unsafe)]
         extern "C" fn __ctor_private() {
             { { __ctor_private_inner() } }
         }

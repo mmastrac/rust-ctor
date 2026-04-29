@@ -36,8 +36,9 @@ crate::__ctor_parse_internal!(
     /// use a generated macro and we cannot use an absolute path to it. (see
     /// <https://github.com/rust-lang/rust/issues/52234>)
     #[ctor(unsafe, priority = naked)]
-    unsafe fn priority_ctor() {
-        crate::collect::run_constructors();
+    #[allow(unsafe_code)]
+    fn priority_ctor() {
+        unsafe { crate::collect::run_constructors(); }
     }
 );
 
@@ -80,7 +81,7 @@ pub mod collect {
     pub(crate) unsafe fn run_constructors() {
         // Mutliple ctor crates may contribute multiple guards, but there will
         // only ever be one "first" guard.
-        let Some(guard) = _CTR0GR_ISIZE_FN.get(0) else {
+        let Some(guard) = _CTR0GR_ISIZE_FN.first() else {
             return;
         };
 

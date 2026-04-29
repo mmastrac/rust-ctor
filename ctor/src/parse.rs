@@ -655,7 +655,7 @@ macro_rules! __ctor_parse_impl {
         used=(#$used_linker_meta:tt),
      ) body=$body:tt ) => {
         const _: () = {
-            #[allow(unused_unsafe)]
+            #[allow(unsafe_code, unused_unsafe)]
             extern "C" fn __ctor_private() {
                 $body
             }
