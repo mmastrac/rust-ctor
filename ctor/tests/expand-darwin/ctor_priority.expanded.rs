@@ -8,12 +8,15 @@ fn foo() {
     }
     const _: () = {
         #[allow(unused_unsafe)]
-        fn __ctor_private() {
+        extern "C" fn __ctor_private() {
             { { __ctor_private_inner() } }
         }
-        #[link_section = "__DATA,CTOR,regular,no_dead_strip"]
+        #[link_section = "__DATA,_CTOR0_ISIZE_FN,regular,no_dead_strip"]
         #[used]
-        static __CTOR_ENTRY: (fn(), u16) = (__ctor_private, 1);
+        pub static CTOR: ::ctor::collect::Constructor = ::ctor::collect::Constructor {
+            priority: 1,
+            ctor: __ctor_private,
+        };
     };
     { __ctor_private_inner() }
 }
