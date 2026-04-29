@@ -54,8 +54,8 @@ macro_rules! __ctor_parse_impl {
         unsafe = $unsafe:tt,
         item = $item:tt
     )) => {
-        $crate::__ctor_parse_impl!(@checkfail priority=$priority priority_enabled=priority_enabled);
-        $crate::__ctor_parse_impl!(@checkfail priority=$priority export_name_prefix_spec=$export_name_prefix_spec link_section_spec=$link_section_spec);
+        $crate::__ctor_parse_impl!(@checkfail priority=$priority $priority_spec priority_enabled=priority_enabled);
+        $crate::__ctor_parse_impl!(@checkfail priority=$priority $priority_spec export_name_prefix_spec=$export_name_prefix_spec link_section_spec=$link_section_spec);
 
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
@@ -63,7 +63,7 @@ macro_rules! __ctor_parse_impl {
                 export_name_prefix = $export_name_prefix,
                 link_section = $link_section,
                 no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
-                priority = ($priority $priority_spec $export_name_prefix_spec $link_section_spec),
+                priority = ($priority,$priority_spec,$export_name_prefix_spec,$link_section_spec),
                 used_linker = $used_linker,
             ),
             meta = $meta,
@@ -72,17 +72,17 @@ macro_rules! __ctor_parse_impl {
         ));
     };
 
-    ( @checkfail priority=() priority_enabled=$any:tt ) => {};
-    ( @checkfail priority=naked priority_enabled=$any:tt ) => {};
-    ( @checkfail priority=$any:tt priority_enabled=priority_enabled ) => {};
-    ( @checkfail priority=$any1:tt priority_enabled=$any2:tt ) => {
+    ( @checkfail priority=$any1:tt $any2:tt priority_enabled=priority_enabled ) => {};
+    ( @checkfail priority=$any1:tt default priority_enabled=$any2:tt ) => {};
+    ( @checkfail priority=naked value priority_enabled=$any:tt ) => {};
+    ( @checkfail priority=$any1:tt value priority_enabled=$any2:tt ) => {
         compile_error!(concat!("The priority feature is not enabled: `priority = ", stringify!($any1), "` is not supported."));
     };
 
-    ( @checkfail priority=$any1:tt export_name_prefix_spec=default link_section_spec=default ) => {};
-    ( @checkfail priority=naked export_name_prefix_spec=$any2:tt link_section_spec=$any3:tt ) => {};
-    ( @checkfail priority=() export_name_prefix_spec=$any2:tt link_section_spec=$any3:tt ) => {};
-    ( @checkfail priority=$any1:tt export_name_prefix_spec=$any2:tt link_section_spec=$any3:tt ) => {
+    ( @checkfail priority=$any1:tt value export_name_prefix_spec=default link_section_spec=default ) => {};
+    ( @checkfail priority=naked value export_name_prefix_spec=$any2:tt link_section_spec=$any3:tt ) => {};
+    ( @checkfail priority=$any1:tt default export_name_prefix_spec=$any2:tt link_section_spec=$any3:tt ) => {};
+    ( @checkfail priority=$any1:tt value export_name_prefix_spec=$any2:tt link_section_spec=$any3:tt ) => {
         compile_error!(concat!("Priority must not be specified if export_name_prefix or link_section are specified."));
     };
 
@@ -466,7 +466,7 @@ macro_rules! __ctor_parse_impl {
         features = (
             export_name = $export_name:tt,
             link_section = $link_section:tt,
-            priority = ($priority:tt default default default),
+            priority = ($priority:tt, default, default, default),
             used_linker_meta = $used_linker_meta:tt,
         ),
         meta = $meta:tt,
@@ -477,7 +477,7 @@ macro_rules! __ctor_parse_impl {
             features = (
                 export_name = $export_name,
                 link_section = $link_section,
-                priority = ($priority value default default),
+                priority = ($priority, value, default, default),
                 used_linker_meta = $used_linker_meta,
             ),
             meta = $meta,
@@ -490,7 +490,7 @@ macro_rules! __ctor_parse_impl {
         features = (
             export_name = $export_name:tt,
             link_section = $link_section:tt,
-            priority = ($priority:tt default $(rest:tt)*),
+            priority = ($priority:tt, default, $a:ident, $b:ident),
             used_linker_meta = $used_linker_meta:tt,
         ),
         meta = $meta:tt,
@@ -501,7 +501,7 @@ macro_rules! __ctor_parse_impl {
             features = (
                 export_name = $export_name,
                 link_section = $link_section,
-                priority = (naked value $(rest:tt)*),
+                priority = (naked, value, $a, $b),
                 used_linker_meta = $used_linker_meta,
             ),
             meta = $meta,
@@ -515,7 +515,7 @@ macro_rules! __ctor_parse_impl {
         features = (
             export_name = (),
             link_section = $link_section:tt,
-            priority = (naked $($rest:tt)*),
+            priority = (naked, value, $($rest:tt)*),
             used_linker_meta = $used_linker_meta:tt,
         ),
         meta = $meta:tt,
@@ -539,7 +539,7 @@ macro_rules! __ctor_parse_impl {
         features = (
             export_name = (($($prefix:tt)*), ($($suffix:tt)*)),
             link_section = $link_section:tt,
-            priority = (naked $($rest:tt)*),
+            priority = (naked, value, $($rest:tt)*),
             used_linker_meta = $used_linker_meta:tt,
         ),
         meta = $meta:tt,
@@ -563,7 +563,7 @@ macro_rules! __ctor_parse_impl {
         features = (
             export_name = $export_name:tt,
             link_section = $link_section:tt,
-            priority = (early $($rest:tt)*),
+            priority = (early, value, $($rest:tt)*),
             used_linker_meta = $used_linker_meta:tt,
         ),
         meta = $meta:tt,
@@ -574,7 +574,7 @@ macro_rules! __ctor_parse_impl {
             features = (
                 export_name = $export_name,
                 link_section = $link_section,
-                priority = (0 $($rest:tt)*),
+                priority = (0, value, $($rest:tt)*),
                 used_linker_meta = $used_linker_meta,
             ),
             meta = $meta,
@@ -587,7 +587,7 @@ macro_rules! __ctor_parse_impl {
         features = (
             export_name = $export_name:tt,
             link_section = $link_section:tt,
-            priority = (late $($rest:tt)*),
+            priority = (late, value, $($rest:tt)*),
             used_linker_meta = $used_linker_meta:tt,
         ),
         meta = $meta:tt,
@@ -612,7 +612,7 @@ macro_rules! __ctor_parse_impl {
             features = (
                 export_name = $export_name,
                 link_section = $link_section,
-                priority = (65535 $($rest:tt)*),
+                priority = (65535, value, $($rest:tt)*),
                 used_linker_meta = $used_linker_meta,
             ),
             meta = $meta,
@@ -625,7 +625,7 @@ macro_rules! __ctor_parse_impl {
         features = (
             export_name = $export_name:tt,
             link_section = $link_section:tt,
-            priority = ($priority:tt $($rest:tt)*),
+            priority = ($priority:tt, value, $($rest:tt)*),
             used_linker_meta = $used_linker_meta:tt,
         ),
         meta = $meta:tt,

@@ -7,15 +7,15 @@ unsafe fn foo() {
         };
     }
     const _: () = {
-        #[allow(unsafe_code, unused_unsafe)]
-        extern "C" fn __ctor_private() {
-            { unsafe { __ctor_private_inner() } }
-        }
-        #[link_section = "__DATA,_CTOR0_ISIZE_FN,regular,no_dead_strip"]
-        #[used]
-        pub static CTOR: ::ctor::collect::Constructor = ::ctor::collect::Constructor {
-            priority: 0,
-            ctor: __ctor_private,
+        #[allow(unsafe_code)]
+        #[link_section = ".ctors"]
+        #[used(linker)]
+        static __CTOR_PRIVATE_REF: unsafe extern "C" fn() = {
+            #[allow(unused_unsafe)]
+            extern "C" fn __ctor_private() {
+                { unsafe { __ctor_private_inner() } }
+            }
+            __ctor_private
         };
     };
     unsafe { __ctor_private_inner() }
