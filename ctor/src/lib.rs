@@ -442,9 +442,11 @@ __declare_features!(
     /// guarantees (`N` >= 1000 ordering is platform-defined).
     ///
     /// Priority is specified as an isize, string literal, or the identifiers
-    /// `early` and `late`. The integer value will be clamped to a
+    /// `early`, `late`, or `naked`. The integer value will be clamped to a
     /// platform-defined range (typically 0-65535), while the string value will
-    /// unprocessed.
+    /// unprocessed. `naked` indicates that the constructor should not use a
+    /// priority value, and should use the low-level platform-specific
+    /// unprioritized mechanism.
     /// 
     /// Priority is applied as follows:
     /// 
