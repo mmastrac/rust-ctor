@@ -37,7 +37,7 @@ __test!(__parse_item[my_macro_parse]:
     fn foo() { /* ... */ }
 ) =>
 (
-    features = (std = std, unsafe = unsafe, priority = 1, anonymous = (),),
+    features = (std = std : default, unsafe = unsafe : value, priority = 1 : value, anonymous = (): default,),
     meta = (),
     item = (fn foo() { /* ... */ })
 ));
@@ -50,7 +50,7 @@ __test!(__parse_item[my_macro_parse]:
     fn foo() { /* ... */ }
 ) =>
 (
-    features = (std = std, unsafe = unsafe, priority = (), anonymous = (),),
+    features = (std = std : default, unsafe = unsafe : value, priority = (): default, anonymous = (): default,),
     meta = (#[other] #[doc]),
     item = (fn foo() { /* ... */ })
 ));

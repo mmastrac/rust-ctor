@@ -102,7 +102,7 @@ __declare_features!(
     /// Do not warn when a ctor or dtor is missing the `unsafe` keyword.
     no_warn_on_missing_unsafe {
         feature: "no_warn_on_missing_unsafe";
-        attr: [(no_warn_on_missing_unsafe) => (no_warn_on_missing_unsafe)];
+        attr: [(unsafe) => (no_warn_on_missing_unsafe)];
     };
     /// Enable support for the priority parameter.
     priority_enabled {
@@ -112,10 +112,6 @@ __declare_features!(
     priority {
         attr: [(priority = $priority_value:tt) => ($priority_value)];
         validate: [(priority = $priority:literal), (priority = early), (priority = late)];
-    };
-    /// Marks a ctor/dtor as unsafe. This will become a warning in 1.0.
-    unsafe {
-        attr: [(unsafe) => (unsafe)];
     };
     /// Place the initialization function pointer in a custom link section. This
     /// may cause the initialization function to fail to run or run earlier or
@@ -152,29 +148,29 @@ __test!(my_macro_parse[my_macro_parse => @extract (std anonymous)]:
     (std = std_value,) => (std = std_value, anonymous = (),));
 
 __test!(__extract_meta[small_macro_parse]:
-    (()) => (std = std, priority = (), unsafe = (),));
+    (()) => (std = std default, priority = ()default, unsafe = ()default,));
 __test!(__extract_meta[small_macro_parse]:
-    ((unsafe)) => (std = std, priority = (), unsafe = unsafe,));
+    ((unsafe)) => (std = std default, priority = ()default, unsafe = unsafe value,));
 __test!(__extract_meta[small_macro_parse]:
-    ((unsafe, priority = 1)) => (std = std, priority = 1, unsafe = unsafe,));
+    ((unsafe, priority = 1)) => (std = std default, priority = 1value, unsafe = unsafe value,));
 __test!(__extract_meta[small_macro_parse]:
-    ((priority = 1)) => (std = std, priority = 1, unsafe = (),));
+    ((priority = 1)) => (std = std default, priority = 1value, unsafe = ()default,));
 
 #[cfg(target_vendor = "apple")]
 __test!(my_macro_parse[my_macro_parse => @crate]:
     () => (
         std = std, used_linker = (), proc_macro = (), no_warn_on_missing_unsafe = (),
-        priority_enabled = (), priority = (), unsafe = (),
+        priority_enabled = (), priority = (), 
         link_section = "__DATA,__mod_term_func,mod_term_funcs", 
         crate_path = (), anonymous = (),));
 
 #[cfg(target_vendor = "apple")]
 __test!(__extract_meta[my_macro_parse]:
     ((used(linker))) => (
-        std = std, used_linker = used_linker, proc_macro = (), no_warn_on_missing_unsafe = (),
-        priority_enabled = (), priority = (), unsafe = (),
-        link_section = "__DATA,__mod_term_func,mod_term_funcs", 
-        crate_path = (), anonymous = (),));
+        std = std default, used_linker = used_linker value, proc_macro = ()default,
+        no_warn_on_missing_unsafe = ()default, priority_enabled = ()default, priority
+        = ()default, link_section = "__DATA,__mod_term_func,mod_term_funcs" default,
+        crate_path = ()default, anonymous = ()default,));
 
 __test!(my_macro_parse[my_macro_parse => @self]:
     (#[my_macro]) => ((())()));

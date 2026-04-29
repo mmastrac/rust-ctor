@@ -8,7 +8,7 @@ fn foo() {
     }
     const _: () = {
         #[allow(unsafe_code)]
-        #[link_section = ".ctors.000"]
+        #[link_section = ".ctors"]
         #[used]
         static __CTOR_PRIVATE_REF: unsafe extern "C" fn() = {
             #[allow(unused_unsafe)]

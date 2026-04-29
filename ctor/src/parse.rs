@@ -37,61 +37,25 @@ macro_rules! __ctor_parse_internal {
 macro_rules! __ctor_parse_impl {
     // Step 1: Feature check
 
-    // If priority disabled and no priority, treat as naked
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
-            anonymous = $anonymous:tt,
-            crate_path = $crate_path:tt,
-            export_name_prefix = $export_name_prefix:tt,
-            link_section = $link_section:tt,
-            no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
-            priority = (),
-            priority_enabled = (),
-            proc_macro = $proc_macro:tt,
-            std = $std:tt,
-            used_linker = $used_linker:tt,
-        ),
-        meta = $meta:tt,
-        unsafe = $unsafe:tt,
-        item = $item:tt
-    )) => {
-        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
-            features = (
-                anonymous = $anonymous,
-                crate_path = $crate_path,
-                export_name_prefix = $export_name_prefix,
-                link_section = $link_section,
-                no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
-                priority = naked,
-                priority_enabled = priority_enabled,
-                proc_macro = $proc_macro,
-                std = $std,
-                used_linker = $used_linker,
-            ),
-            meta = $meta,
-            unsafe = $unsafe,
-            item = $item
-        ));
-    };
-
-    ( @entry next=$next:path[$next_args:tt], input=(
-        features = (
-            anonymous = $anonymous:tt,
-            crate_path = $crate_path:tt,
-            export_name_prefix = $export_name_prefix:tt,
-            link_section = $link_section:tt,
-            no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
-            priority = $priority:tt,
-            priority_enabled = $priority_enabled:tt,
-            proc_macro = $proc_macro:tt,
-            std = $std:tt,
-            used_linker = $used_linker:tt,
+            anonymous = $anonymous:tt: $anonymous_spec:ident,
+            crate_path = $crate_path:tt: $crate_path_spec:ident,
+            export_name_prefix = $export_name_prefix:tt: $export_name_prefix_spec:ident,
+            link_section = $link_section:tt: $link_section_spec:ident,
+            no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt: $no_warn_on_missing_unsafe_spec:ident,
+            priority = $priority:tt: $priority_spec:ident,
+            priority_enabled = $priority_enabled:tt: $priority_enabled_spec:ident,
+            proc_macro = $proc_macro:tt: $proc_macro_spec:ident,
+            std = $std:tt: $std_spec:ident,
+            used_linker = $used_linker:tt: $used_linker_spec:ident,
         ),
         meta = $meta:tt,
         unsafe = $unsafe:tt,
         item = $item:tt
     )) => {
         $crate::__ctor_parse_impl!(@checkfail priority=$priority priority_enabled=priority_enabled);
+        $crate::__ctor_parse_impl!(@checkfail priority=$priority export_name_prefix_spec=$export_name_prefix_spec link_section_spec=$link_section_spec);
 
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
@@ -99,7 +63,7 @@ macro_rules! __ctor_parse_impl {
                 export_name_prefix = $export_name_prefix,
                 link_section = $link_section,
                 no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe,
-                priority = $priority,
+                priority = ($priority $export_name_prefix_spec $link_section_spec),
                 used_linker = $used_linker,
             ),
             meta = $meta,
@@ -109,9 +73,17 @@ macro_rules! __ctor_parse_impl {
     };
 
     ( @checkfail priority=() priority_enabled=$any:tt ) => {};
+    ( @checkfail priority=naked priority_enabled=$any:tt ) => {};
     ( @checkfail priority=$any:tt priority_enabled=priority_enabled ) => {};
     ( @checkfail priority=$any1:tt priority_enabled=$any2:tt ) => {
-        compile_error!("The priority feature is not enabled, so `priority = N` is not supported.");
+        compile_error!(concat!("The priority feature is not enabled: `priority = ", stringify!($any1), "` is not supported."));
+    };
+
+    ( @checkfail priority=$any1:tt export_name_prefix_spec=default link_section_spec=default ) => {};
+    ( @checkfail priority=naked export_name_prefix_spec=$any2:tt link_section_spec=$any3:tt ) => {};
+    ( @checkfail priority=() export_name_prefix_spec=$any2:tt link_section_spec=$any3:tt ) => {};
+    ( @checkfail priority=$any1:tt export_name_prefix_spec=$any2:tt link_section_spec=$any3:tt ) => {
+        compile_error!(concat!("Priority must not be specified if export_name_prefix or link_section are specified."));
     };
 
     ( @checkfail $($rest:tt)* ) => {};
@@ -488,37 +460,12 @@ macro_rules! __ctor_parse_impl {
 
     // Step 7: Compute priority
 
-    // No priority, treat as early
-    ( @entry next=$next:path[$next_args:tt], input=(
-        features = (
-            export_name = $export_name:tt,
-            link_section = $link_section:tt,
-            priority = (),
-            used_linker_meta = $used_linker_meta:tt,
-        ),
-        meta = $meta:tt,
-        unsafe = $unsafe:tt,
-        item = $item:tt
-    ) ) => {
-        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
-            features = (
-                export_name = $export_name,
-                link_section = $link_section,
-                priority = early,
-                used_linker_meta = $used_linker_meta,
-            ),
-            meta = $meta,
-            unsafe = $unsafe,
-            item = $item
-        ));
-    };
-
     // naked - no processing
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             export_name = (),
             link_section = $link_section:tt,
-            priority = naked,
+            priority = (naked $($rest:tt)*),
             used_linker_meta = $used_linker_meta:tt,
         ),
         meta = $meta:tt,
@@ -542,7 +489,7 @@ macro_rules! __ctor_parse_impl {
         features = (
             export_name = (($($prefix:tt)*), ($($suffix:tt)*)),
             link_section = $link_section:tt,
-            priority = naked,
+            priority = (naked, $($rest:tt)*),
             used_linker_meta = $used_linker_meta:tt,
         ),
         meta = $meta:tt,
@@ -561,36 +508,73 @@ macro_rules! __ctor_parse_impl {
         ));
     };
 
+    // Empty priority, no link section or export name, treat as early
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
             export_name = $export_name:tt,
             link_section = $link_section:tt,
-            priority = early,
+            priority = (() default default),
             used_linker_meta = $used_linker_meta:tt,
         ),
         meta = $meta:tt,
         unsafe = $unsafe:tt,
         item = $item:tt
     ) ) => {
-        #[cfg(target_vendor = "apple")]
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
-            link_args = (
+            features = (
                 export_name = $export_name,
-                priority = early,
-                used = $used_linker_meta,
+                link_section = $link_section,
+                priority = (0 default default),
+                used_linker_meta = $used_linker_meta,
             ),
             meta = $meta,
             unsafe = $unsafe,
             item = $item
         ));
+    };
 
-        // Treat early as 0 for all other platforms
-        #[cfg(not(target_vendor = "apple"))]
+    // Empty priority, link section and/or export name, treat as naked
+    ( @entry next=$next:path[$next_args:tt], input=(
+        features = (
+            export_name = $export_name:tt,
+            link_section = $link_section:tt,
+            priority = (() $($rest:tt)*),
+            used_linker_meta = $used_linker_meta:tt,
+        ),
+        meta = $meta:tt,
+        unsafe = $unsafe:tt,
+        item = $item:tt
+    ) ) => {
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
                 export_name = $export_name,
                 link_section = $link_section,
-                priority = 0,
+                priority = (naked $($rest:tt)*),
+                used_linker_meta = $used_linker_meta,
+            ),
+            meta = $meta,
+            unsafe = $unsafe,
+            item = $item
+        ));
+    };
+
+    // Early is zero on all platforms
+    ( @entry next=$next:path[$next_args:tt], input=(
+        features = (
+            export_name = $export_name:tt,
+            link_section = $link_section:tt,
+            priority = (early $($rest:tt)*),
+            used_linker_meta = $used_linker_meta:tt,
+        ),
+        meta = $meta:tt,
+        unsafe = $unsafe:tt,
+        item = $item:tt
+    ) ) => {
+        $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
+            features = (
+                export_name = $export_name,
+                link_section = $link_section,
+                priority = (0 $($rest:tt)*),
                 used_linker_meta = $used_linker_meta,
             ),
             meta = $meta,
@@ -603,7 +587,7 @@ macro_rules! __ctor_parse_impl {
         features = (
             export_name = $export_name:tt,
             link_section = $link_section:tt,
-            priority = late,
+            priority = (late $($rest:tt)*),
             used_linker_meta = $used_linker_meta:tt,
         ),
         meta = $meta:tt,
@@ -628,7 +612,7 @@ macro_rules! __ctor_parse_impl {
             features = (
                 export_name = $export_name,
                 link_section = $link_section,
-                priority = 65535,
+                priority = (65535 $($rest:tt)*),
                 used_linker_meta = $used_linker_meta,
             ),
             meta = $meta,
@@ -641,7 +625,7 @@ macro_rules! __ctor_parse_impl {
         features = (
             export_name = $export_name:tt,
             link_section = $link_section:tt,
-            priority = $priority:tt,
+            priority = ($priority:tt $($rest:tt)*),
             used_linker_meta = $used_linker_meta:tt,
         ),
         meta = $meta:tt,
