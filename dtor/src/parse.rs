@@ -79,19 +79,8 @@ macro_rules! __dtor_parse_impl {
 
     ( @entry next=$next:path[$next_args:tt], input=(
         features = (
-            anonymous = $anonymous:tt,
-            crate_path = $crate_path:tt,
-            ctor_export_name_prefix = $ctor_export_name_prefix:tt,
-            ctor_link_section = $ctor_link_section:tt,
-            default_term_method = $default_term_method:tt,
-            default_unload_method = $default_unload_method:tt,
-            export_name_prefix = $export_name_prefix:tt,
-            link_section = $link_section:tt,
-            method = $method:tt,
-            no_warn_on_missing_unsafe = $no_warn_on_missing_unsafe:tt,
-            proc_macro = $proc_macro:tt,
-            std = $std:tt,
-            used_linker = $used_linker:tt,
+            anonymous = $anonymous:tt : $anonymous_spec:ident,
+            $($rest:tt)*
         ),
         meta = $meta:tt,
         unsafe = $unsafe:tt,
@@ -101,6 +90,18 @@ macro_rules! __dtor_parse_impl {
             Expected a function with no args, \
             return value, or type parameters.\n\
             Valid forms are: [pub] [unsafe] [extern $abi] fn $name() { ... }");
+    };
+
+    ( @entry next=$next:path[$next_args:tt], input=(
+        features = (
+            anonymous = $anonymous:tt : $anonymous_spec:ident,
+            $($rest:tt)*
+        ),
+        meta = $meta:tt,
+        unsafe = $unsafe:tt,
+        item = ($($item:tt)*)
+    ) ) => {
+        compile_error!(concat!("Invalid dtor, didn't get an item: ", stringify!($($item)*)));
     };
 
     // Step 1: Compute method
