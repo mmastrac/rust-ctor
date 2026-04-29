@@ -547,6 +547,7 @@ macro_rules! __ctor_parse_impl {
         ));
 
         // Treat early as naked for all other platforms
+        #[cfg(not(target_vendor = "apple"))]
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
                 export_name = $export_name,
@@ -584,6 +585,7 @@ macro_rules! __ctor_parse_impl {
         ));
 
         // Treat late as 65535 for all other platforms
+        #[cfg(not(target_vendor = "apple"))]
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
                 export_name = $export_name,
