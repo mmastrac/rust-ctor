@@ -609,13 +609,13 @@ macro_rules! __ctor_parse_impl {
             item = $item
         ));
 
-        // Treat early as naked for all other platforms
+        // Treat early as 0 for all other platforms
         #[cfg(not(target_vendor = "apple"))]
         $crate::__ctor_parse_impl!(@entry next=$next[$next_args], input=(
             features = (
                 export_name = $export_name,
                 link_section = $link_section,
-                priority = naked,
+                priority = 0,
                 used_linker_meta = $used_linker_meta,
             ),
             meta = $meta,
