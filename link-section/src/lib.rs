@@ -147,7 +147,7 @@ pub mod __support {
         VALID_SECTION_CHARS = "_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     }
 
-    #[cfg(target_vendor = "pc")]
+    #[cfg(any(target_vendor = "pc", target_os = "aix"))]
     def_section_name! {
         {
             data bare =>    (".data", "$") __ ();
@@ -377,24 +377,20 @@ pub mod __support {
         macro_rules! __get_section {
             (name=$ident:ident, type=$generic_ty:ty, aux=$($aux:ident)?) => {
                 {
-                    // $crate::__support::add_section_link_attribute!(
-                    //     data start $ident $($aux)?
-                    //     #[link_section = __]
-                    //     static __START: [$generic_ty; 0] = [];
-                    // );
-                    // $crate::__support::add_section_link_attribute!(
-                    //     data end $ident $($aux)?
-                    //     #[link_section = __]
-                    //     static __END: [$generic_ty; 0] = [];
-                    // );
+                    $crate::__support::add_section_link_attribute!(
+                        data start $ident $($aux)?
+                        #[link_section = __]
+                        static __START: [$generic_ty; 0] = [];
+                    );
+                    $crate::__support::add_section_link_attribute!(
+                        data end $ident $($aux)?
+                        #[link_section = __]
+                        static __END: [$generic_ty; 0] = [];
+                    );
 
-                    // (
-                    //     unsafe { &raw const __START as $crate::__support::SectionPtr<$generic_ty> },
-                    //     unsafe { &raw const __END as $crate::__support::SectionPtr<$generic_ty> },
-                    // )
                     (
-                    std::ptr::null_mut() as $crate::__support::SectionPtr<$generic_ty>,
-                    std::ptr::null_mut() as $crate::__support::SectionPtr<$generic_ty>,
+                        unsafe { &raw const __START as $crate::__support::SectionPtr<$generic_ty> },
+                        unsafe { &raw const __END as $crate::__support::SectionPtr<$generic_ty> },
                     )
                 }
             }
