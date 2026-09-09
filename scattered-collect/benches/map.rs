@@ -73,8 +73,8 @@ fn scattered_map_lookup(bencher: Bencher) {
         for (n, key) in [(500, "key0500"), (100, "key0100"), (254, "key0254")] {
             let hash = const_hash!(key);
             let offset = (table.lookup_fn)(&table, hash);
-            let value = offset.map(|offset| &MAP_RECORDS[offset as usize].value);
-            assert_eq!(value, Some(&n));
+            let value = &MAP_RECORDS[offset as usize].value;
+            assert_eq!(value, &n);
         }
     });
 }
