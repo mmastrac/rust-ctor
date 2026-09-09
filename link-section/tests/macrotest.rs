@@ -71,6 +71,11 @@ pub fn pass_linux() {
 
 #[test]
 pub fn trybuild() {
+    // nightly returns different errors
+    if std::env::var_os("TOOLCHAIN").unwrap_or_default() == "nightly" {
+        return;
+    };
+
     let t = trybuild::TestCases::new();
     // TODO: whitespace issue (tabs?) in error tests
     #[cfg(not(target_os = "openbsd"))]
