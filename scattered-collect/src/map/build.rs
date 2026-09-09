@@ -1,5 +1,7 @@
 #![allow(clippy::modulo_one, unreachable_pub)]
 
+use std::u64;
+
 use crate::map::MapRecord;
 use crate::map::probe::{
     BUCKET_SIZE, Bucket, LinearProbe, ProbeStrategy, control_byte_from_hash, match_mask, split_hash,
@@ -50,12 +52,12 @@ pub fn initialize_scattered_map<K, V>(
     if n == 0 {
         return ScatteredMapTable {
             metadata: &[],
-            lookup_fn: |_table, _h| None,
+            lookup_fn: |_table, _h| u64::MAX,
             index_bits: 0,
         };
     }
 
-    let (lookup_fn, index_bits): (fn(&ScatteredMapTable, h: u64) -> Option<u64>, _);
+    let (lookup_fn, index_bits): (fn(&ScatteredMapTable, h: u64) -> u64, _);
     if records.len() < 256 {
         lookup_fn = lookup::<8, LinearProbe>;
         index_bits = 8;
