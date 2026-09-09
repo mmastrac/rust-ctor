@@ -1,8 +1,4 @@
-/* @theme custom-theme */
-
-/* Keep <!-- fit --> header scaling, but stop code blocks (and math) from
-   being shrunk to fit. */
-
+/* @theme RUSTCONF */
 /* @auto-scaling fittingHeader */
 
 @import 'default';
@@ -23,15 +19,12 @@ li::before {
    padding-right: 0.7em;
 }
 pre {
-   /* 75% keeps the widest line in the deck (83 cols) inside the slide now
-      that code no longer downscales itself. */
    font-size: 75%;
    white-space: pre;
    background: transparent; 
    border: 0; 
 }
 
-/* Tables that hold code blocks are layout, not data: no borders or stripes. */
 table:has(pre) {
    border: 0;
 }

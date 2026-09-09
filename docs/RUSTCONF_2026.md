@@ -1,6 +1,6 @@
 ---
 marp: true
-theme: RUSTCONF_2026
+theme: RUSTCONF
 paginate: true
 title: Life Before Main
 description: Scatter at link time, gather before main
