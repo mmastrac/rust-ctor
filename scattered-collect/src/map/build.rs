@@ -1,7 +1,4 @@
 #![allow(clippy::modulo_one, unreachable_pub)]
-
-use std::u64;
-
 use crate::map::MapRecord;
 use crate::map::probe::{
     BUCKET_SIZE, Bucket, LinearProbe, ProbeStrategy, control_byte_from_hash, match_mask, split_hash,
