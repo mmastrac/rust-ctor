@@ -1,7 +1,7 @@
 #![allow(clippy::modulo_one, unreachable_pub)]
 use crate::map::probe::{
     BUCKET_SIZE, Bucket, LinearProbe, LookupResult, ProbeStrategy, control_byte_from_hash,
-    match_mask,
+    has_empty, match_mask,
 };
 
 // Cache line sizes:
@@ -53,7 +53,7 @@ impl ScatteredMapTable {
             8 => lookup::<8, LinearProbe>(self, h),
             16 => lookup::<16, LinearProbe>(self, h),
             24 => lookup::<24, LinearProbe>(self, h),
-            _ => unreachable!(),
+            _ => LookupResult::not_found(),
         }
     }
 }
@@ -82,6 +82,9 @@ pub fn lookup<const INDEX_BITS: u8, P: ProbeStrategy>(
                 return LookupResult::found(idx);
             }
             bits &= bits - 1;
+        }
+        if has_empty(&group.buckets[group_offset]) {
+            return LookupResult::not_found();
         }
     }
     LookupResult::not_found()
@@ -123,7 +126,15 @@ mod tests {
         const INDEX_BITS: u8 = 16;
         static RECORDS: [MetadataStride; 128] = const {
             let mut records = [MetadataStride::ZERO; 128];
-
+            let mut i = 0;
+            while i < records.len() {
+                let mut j = 0;
+                while j < records[i].buckets.len() {
+                    records[i].buckets[j] = Bucket::splat(0x80);
+                    j += 1;
+                }
+                i += 1;
+            }
             let mut bucket = [0; _];
             bucket[7] = control_byte_from_hash(HASH);
             records[99].buckets[0] = Bucket::new(bucket);
