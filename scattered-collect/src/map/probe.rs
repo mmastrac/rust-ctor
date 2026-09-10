@@ -1,5 +1,4 @@
 #![allow(unreachable_pub)]
-
 pub type Bucket = wide::u8x16;
 
 pub const BUCKET_SIZE: usize = std::mem::size_of::<Bucket>();
@@ -45,6 +44,7 @@ pub struct LinearProbe {
     len: usize,
     remaining: usize,
     pos: usize,
+    stride: usize,
 }
 
 impl ProbeStrategy for LinearProbe {
@@ -55,6 +55,7 @@ impl ProbeStrategy for LinearProbe {
             len,
             remaining: len,
             pos,
+            stride: 1,
         }
     }
 
@@ -64,7 +65,7 @@ impl ProbeStrategy for LinearProbe {
             return None;
         }
         let p = self.pos;
-        self.pos = (self.pos + 1) % self.len;
+        self.pos = (self.pos.wrapping_add(self.stride)) % self.len;
         self.remaining -= 1;
         Some(p)
     }

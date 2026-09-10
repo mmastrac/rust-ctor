@@ -1,7 +1,7 @@
 //! A swiss-table-style lookup table initialized with link-time data.
 #![doc = concat!("```rust\n", include_str!("../../examples/map.rs"), "\n```\n")]
 
-use link_section::{TypedMutableSection, TypedSection};
+use link_section::{__support::SyncUnsafeCell, TypedMutableSection, TypedSection};
 use std::{
     borrow::Borrow,
     mem::MaybeUninit,
@@ -17,6 +17,11 @@ pub use build::{initialize_scattered_map, safe_byte_count_for_capacity};
 mod build;
 mod probe;
 mod table;
+
+// Table init atomic states
+const UNINITIALIZED: u8 = 0;
+const INITIALIZING: u8 = 1;
+const FINISHED_INITIALIZING: u8 = 2;
 
 /// One gathered map entry.
 ///
@@ -204,7 +209,7 @@ pub struct __ScatteredMapState<K: 'static, V: 'static> {
     state: AtomicU8,
     records: &'static TypedSection<MapRecord<K, V>>,
     refs: &'static TypedMutableSection<u8>,
-    table: ::core::mem::MaybeUninit<ScatteredMapTable>,
+    table: SyncUnsafeCell<MaybeUninit<ScatteredMapTable>>,
 }
 
 impl<K: 'static, V: 'static> __ScatteredMapState<K, V> {
@@ -217,7 +222,7 @@ impl<K: 'static, V: 'static> __ScatteredMapState<K, V> {
             state: AtomicU8::new(0),
             records,
             refs,
-            table: MaybeUninit::uninit(),
+            table: SyncUnsafeCell::new(MaybeUninit::uninit()),
         }
     }
 
@@ -230,21 +235,43 @@ impl<K: 'static, V: 'static> __ScatteredMapState<K, V> {
         self.records.as_slice()
     }
 
+    /// Ensure that the table has been initialized using atomic read (fast),
+    /// then falling back to CAS if that suggests non-initialization.
     #[allow(unsafe_code)]
+    #[inline]
     fn ensure_initialized(&self) -> &ScatteredMapTable {
-        match self
-            .state
-            .compare_exchange(0, 1, Ordering::Relaxed, Ordering::Relaxed)
-        {
+        if self.state.load(Ordering::Acquire) == FINISHED_INITIALIZING {
+            return unsafe { self.table_ref() };
+        }
+        self.initialize_slow()
+    }
+
+    /// Only valid once `state` has been atomically observed as
+    /// `FINISHED_INITIALIZING`.
+    #[allow(unsafe_code)]
+    #[inline]
+    unsafe fn table_ref(&self) -> &ScatteredMapTable {
+        unsafe { &*self.table.get().cast::<ScatteredMapTable>() }
+    }
+
+    #[allow(unsafe_code)]
+    #[cold]
+    fn initialize_slow(&self) -> &ScatteredMapTable {
+        match self.state.compare_exchange(
+            UNINITIALIZED,
+            INITIALIZING,
+            Ordering::Relaxed,
+            Ordering::Acquire,
+        ) {
             Ok(_) => {
                 let table = build::initialize_scattered_map(self.records, unsafe {
                     self.refs.as_mut_slice()
                 });
-                unsafe { ptr::write(self.table.as_ptr() as _, table) };
-                self.state.store(2, Ordering::Relaxed);
-                unsafe { self.table.assume_init_ref() }
+                unsafe { ptr::write(self.table.get().cast::<ScatteredMapTable>(), table) };
+                self.state.store(FINISHED_INITIALIZING, Ordering::Release);
+                unsafe { self.table_ref() }
             }
-            Err(2) => unsafe { self.table.assume_init_ref() },
+            Err(FINISHED_INITIALIZING) => unsafe { self.table_ref() },
             Err(_) => panic!("Recursive or overlapping initialization of static variable"),
         }
     }
