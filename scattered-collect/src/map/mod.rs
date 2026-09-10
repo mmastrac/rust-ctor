@@ -286,7 +286,7 @@ impl<K: 'static, V: 'static> __ScatteredMapState<K, V> {
         }
 
         match self.state.load(Ordering::Acquire) {
-            FINISHED_INITIALIZING => return unsafe { self.table_ref() },
+            FINISHED_INITIALIZING => unsafe { self.table_ref() },
             POISONED => panic!("Initialization of static variable panicked"),
             _ => panic!("Recursive or overlapping initialization of static variable"),
         }
