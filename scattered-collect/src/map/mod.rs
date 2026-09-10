@@ -105,15 +105,15 @@ impl<K: ConstHash + PartialEq + 'static, V: 'static> ScatteredMap<K, V> {
         let table = this.ensure_initialized();
         let hash = ConstHash::hash(key);
         let offset = (table.lookup_fn)(table, hash);
-        if offset == u64::MAX {
-            None
-        } else {
-            let record = &this.records[offset as usize];
+        if offset.is_found() {
+            let record = &this.records[offset.unwrap() as usize];
             if record.key.borrow() == key {
                 Some(&record.value)
             } else {
                 None
             }
+        } else {
+            None
         }
     }
 

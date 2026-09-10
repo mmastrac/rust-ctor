@@ -4,6 +4,32 @@ pub type Bucket = wide::u8x16;
 
 pub const BUCKET_SIZE: usize = std::mem::size_of::<Bucket>();
 
+#[repr(C)]
+pub struct LookupResult(u32);
+
+impl LookupResult {
+    #[inline(always)]
+    pub const fn found(at: i32) -> Self {
+        debug_assert!(at > 0);
+        LookupResult(at as u32)
+    }
+
+    #[inline(always)]
+    pub const fn not_found() -> Self {
+        LookupResult(u32::MAX)
+    }
+
+    #[inline(always)]
+    pub const fn is_found(&self) -> bool {
+        (self.0 as i32) >= 0
+    }
+
+    #[inline(always)]
+    pub const fn unwrap(self) -> u32 {
+        self.0
+    }
+}
+
 /// Pluggable probe strategy for the scattered map.
 ///
 /// For [`LinearProbe`], `len` is the number of **groups** (each group is 16 slots). The iterator

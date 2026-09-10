@@ -1,5 +1,7 @@
 #![allow(clippy::modulo_one, unreachable_pub)]
-use crate::map::probe::{BUCKET_SIZE, Bucket, ProbeStrategy, control_byte_from_hash, match_mask};
+use crate::map::probe::{
+    BUCKET_SIZE, Bucket, LookupResult, ProbeStrategy, control_byte_from_hash, match_mask,
+};
 
 // Cache line sizes:
 //  - macOS (ARM): 128 bytes
@@ -41,14 +43,14 @@ impl MetadataStride {
 pub struct ScatteredMapTable {
     pub metadata: &'static [MetadataStride],
     /// Index, or `u64::MAX` if none
-    pub lookup_fn: fn(&ScatteredMapTable, h: u64) -> u64,
+    pub lookup_fn: fn(&ScatteredMapTable, h: u64) -> LookupResult,
     pub index_bits: u8,
 }
 
 pub fn lookup<const INDEX_BITS: u8, P: ProbeStrategy>(
     table: &ScatteredMapTable,
     h: u64,
-) -> u64 {
+) -> LookupResult {
     let tag = control_byte_from_hash(h);
     let hash_mask: u64 = (-1_i64 as u64) << (INDEX_BITS as usize);
     let index_mask = !hash_mask;
@@ -64,12 +66,12 @@ pub fn lookup<const INDEX_BITS: u8, P: ProbeStrategy>(
             let lane = bits.trailing_zeros() as usize;
             let h2 = group.hashes[group_offset * BUCKET_SIZE + lane];
             if h2 & hash_mask == masked_hash {
-                return h2 & index_mask;
+                return LookupResult::found((h2 & index_mask) as _);
             }
             bits &= bits - 1;
         }
     }
-    u64::MAX
+    LookupResult::not_found()
 }
 
 #[cfg(test)]
@@ -99,7 +101,7 @@ mod tests {
 
         let result = lookup::<16, LinearProbe>(&table, HASH);
 
-        assert_eq!(result, 15);
+        assert_eq!(result.unwrap(), 15);
     }
 
     /// Find a single record somewhere in the table.
@@ -124,6 +126,6 @@ mod tests {
         };
 
         let result = lookup::<INDEX_BITS, LinearProbe>(&table, HASH);
-        assert_eq!(result, 99);
+        assert_eq!(result.unwrap(), 99);
     }
 }
