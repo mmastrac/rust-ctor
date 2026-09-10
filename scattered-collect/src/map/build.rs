@@ -1,10 +1,9 @@
 #![allow(clippy::modulo_one, unreachable_pub)]
 use crate::map::MapRecord;
 use crate::map::probe::{
-    BUCKET_SIZE, Bucket, LinearProbe, LookupResult, ProbeStrategy, control_byte_from_hash,
-    match_mask, split_hash,
+    BUCKET_SIZE, Bucket, LinearProbe, ProbeStrategy, control_byte_from_hash, match_mask, split_hash,
 };
-use crate::map::table::{BUCKET_STRIDE, MetadataStride, ScatteredMapTable, lookup};
+use crate::map::table::{BUCKET_STRIDE, MetadataStride, ScatteredMapTable};
 
 pub const SAFE_CAPACITY: f32 = 0.70;
 pub const BASE_CAPACITY: usize = 512;
@@ -50,20 +49,16 @@ pub fn initialize_scattered_map<K, V>(
     if n == 0 {
         return ScatteredMapTable {
             metadata: &[],
-            lookup_fn: |_table, _h| LookupResult::not_found(),
             index_bits: 0,
         };
     }
 
-    let (lookup_fn, index_bits): (fn(&ScatteredMapTable, h: u64) -> LookupResult, _);
+    let index_bits;
     if records.len() < 256 {
-        lookup_fn = lookup::<8, LinearProbe>;
         index_bits = 8;
     } else if records.len() < 65536 {
-        lookup_fn = lookup::<16, LinearProbe>;
         index_bits = 16;
     } else {
-        lookup_fn = lookup::<24, LinearProbe>;
         index_bits = 24;
     }
 
@@ -118,7 +113,6 @@ pub fn initialize_scattered_map<K, V>(
 
     ScatteredMapTable {
         metadata,
-        lookup_fn,
         index_bits,
     }
 }

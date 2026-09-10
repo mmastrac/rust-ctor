@@ -104,7 +104,7 @@ impl<K: ConstHash + PartialEq + 'static, V: 'static> ScatteredMap<K, V> {
         let this = self.state;
         let table = this.ensure_initialized();
         let hash = ConstHash::hash(key);
-        let offset = (table.lookup_fn)(table, hash);
+        let offset = table.lookup(hash);
         if offset.is_found() {
             let record = &this.records[offset.unwrap() as usize];
             if record.key.borrow() == key {

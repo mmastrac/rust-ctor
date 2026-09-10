@@ -1,6 +1,7 @@
 #![allow(clippy::modulo_one, unreachable_pub)]
 use crate::map::probe::{
-    BUCKET_SIZE, Bucket, LookupResult, ProbeStrategy, control_byte_from_hash, match_mask,
+    BUCKET_SIZE, Bucket, LinearProbe, LookupResult, ProbeStrategy, control_byte_from_hash,
+    match_mask,
 };
 
 // Cache line sizes:
@@ -42,11 +43,23 @@ impl MetadataStride {
 #[doc(hidden)]
 pub struct ScatteredMapTable {
     pub metadata: &'static [MetadataStride],
-    /// Index, or `u64::MAX` if none
-    pub lookup_fn: fn(&ScatteredMapTable, h: u64) -> LookupResult,
     pub index_bits: u8,
 }
 
+impl ScatteredMapTable {
+    #[inline]
+    pub fn lookup(&self, h: u64) -> LookupResult {
+        let offset = match self.index_bits {
+            8 => lookup::<8, LinearProbe>(self, h),
+            16 => lookup::<16, LinearProbe>(self, h),
+            24 => lookup::<24, LinearProbe>(self, h),
+            _ => unreachable!(),
+        };
+        offset
+    }
+}
+
+#[inline]
 pub fn lookup<const INDEX_BITS: u8, P: ProbeStrategy>(
     table: &ScatteredMapTable,
     h: u64,
@@ -96,7 +109,6 @@ mod tests {
 
         let table = ScatteredMapTable {
             metadata: &RECORDS,
-            lookup_fn: lookup::<INDEX_BITS, LinearProbe>,
             index_bits: INDEX_BITS,
         };
 
@@ -122,7 +134,6 @@ mod tests {
 
         let table = ScatteredMapTable {
             metadata: &RECORDS,
-            lookup_fn: lookup::<16, LinearProbe>,
             index_bits: INDEX_BITS,
         };
 
