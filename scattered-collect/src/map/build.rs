@@ -1,7 +1,8 @@
 #![allow(clippy::modulo_one, unreachable_pub)]
 use crate::map::MapRecord;
 use crate::map::probe::{
-    BUCKET_SIZE, Bucket, LinearProbe, ProbeStrategy, control_byte_from_hash, match_mask, split_hash,
+    BUCKET_SIZE, Bucket, LinearProbe, ProbeStrategy, control_byte_from_hash, first_empty_lane,
+    match_mask, split_hash,
 };
 use crate::map::table::{BUCKET_STRIDE, MetadataStride, ScatteredMapTable};
 
@@ -25,17 +26,6 @@ pub const fn pack_hash(index_bits: u8, hash: u64, index: usize) -> u64 {
     let hash_mask: u64 = (-1_i64 as u64) << (index_bits as usize);
     let index_mask = !hash_mask;
     hash & hash_mask | (index as u64) & index_mask
-}
-
-/// First lane index in `buckets` whose byte is `0` (empty), using SIMD.
-#[inline]
-pub fn first_empty_lane(buckets: &Bucket) -> Option<usize> {
-    let mask = buckets.simd_eq(Bucket::splat(0)).to_bitmask();
-    if mask == 0 {
-        None
-    } else {
-        Some(mask.trailing_zeros() as usize)
-    }
 }
 
 /// Initialize a scattered map table from a slice of records.
