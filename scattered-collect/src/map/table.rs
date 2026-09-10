@@ -49,13 +49,12 @@ pub struct ScatteredMapTable {
 impl ScatteredMapTable {
     #[inline]
     pub fn lookup(&self, h: u64) -> LookupResult {
-        let offset = match self.index_bits {
+        match self.index_bits {
             8 => lookup::<8, LinearProbe>(self, h),
             16 => lookup::<16, LinearProbe>(self, h),
             24 => lookup::<24, LinearProbe>(self, h),
             _ => unreachable!(),
-        };
-        offset
+        }
     }
 }
 
