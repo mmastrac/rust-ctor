@@ -53,14 +53,13 @@ pub fn initialize_scattered_map<K, V>(
         };
     }
 
-    let index_bits;
-    if records.len() < 256 {
-        index_bits = 8;
+    let index_bits = if records.len() < 256 {
+        8
     } else if records.len() < 65536 {
-        index_bits = 16;
+        16
     } else {
-        index_bits = 24;
-    }
+        24
+    };
 
     let align = align_of::<MetadataStride>();
     let base = refs.as_mut_ptr() as usize;
