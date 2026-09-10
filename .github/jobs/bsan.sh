@@ -12,6 +12,17 @@ set -xeuo pipefail
 # inside the first command, mixing a libstd build into that command's output.
 cargo bsan setup
 
+preinit_dir=$(mktemp -d)
+cc -c -fPIC -x c -o "$preinit_dir/preinit.o" - <<'EOF'
+extern void __bsan_init(void);
+__attribute__((section(".preinit_array"),
+               used)) static void (*bsan_preinit)(void) = __bsan_init;
+EOF
+
+host_triple=$(rustc -vV | sed -n 's/^host: //p')
+export "CARGO_TARGET_$(echo "$host_triple" | tr 'a-z-' 'A-Z_')_RUSTFLAGS=-C link-arg=$preinit_dir/preinit.o"
+export RUSTDOCFLAGS="-C link-arg=$preinit_dir/preinit.o"
+
 cargo bsan test
 
 cargo bsan run --example "link-section-const"
