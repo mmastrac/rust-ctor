@@ -26,7 +26,22 @@ export RUSTDOCFLAGS="-C link-arg=$preinit_dir/preinit.o"
 cargo bsan test
 
 bsan_examples=(
+  ctor-advanced
+  ctor-basic
+  ctor-dynamic
+  ctor-example
+  ctor-priority
+  ctor-statics
+  dtor-example
   link-section-const
+  link-section-dyn
+  link-section-empty
+  link-section-example
+  link-section-movable
+  link-section-movable-no-macro
+  link-section-mut
+  link-section-mut-no-macro
+  link-section-ref
   scattered-collect-command-registration
   scattered-collect-intern-strings
   scattered-collect-iterable
