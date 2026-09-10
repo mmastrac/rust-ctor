@@ -57,7 +57,8 @@ pub struct ScatteredMapTable {
 }
 
 impl ScatteredMapTable {
-    #[inline]
+    // `inline(always)`: passes ato-inliner threshold otherwise.
+    #[inline(always)]
     pub fn lookup(&self, h: u64) -> LookupResult {
         match self.index_bits {
             0 => LookupResult::not_found(),

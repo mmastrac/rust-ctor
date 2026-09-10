@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.22.2] - 2026-09-10
 
-Recommended patch: performance 
+Recommended patch: major performance
 
 ### Fixed
 
@@ -15,9 +15,7 @@ Recommended patch: performance
   (~2x faster, ahead of std HashMap)
 - Major improvements on x64 (~3x faster on misses, ~30% on hit)
 - Fixed UB risk in initialization
-- Short-circuit hashmap lookups on empty bucket
-- Concurrent first access to a map no longer panics; racing threads now
-  wait for initialization to finish
+- Short-circuit hashmap lookups on empty bucket 
 
 ## [0.22.1] - 2026-08-14
 
