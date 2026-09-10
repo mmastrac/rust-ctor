@@ -204,8 +204,7 @@ fn scattered_map_lookup(bencher: Bencher) {
     });
 
     bencher.bench_local(|| {
-        for (n, key) in PROBES {
-            let hash = const_hash!(key);
+        for (hash, key) in PROBES {
             let offset = table.lookup(hash);
             let value = &MAP_RECORDS[offset.unwrap() as usize].value;
             assert_eq!(value, &key);
@@ -223,9 +222,9 @@ fn scattered_map_lookup_sweep(bencher: Bencher) {
 
     bencher.bench_local(|| {
         for (hash, n) in SWEEP_PROBES {
-            let offset = (table.lookup_fn)(&table, divan::black_box(hash));
-            let value = offset.map(|offset| &MAP_RECORDS[offset as usize].value);
-            assert_eq!(value, Some(&n));
+            let offset = table.lookup(divan::black_box(hash)).unwrap();
+            let value = &MAP_RECORDS[offset as usize].value;
+            assert_eq!(*value, n);
         }
     });
 }
@@ -240,8 +239,8 @@ fn scattered_map_lookup_miss(bencher: Bencher) {
 
     bencher.bench_local(|| {
         for hash in MISSING_PROBES {
-            let offset = (table.lookup_fn)(&table, divan::black_box(hash));
-            assert_eq!(offset, None);
+            let offset = table.lookup(divan::black_box(hash));
+            assert!(!offset.is_found());
         }
     });
 }
@@ -532,9 +531,9 @@ fn scattered_map_lookup_50k(bencher: Bencher) {
 
     bencher.bench_local(|| {
         for &(hash, n) in &LARGE.hot {
-            let offset = (table.lookup_fn)(&table, divan::black_box(hash));
-            let value = offset.map(|offset| &LARGE.map_records[offset as usize].value);
-            assert_eq!(value, Some(&n));
+            let offset = table.lookup(divan::black_box(hash)).unwrap();
+            let value = &LARGE.map_records[offset as usize].value;
+            assert_eq!(*value, n);
         }
     });
 }
@@ -548,9 +547,9 @@ fn scattered_map_lookup_sweep_50k(bencher: Bencher) {
 
     bencher.bench_local(|| {
         for &(hash, n) in &LARGE.sweep {
-            let offset = (table.lookup_fn)(&table, divan::black_box(hash));
-            let value = offset.map(|offset| &LARGE.map_records[offset as usize].value);
-            assert_eq!(value, Some(&n));
+            let offset = table.lookup(divan::black_box(hash)).unwrap();
+            let value = &LARGE.map_records[offset as usize].value;
+            assert_eq!(*value, n);
         }
     });
 }
@@ -564,7 +563,7 @@ fn scattered_map_lookup_miss_50k(bencher: Bencher) {
 
     bencher.bench_local(|| {
         for &hash in &LARGE.miss {
-            assert_eq!((table.lookup_fn)(&table, divan::black_box(hash)), None);
+            assert!(!table.lookup(divan::black_box(hash)).is_found());
         }
     });
 }
