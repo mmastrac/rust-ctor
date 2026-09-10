@@ -299,6 +299,51 @@ pub struct SearchStepCounts {
     pub linear_tag_checks: u32,
 }
 
+/// Step accounting for the search phases.
+///
+/// The production lookup instantiates [`NoSteps`], so all counting compiles away and
+/// the hot path keeps no bookkeeping state; analysis code instantiates
+/// [`SearchStepCounts`].
+trait StepCounter {
+    fn coarse_step(&mut self);
+    fn simd_block(&mut self);
+    fn simd_candidate(&mut self);
+    fn linear_tag_checks(&mut self, count: usize);
+}
+
+/// Zero-sized [`StepCounter`] used by the production lookup.
+struct NoSteps;
+
+impl StepCounter for NoSteps {
+    #[inline(always)]
+    fn coarse_step(&mut self) {}
+    #[inline(always)]
+    fn simd_block(&mut self) {}
+    #[inline(always)]
+    fn simd_candidate(&mut self) {}
+    #[inline(always)]
+    fn linear_tag_checks(&mut self, _count: usize) {}
+}
+
+impl StepCounter for SearchStepCounts {
+    #[inline]
+    fn coarse_step(&mut self) {
+        self.coarse_steps += 1;
+    }
+    #[inline]
+    fn simd_block(&mut self) {
+        self.simd_blocks += 1;
+    }
+    #[inline]
+    fn simd_candidate(&mut self) {
+        self.simd_candidates += 1;
+    }
+    #[inline]
+    fn linear_tag_checks(&mut self, count: usize) {
+        self.linear_tag_checks += count as u32;
+    }
+}
+
 /// Sort the hash index and write sorted SIMD tags and the top-byte jump table.
 pub fn initialize_hash_sorted_map_index<K, V>(
     index: &mut [HashBackref<K, V>],
@@ -515,16 +560,20 @@ pub(crate) fn interpolation_search<K, V>(index: &[HashBackref<K, V>], hash: u64)
 }
 
 /// Hybrid lookup: coarse interpolation jumps, then SIMD tag filtering, then full-hash verification.
+// `inline`: the search is the whole body of `find`, and leaving it outlined costs a
+// generic call plus a stack frame on every lookup.
+#[inline]
 pub(crate) fn hybrid_interpolation_search<K, V>(
     index: &[HashBackref<K, V>],
     tags: &[Tag],
     radix: Option<&RadixLookupTables>,
     hash: u64,
 ) -> Option<usize> {
-    hybrid_interpolation_search_with_steps(index, tags, radix, hash).0
+    hybrid_interpolation_search_impl(index, tags, radix, hash, &mut NoSteps)
 }
 
 /// Hybrid lookup with per-phase step counts for analysis.
+#[cfg(test)]
 pub(crate) fn hybrid_interpolation_search_with_steps<K, V>(
     index: &[HashBackref<K, V>],
     tags: &[Tag],
@@ -532,92 +581,97 @@ pub(crate) fn hybrid_interpolation_search_with_steps<K, V>(
     hash: u64,
 ) -> (Option<usize>, SearchStepCounts) {
     let mut steps = SearchStepCounts::default();
+    let found = hybrid_interpolation_search_impl(index, tags, radix, hash, &mut steps);
+    (found, steps)
+}
+
+#[inline]
+fn hybrid_interpolation_search_impl<K, V, S: StepCounter>(
+    index: &[HashBackref<K, V>],
+    tags: &[Tag],
+    radix: Option<&RadixLookupTables>,
+    hash: u64,
+    steps: &mut S,
+) -> Option<usize> {
     let len = index.len();
     if len == 0 {
-        return (None, steps);
+        return None;
     }
 
     let (mut low, mut high) = match radix {
-        Some(radix) => match radix_window(radix, hash) {
-            Some(window) => window,
-            None => return (None, steps),
-        },
+        Some(radix) => radix_window(radix, hash)?,
         None => (0, len - 1),
     };
 
-    if low > high || hash < index[low].hash || hash > index[high].hash {
-        return (None, steps);
+    if low >= len {
+        return None;
+    }
+    // Clamped once here so the tag phase can trust `candidate <= high < len` and skip
+    // per-candidate range checks.
+    high = high.min(len - 1);
+    if low > high {
+        return None;
     }
 
-    let window = high.saturating_sub(low) + 1;
+    if hash < index[low].hash || hash > index[high].hash {
+        return None;
+    }
+
+    let window = high - low + 1;
     if window < RADIX_LINEAR_THRESHOLD {
-        return (
-            linear_tag_block_search(index, tags, hash, low, high, &mut steps),
-            steps,
-        );
+        steps.linear_tag_checks(window);
+        return tag_block_scan(index, tags, hash, low, high, steps);
     }
 
-    while high.saturating_sub(low) > TAG_BLOCK_SIZE {
-        steps.coarse_steps += 1;
+    while high - low > TAG_BLOCK_SIZE {
+        steps.coarse_step();
         let low_val = index[low].hash;
         let high_val = index[high].hash;
 
         if hash < low_val || hash > high_val {
-            return (None, steps);
+            return None;
         }
         if low_val == high_val {
             break;
         }
 
         let pos = interpolate_pos(low, high, low_val, high_val, hash);
+        let pos_hash = index[pos].hash;
 
-        if index[pos].hash == hash {
-            return (Some(pos), steps);
+        if pos_hash == hash {
+            return Some(pos);
         }
-        if index[pos].hash < hash {
+        if pos_hash < hash {
             low = pos + 1;
         } else if pos == 0 {
-            return (None, steps);
+            return None;
         } else {
             high = pos - 1;
         }
     }
 
     if hash < index[low].hash || hash > index[high].hash {
-        return (None, steps);
+        return None;
     }
 
-    // Start at `low` (unaligned); aligning down to a block boundary only wastes
-    // an extra block when `low` sits late in its lane group.
-    let mut block_offset = low;
-    while block_offset <= high {
-        steps.simd_blocks += 1;
-        if let Some(idx) =
-            simd_verify_tag_block(index, tags, hash, block_offset, low, high, &mut steps)
-        {
-            return (Some(idx), steps);
-        }
-        block_offset += TAG_BLOCK_SIZE;
-    }
-
-    (None, steps)
+    tag_block_scan(index, tags, hash, low, high, steps)
 }
 
-/// Walk [`Tag`] blocks sequentially over a small radix window (no interpolation).
-fn linear_tag_block_search<K, V>(
+/// Walk [`Tag`] blocks sequentially over `[low, high]` (no interpolation).
+#[inline]
+fn tag_block_scan<K, V, S: StepCounter>(
     index: &[HashBackref<K, V>],
     tags: &[Tag],
     hash: u64,
     low: usize,
     high: usize,
-    steps: &mut SearchStepCounts,
+    steps: &mut S,
 ) -> Option<usize> {
-    let window = high.saturating_sub(low) + 1;
-    steps.linear_tag_checks += window as u32;
-
+    // Start at `low` (unaligned); aligning down to a block boundary only wastes
+    // an extra block when `low` sits late in its lane group.
     let mut block_offset = low;
     while block_offset <= high {
-        steps.simd_blocks += 1;
+        steps.simd_block();
         if let Some(idx) = simd_verify_tag_block(index, tags, hash, block_offset, low, high, steps)
         {
             return Some(idx);
@@ -637,15 +691,28 @@ fn load_tag_block(tags: &[Tag], block_offset: usize) -> TagVector {
     }
 }
 
+/// Bitmask of the lanes of the block at `block_offset` that fall inside `[low, high]`.
 #[inline]
-fn simd_verify_tag_block<K, V>(
+fn lane_mask(block_offset: usize, low: usize, high: usize) -> u32 {
+    debug_assert!(block_offset <= high);
+    let first = low.saturating_sub(block_offset);
+    if first >= TAG_BLOCK_SIZE {
+        return 0;
+    }
+    let last = (high - block_offset).min(TAG_BLOCK_SIZE - 1);
+    let width = last - first + 1;
+    (u32::MAX >> (u32::BITS as usize - width)) << first
+}
+
+#[inline]
+fn simd_verify_tag_block<K, V, S: StepCounter>(
     index: &[HashBackref<K, V>],
     tags: &[Tag],
     hash: u64,
     block_offset: usize,
     low: usize,
     high: usize,
-    steps: &mut SearchStepCounts,
+    steps: &mut S,
 ) -> Option<usize> {
     if block_offset + TAG_BLOCK_SIZE > tags.len() {
         return None;
@@ -653,18 +720,18 @@ fn simd_verify_tag_block<K, V>(
 
     let current_tags = load_tag_block(tags, block_offset);
     let target_vec = TagVector::splat(hash_tag(hash));
-    let mut move_mask = current_tags.simd_eq(target_vec).to_bitmask();
+    // Lanes outside `[low, high]` are masked out in one step rather than range-checked
+    // per match.
+    let mut move_mask =
+        current_tags.simd_eq(target_vec).to_bitmask() & lane_mask(block_offset, low, high);
 
     while move_mask != 0 {
         let lane = move_mask.trailing_zeros() as usize;
         let candidate_idx = block_offset + lane;
 
-        if candidate_idx >= low && candidate_idx <= high && candidate_idx < index.len() {
-            steps.simd_candidates += 1;
-            let candidate = &index[candidate_idx];
-            if candidate.hash == hash {
-                return Some(candidate_idx);
-            }
+        steps.simd_candidate();
+        if index[candidate_idx].hash == hash {
+            return Some(candidate_idx);
         }
 
         move_mask &= move_mask - 1;
@@ -677,6 +744,8 @@ fn simd_verify_tag_block<K, V>(
 #[cfg(feature = "__internal")]
 pub mod internal {
     /// See [`super::hybrid_interpolation_search`].
+    // `inline`: mirrors the production `find` path, which inlines the search.
+    #[inline]
     pub fn hybrid_interpolation_search<K, V>(
         index: &[super::HashBackref<K, V>],
         tags: &[super::Tag],
