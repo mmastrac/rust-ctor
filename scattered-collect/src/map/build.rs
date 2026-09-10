@@ -181,7 +181,7 @@ mod tests {
             assert_eq!(found.unwrap() as usize, i, "n={n} strides={strides}: {key}");
         }
 
-        for i in 0..if cfg!(any(miri, bsan)) { 50 } else { 1000 } {
+        for i in 0..if cfg!(miri) { 50 } else { 1000 } {
             let key = format!("absent{i:08}");
             let found = table.lookup(crate::hash::ConstHash::hash(&key.as_str()));
             if found.is_found() {
@@ -193,8 +193,10 @@ mod tests {
         }
     }
 
-    const ROUND_TRIP_SIZES: &[usize] = if cfg!(any(miri, bsan)) {
+    const ROUND_TRIP_SIZES: &[usize] = if cfg!(miri) {
         &[1, 2, 16, 17, 255, 256, 257]
+    } else if cfg!(bsan) {
+        &[1, 2, 15, 16, 17, 255, 256, 257, 1000]
     } else {
         &[
             1, 2, 15, 16, 17, 255, 256, 257, 1000, 5000, 65535, 65536, 70000,

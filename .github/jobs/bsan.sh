@@ -27,11 +27,20 @@ cargo bsan test
 
 cargo bsan run --example "link-section-const"
 
-# Crates outside the workspace, matching the set miri runs.
+# Crates outside the workspace.
 bsan_crates=(
   tests/ctor/edition-2018
+  tests/ctor/edition-2021
+  tests/ctor/edition-2024
+  tests/ctor/no-default-features
   tests/ctor/priority
+  tests/dtor/link-section
+  tests/dtor/no-default-features
   tests/link_section/basic
+  tests/link_section/copied
+  tests/link_section/interior_mut
+  tests/link_section/mutable
+  tests/link_section/no-default-features
 )
 for dir in "${bsan_crates[@]}"; do
   (cd "$dir" && cargo bsan run)
