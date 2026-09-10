@@ -25,7 +25,21 @@ export RUSTDOCFLAGS="-C link-arg=$preinit_dir/preinit.o"
 
 cargo bsan test
 
-cargo bsan run --example "link-section-const"
+bsan_examples=(
+  link-section-const
+  scattered-collect-command-registration
+  scattered-collect-intern-strings
+  scattered-collect-iterable
+  scattered-collect-map
+  scattered-collect-referenced-slice
+  scattered-collect-set
+  scattered-collect-slice
+  scattered-collect-sorted-referenced-slice
+  scattered-collect-sorted-slice
+)
+for example in "${bsan_examples[@]}"; do
+  cargo bsan run --example "$example"
+done
 
 # Crates outside the workspace.
 bsan_crates=(
