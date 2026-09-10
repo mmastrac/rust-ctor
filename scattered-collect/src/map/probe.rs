@@ -10,7 +10,7 @@ pub struct LookupResult(u32);
 impl LookupResult {
     #[inline(always)]
     pub const fn found(at: i32) -> Self {
-        debug_assert!(at > 0);
+        debug_assert!(at >= 0);
         LookupResult(at as u32)
     }
 

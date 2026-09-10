@@ -66,7 +66,8 @@ pub fn lookup<const INDEX_BITS: u8, P: ProbeStrategy>(
             let lane = bits.trailing_zeros() as usize;
             let h2 = group.hashes[group_offset * BUCKET_SIZE + lane];
             if h2 & hash_mask == masked_hash {
-                return LookupResult::found((h2 & index_mask) as _);
+                let idx = (h2 & index_mask) as _;
+                return LookupResult::found(idx);
             }
             bits &= bits - 1;
         }
