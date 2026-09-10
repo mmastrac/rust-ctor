@@ -22,6 +22,15 @@ mod table;
 const UNINITIALIZED: u8 = 0;
 const INITIALIZING: u8 = 1;
 const FINISHED_INITIALIZING: u8 = 2;
+const POISONED: u8 = 3;
+
+struct PoisonOnUnwind<'a>(&'a AtomicU8);
+
+impl Drop for PoisonOnUnwind<'_> {
+    fn drop(&mut self) {
+        self.0.store(POISONED, Ordering::Release);
+    }
+}
 
 /// One gathered map entry.
 ///
@@ -219,7 +228,7 @@ impl<K: 'static, V: 'static> __ScatteredMapState<K, V> {
         refs: &'static TypedMutableSection<u8>,
     ) -> Self {
         Self {
-            state: AtomicU8::new(0),
+            state: AtomicU8::new(UNINITIALIZED),
             records,
             refs,
             table: SyncUnsafeCell::new(MaybeUninit::uninit()),
@@ -257,22 +266,29 @@ impl<K: 'static, V: 'static> __ScatteredMapState<K, V> {
     #[allow(unsafe_code)]
     #[cold]
     fn initialize_slow(&self) -> &ScatteredMapTable {
-        match self.state.compare_exchange(
-            UNINITIALIZED,
-            INITIALIZING,
-            Ordering::Relaxed,
-            Ordering::Acquire,
-        ) {
-            Ok(_) => {
-                let table = build::initialize_scattered_map(self.records, unsafe {
-                    self.refs.as_mut_slice()
-                });
-                unsafe { ptr::write(self.table.get().cast::<ScatteredMapTable>(), table) };
-                self.state.store(FINISHED_INITIALIZING, Ordering::Release);
-                unsafe { self.table_ref() }
-            }
-            Err(FINISHED_INITIALIZING) => unsafe { self.table_ref() },
-            Err(_) => panic!("Recursive or overlapping initialization of static variable"),
+        if self
+            .state
+            .compare_exchange(
+                UNINITIALIZED,
+                INITIALIZING,
+                Ordering::Relaxed,
+                Ordering::Acquire,
+            )
+            .is_ok()
+        {
+            let guard = PoisonOnUnwind(&self.state);
+            let table =
+                build::initialize_scattered_map(self.records, unsafe { self.refs.as_mut_slice() });
+            unsafe { ptr::write(self.table.get().cast::<ScatteredMapTable>(), table) };
+            std::mem::forget(guard);
+            self.state.store(FINISHED_INITIALIZING, Ordering::Release);
+            return unsafe { self.table_ref() };
+        }
+
+        match self.state.load(Ordering::Acquire) {
+            FINISHED_INITIALIZING => return unsafe { self.table_ref() },
+            POISONED => panic!("Initialization of static variable panicked"),
+            _ => panic!("Recursive or overlapping initialization of static variable"),
         }
     }
 }

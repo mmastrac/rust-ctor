@@ -106,9 +106,12 @@ macro_rules! const_hash {
 
 #[cfg(test)]
 mod tests {
+    use crate::hash::ConstHash;
+
     #[test]
     fn test_const_hash_str() {
         assert_eq!(const_hash!("hello"), 10760762337991515389);
+        assert_eq!(ConstHash::hash("hello"), 10760762337991515389);
     }
 
     #[test]

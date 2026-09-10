@@ -3,7 +3,7 @@ pub type Bucket = wide::u8x16;
 
 pub const BUCKET_SIZE: usize = std::mem::size_of::<Bucket>();
 
-#[repr(C)]
+#[repr(transparent)]
 pub struct LookupResult(u32);
 
 impl LookupResult {
@@ -25,6 +25,7 @@ impl LookupResult {
 
     #[inline(always)]
     pub const fn unwrap(self) -> u32 {
+        debug_assert!(self.is_found());
         self.0
     }
 }

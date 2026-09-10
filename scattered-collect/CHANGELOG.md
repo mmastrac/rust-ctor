@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.22.2] - 2026-09-10
+
+Recommended patch: performance 
+
+### Fixed
+
+- Major performance improvements in lookup on ARM by removing CAS in hot path
+  (~2x faster, ahead of std HashMap)
+- Major improvements on x64 (~3x faster on misses, ~30% on hit)
+- Fixed UB risk in initialization
+- Short-circuit hashmap lookups on empty bucket
+- Concurrent first access to a map no longer panics; racing threads now
+  wait for initialization to finish
+
 ## [0.22.1] - 2026-08-14
 
 ### Fixed
