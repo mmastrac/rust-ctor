@@ -98,6 +98,22 @@ impl<K: 'static, V: 'static> crate::ScatteredElementTuple for ScatteredHashSorte
     type B = V;
 }
 
+// Rejected alternative: folding the resolution data into the tag blocks, i.e. storing
+// the index as swiss-table-style blocks of `{ tags: [Tag; N], entries: [u64; N] }` with
+// the record offset packed into the low bits of each entry, so a matched tag lane is
+// verified and resolved out of the object the tag load already touched. Measured on
+// x86_64 at 5k and 50k records with N = 8/16/32, natural and cache-line-aligned block
+// sizes, against the same packed entries in a separate dense array: folding costs
+// 13-21% on a hot lookup and 37-61% on a full sweep, in every geometry.
+//
+// The reason is that this is not a swiss table. A swiss-table probe examines exactly one
+// group, so co-locating a group's hashes with its control bytes is free. This search
+// examines a radix *window* whose width grows with `len / 2^RADIX_BITS` (avg 2.2 at 5k,
+// ~12 at 50k): a dense tag array covers a whole window in one SIMD load and stays
+// cache-resident (one byte per record), while interleaving the entries dilutes tag
+// density ninefold, spreads a window's tags over several blocks, and still needs a
+// second cache line for any entry that does not share a line with the tags. The
+// verification load it saves costs less than the tag locality it gives up.
 /// One hash-index entry pointing back to a [`MapRecord`].
 #[repr(C)]
 pub struct HashBackref<K, V> {
