@@ -21,16 +21,18 @@ macro_rules! const_hash_str {
             impl ConstHash for $ty {
                 type Hasher = StrHasher;
                 const HASHER: Self::Hasher = StrHasher;
+                #[inline(always)]
                 fn hash(&self) -> u64 {
-                    (Self::HASHER).const_hash(self)
+                    xxhash_rust::xxh3::xxh3_64(self.as_bytes())
                 }
             }
 
             impl <'a> ConstHash for &'a $ty {
                 type Hasher = StrHasher;
                 const HASHER: Self::Hasher = StrHasher;
+                #[inline(always)]
                 fn hash(&self) -> u64 {
-                    (Self::HASHER).const_hash(self)
+                    xxhash_rust::xxh3::xxh3_64(self.as_bytes())
                 }
             }
         )*
