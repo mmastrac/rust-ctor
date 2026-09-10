@@ -1,8 +1,8 @@
 #![allow(clippy::modulo_one, unreachable_pub)]
 use crate::map::MapRecord;
 use crate::map::probe::{
-    BUCKET_SIZE, Bucket, LinearProbe, ProbeStrategy, control_byte_from_hash, first_empty_lane,
-    match_mask, split_hash,
+    BUCKET_SIZE, LinearProbe, ProbeStrategy, control_byte_from_hash, first_empty_lane, match_mask,
+    split_hash,
 };
 use crate::map::table::{BUCKET_STRIDE, MetadataStride, ScatteredMapTable};
 
